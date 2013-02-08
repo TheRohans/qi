@@ -6879,10 +6879,10 @@ void set_user_option(const char *user)
     user_option = user;
     /* compute resources path */
     pstrcpy(qs->res_path, sizeof(qs->res_path),
-            CONFIG_QE_PREFIX "/share/qe:" CONFIG_QE_PREFIX "/lib/qe:"
-            "/usr/share/qe:/usr/lib/qe");
+            CONFIG_QE_PREFIX "/share/qi:" CONFIG_QE_PREFIX "/lib/qi:"
+            "/usr/share/qi:/usr/lib/qi");
     if (user) {
-        /* use ~USER/.qe instead of ~/.qe */
+        /* use ~USER/.qi instead of ~/.qi */
         /* CG: should get user homedir */
         snprintf(path, sizeof(path), "/home/%s", user);
         home_path = path;
@@ -6892,7 +6892,7 @@ void set_user_option(const char *user)
     if (home_path) {
         pstrcat(qs->res_path, sizeof(qs->res_path), ":");
         pstrcat(qs->res_path, sizeof(qs->res_path), home_path);
-        pstrcat(qs->res_path, sizeof(qs->res_path), "/.qe");
+        pstrcat(qs->res_path, sizeof(qs->res_path), "/.qi");
     }
 }
 

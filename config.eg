@@ -1,8 +1,8 @@
-// Sample qemacs config file 
+// Sample qi config file 
 //
 // copy it in ~/.qe/config
 //
-// You can call any Qemacs command with a C like syntax.
+// You can call any qi command with a C like syntax.
 //
 // underscores can be used in command names instead of dash.
 //
