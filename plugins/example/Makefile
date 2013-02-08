@@ -33,4 +33,4 @@ $(LIB): $(OBJS) #Makefile
 	$(CC) $(CFLAGS) -c -o $(LOAD_PATH)$@ $<
 
 clean:
-	rm -f *.o *.so *~
+	rm -f $(LOAD_PATH)my_plugin.o #*.o *.so *~
