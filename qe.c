@@ -7264,7 +7264,7 @@ void qe_init(void *opaque)
     }
 #endif
 
-    put_status(s, "Qi %s - Press F1 for help", QE_VERSION);
+    put_status(s, "气 %s - Press F1 for help", QE_VERSION);
 
     edit_display(qs);
     dpy_flush(&global_screen);
