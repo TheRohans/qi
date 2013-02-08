@@ -7043,12 +7043,12 @@ extern void module_bufed_init(void); /* bufed.c(197) */
 extern void module_shell_init(void); /* shell.c(922) */
 extern void module_dired_init(void); /* dired.c(369) */
 extern void module_win32_init(void); /* win32.c(504) */
-extern void module_x11_init(void); /* x11.c(1704) */
-extern void module_html_init(void); /* html.c(894) */
-extern void module_docbook_init(void); /* docbook.c(53) */
-extern void module_video_init(void); /* video.c(979) */
-extern void module_image_init(void); /* image.c(844) */
-extern void module_mpeg_init(void); /* mpeg.c(181) */
+//extern void module_x11_init(void); /* x11.c(1704) */
+//extern void module_html_init(void); /* html.c(894) */
+//extern void module_docbook_init(void); /* docbook.c(53) */
+//extern void module_video_init(void); /* video.c(979) */
+//extern void module_image_init(void); /* image.c(844) */
+//extern void module_mpeg_init(void); /* mpeg.c(181) */
 
 static inline void init_all_modules(void)
 {
@@ -7084,17 +7084,17 @@ static inline void init_all_modules(void)
     module_win32_init(); /* win32.c(504) */
 #endif
 #ifdef CONFIG_X11
-    module_x11_init(); /* x11.c(1704) */
+//    module_x11_init(); /* x11.c(1704) */
 #endif
 #ifndef CONFIG_TINY
 #ifdef CONFIG_HTML
-    module_html_init(); /* html.c(894) */
-    module_docbook_init(); /* docbook.c(53) */
+//    module_html_init(); /* html.c(894) */
+//    module_docbook_init(); /* docbook.c(53) */
 #endif
 #endif
 #ifdef CONFIG_FFMPEG
-    module_video_init(); /* video.c(979) */
-    module_image_init(); /* image.c(844) */
+//    module_video_init(); /* video.c(979) */
+//    module_image_init(); /* image.c(844) */
     //module_mpeg_init(); /* mpeg.c(181) */
 #endif
 }
@@ -7264,7 +7264,7 @@ void qe_init(void *opaque)
     }
 #endif
 
-    put_status(s, "QEmacs %s - Press F1 for help", QE_VERSION);
+    put_status(s, "Qi %s - Press F1 for help", QE_VERSION);
 
     edit_display(qs);
     dpy_flush(&global_screen);

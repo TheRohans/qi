@@ -105,18 +105,19 @@ _OBJS+= cutils.o
 #endif
 
 ifndef CONFIG_WIN32
-_OBJS+= unix.o tty.o 
+_OBJS+= unix.o plugin_tty.o 
 endif
 
 # more charsets if needed
 ifndef CONFIG_TINY
-_OBJS+=charsetmore.o charset_table.o 
+_OBJS+= plugin_charsetmore.o charset_table.o 
 endif
 
 ifdef CONFIG_ALL_MODES
-_OBJS+= unihex.o clang.o latex-mode.o xml.o bufed.o
+#_OBJS+= unihex.o clang.o latex-mode.o xml.o bufed.o
+_OBJS+= plugin_unihex.o plugin_clang.o plugin_latex-mode.o plugin_xml.o plugin_bufed.o
 ifndef CONFIG_WIN32
-_OBJS+= shell.o dired.o 
+_OBJS+= plugin_shell.o plugin_dired.o 
 endif
 endif
 
@@ -153,7 +154,7 @@ endif
 #endif
 
 ifdef CONFIG_UNICODE_JOIN
-_OBJS+= arabic.o indic.o qfribidi.o unihex.o
+_OBJS+= arabic.o indic.o qfribidi.o plugin_unihex.o
 endif
 
 #ifdef CONFIG_FFMPEG
@@ -168,8 +169,7 @@ endif
 _OBJS+= qeend.o
 
 OBJS = $(patsubst %,$(LOAD_PATH)/%,$(_OBJS))
-PLUGIN_OBJS = $(wildcard $(PLUGIN_LOAD_PATH)/*.o)
-PLUGIN_OBJS_PATH = $(patsubst %,$(PLUGIN_LOAD_PATH)/%,$(PLUGIN_OBJS))
+#PLUGIN_OBJS_PATH = $(patsubst %,$(PLUGIN_LOAD_PATH)/%,$(PLUGIN_OBJS))
 
 all: $(TARGETLIBS) $(TARGETS)
 
@@ -177,10 +177,11 @@ all: $(TARGETLIBS) $(TARGETS)
 #	make -C libqhtml all
 
 qe_g$(EXE): $(OBJS) $(DEP_LIBS)
-	echo '=========== Building Plugins ==========='
+	@echo '=========== Building Plugins ==========='
 	make -C plugins all
-	echo '=========== Building Plugins ==========='
-	$(CC) $(LDFLAGS) -o $(LOAD_PATH)/$@ $(PLUGIN_OBJS) $^ $(LIBS)
+	#PLUGIN_OBJS = $(wildcard $(PLUGIN_LOAD_PATH)/*.o)
+	@echo '=========== Building Plugins ==========='
+	$(CC) $(LDFLAGS) -o $(LOAD_PATH)/$@ $^ $(LIBS)
 
 qi$(EXE): qe_g$(EXE)
 	rm -f $@
@@ -197,7 +198,7 @@ $(LOAD_PATH)/charset.o: charset.c qe.h
 
 $(LOAD_PATH)/buffer.o: buffer.c qe.h
 
-$(LOAD_PATH)/tty.o: tty.c qe.h
+$(LOAD_PATH)/tty.o: plugin_tty.c qe.h
 
 $(LOAD_PATH)/qfribidi.o: qfribidi.c qfribidi.h
 
