@@ -38,11 +38,11 @@ LDFLAGS+= -p
 endif
 ifdef TARGET_ARCH_X86
 #CFLAGS+=-fomit-frame-pointer
-ifeq ($(GCC_MAJOR),2)
-CFLAGS+=-m386 -malign-functions=0
-else
+#ifeq ($(GCC_MAJOR),2)
+#CFLAGS+=-m386 -malign-functions=0
+#else
 CFLAGS+=-march=i386 -falign-functions=0
-endif
+#endif
 endif
 DEFINES=-DHAVE_QE_CONFIG_H
 
