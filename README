@@ -28,5 +28,10 @@ the accompagning COPYING file).
 
 Fabrice Bellard.
 
-./configure --disable-x11 --disable-xv --disable-xrender --disable-html --disable-png
+(most are not used anymore anyway)
+./configure --disable-x11 \
+--disable-xv \
+--disable-xrender \
+--disable-html \
+--disable-png
 
