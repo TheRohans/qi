@@ -1,4 +1,9 @@
+#build stuff
 *.o
-*~
 config.mak
 config.h
+qi
+qe_g
+
+#temp files
+*~
