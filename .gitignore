@@ -1,0 +1,4 @@
+*.o
+*~
+config.mak
+config.h
