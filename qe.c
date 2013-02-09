@@ -188,9 +188,9 @@ static void qe_register_binding2(int key,
         keys[nb_keys++] = KEY_CTRL('x');
         keys[nb_keys++] = KEY_RET;
         keys[nb_keys++] = key & 0xff;
-    } else if (key >= KEY_CTRLH(0) && key <= KEY_CTRLH(0xff)) {
-        keys[nb_keys++] = KEY_CTRL('h');
-        keys[nb_keys++] = key & 0xff;
+	//} else if (key >= KEY_CTRLH(0) && key <= KEY_CTRLH(0xff)) {
+    //    keys[nb_keys++] = KEY_CTRL('h');
+    //    keys[nb_keys++] = key & 0xff;
     } else {
         keys[nb_keys++] = key;
     }
