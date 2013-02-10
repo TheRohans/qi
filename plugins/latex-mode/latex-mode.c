@@ -313,7 +313,7 @@ static CmdDef latex_commands[] = {
     CMD_DEF_END,
 };
 
-static int latex_init(void)
+int latex_init(void)
 {
     /* LaTeX mode is almost like the text mode, so we copy and patch it */
     memcpy(&latex_mode, &text_mode, sizeof(ModeDef));
@@ -328,4 +328,3 @@ static int latex_init(void)
     return 0;
 }
 
-qe_module_init(latex_init);

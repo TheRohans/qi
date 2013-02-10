@@ -7004,126 +7004,58 @@ QEDisplay dummy_dpy = {
 };
 
 
-#if (defined(__GNUC__) || defined(__TINYC__)) && defined(CONFIG_INIT_CALLS)
+//#if (defined(__GNUC__) || defined(__TINYC__)) && defined(CONFIG_INIT_CALLS)
+//static inline void init_all_modules(void)
+//{
+//    int (*initcall)(void);
+//    void **ptr;
+//    
+//    ptr = (void **)(void *)&__initcall_first;
+//    for (;;) {
+//        /* NOTE: if bound checking is on, a '\0' is inserted between
+//           each initialized 'void *' */
+//#if defined(__BOUNDS_CHECKING_ON)
+//        ptr = (void **)((long)ptr + (2 * sizeof(void *)));
+//#else
+//        ptr++;
+//#endif
+//        initcall = *ptr;
+//        if (initcall == NULL)
+//            break;
+//        initcall();
+//    }
+//}
+//#else
 static inline void init_all_modules(void)
 {
-    int (*initcall)(void);
-    void **ptr;
-    
-    ptr = (void **)(void *)&__initcall_first;
-    for (;;) {
-        /* NOTE: if bound checking is on, a '\0' is inserted between
-           each initialized 'void *' */
-#if defined(__BOUNDS_CHECKING_ON)
-        ptr = (void **)((long)ptr + (2 * sizeof(void *)));
-#else
-        ptr++;
-#endif
-        initcall = *ptr;
-        if (initcall == NULL)
-            break;
-        initcall();
-    }
-}
-#else
-
-/* cannot use elf sections, so we initialize the modules manually */
-/* Should use a shell script to process objects and construct
- * initcall array:
- cat $(OBJS) | tr -cs 'a-z0-9_' \\n | grep -E '^module_[a-z]+_init$'
- */
-
-//extern void module_hex_init(void); /* hex.c(351) */
-//extern void module_list_init(void); /* list.c(102) */
-//extern void module_tty_init(void); /* tty.c(567) */
-//extern void module_charset_more_init(void); /* charsetmore.c(324) */
-//extern void module_unihex_init(void); /* unihex.c(184) */
-////extern void module_c_init(void); /* clang.c(567) */
-//extern void module_latex_init(void); /* latex-mode.c(338) */
-//extern void module_xml_init(void); /* xml.c(202) */
-//extern void module_bufed_init(void); /* bufed.c(197) */
-//extern void module_shell_init(void); /* shell.c(922) */
-//extern void module_dired_init(void); /* dired.c(369) */
-//extern void module_win32_init(void); /* win32.c(504) */
-	 
-//extern void module_x11_init(void); /* x11.c(1704) */
-//extern void module_html_init(void); /* html.c(894) */
-//extern void module_docbook_init(void); /* docbook.c(53) */
-//extern void module_video_init(void); /* video.c(979) */
-//extern void module_image_init(void); /* image.c(844) */
-//extern void module_mpeg_init(void); /* mpeg.c(181) */
-
-static inline void init_all_modules(void)
-{
-    /* modules must be initialized in link order (!)
-       OBJS=qe.o charset.o buffer.o \
-            input.o unicode_join.o display.o util.o hex.o list.o cutils.o
-       OBJS+= unix.o tty.o 
-       OBJS+= charsetmore.o charset_table.o 
-       OBJS+= unihex.o clang.o latex-mode.o xml.o bufed.o
-       OBJS+= shell.o dired.o 
-       OBJS+= win32.o
-       OBJS+= libfbf.o fbfrender.o cfb.o fbffonts.o
-       OBJS+= x11.o
-       OBJS+= html.o docbook.o
-       OBJS+= arabic.o indic.o qfribidi.o unihex.o
-       OBJS+= video.o image.o
-       OBJS+= qeend.o
-    */
-
-	//these are required for basic operation?
-    //module_hex_init(); /* hex.c(351) */
-    //module_list_init(); /* list.c(102) */
-    //module_tty_init(); /* tty.c(567) */
-
-	//Plugins that are needed, can not live without	
+	//Plugins that are needed, can not run without
 	//Warning: these need to start in this order! Segfault otherwise
 	hex_init();
 	list_init();
 	tty_init();
 #ifndef CONFIG_WIN32
+	//I think this is only needed on non-w32 system, need to test
+	//but I don't care really since I only use mac, linux and freebsd
 	shell_init();
 #endif
+	
+#ifndef CONFIG_TINY
+	//If they are not building the tiny version, init some the
+	//extra cool plugins
+	bufed_init();
 	dired_init();
+	c_init();
+	xml_init();
 	
+	latex_init(); //I don't care about latex.
 	
-	//bufed_init();
+	example_init();
+#endif
 	
-#ifndef CONFIG_TINY
-    //module_charset_more_init(); /* charsetmore.c(324) */
-    //module_unihex_init(); /* unihex.c(184) */
-    //module_c_init(); /* clang.c(567) */
-	// -- c_init();
-	//example_init();
-    //module_latex_init(); /* latex-mode.c(338) */
-    //module_xml_init(); /* xml.c(202) */
-    //module_bufed_init(); /* bufed.c(197) */
-	// -- bufed_init();
-    //module_shell_init(); /* shell.c(922) */
-    //module_dired_init(); /* dired.c(369) */
-#endif
-#ifdef CONFIG_WIN32
-    //module_win32_init(); /* win32.c(504) */
-#endif
-#ifdef CONFIG_X11
-//    module_x11_init(); /* x11.c(1704) */
-#endif
-#ifndef CONFIG_TINY
-#ifdef CONFIG_HTML
-//    module_html_init(); /* html.c(894) */
-//    module_docbook_init(); /* docbook.c(53) */
-#endif
-#endif
-#ifdef CONFIG_FFMPEG
-//    module_video_init(); /* video.c(979) */
-//    module_image_init(); /* image.c(844) */
-    //module_mpeg_init(); /* mpeg.c(181) */
-#endif
 }
-#endif
+//#endif
 
 #ifdef CONFIG_DLL
-
 void load_all_modules(QEmacsState *qs)
 {
     QErrorContext ec = qs->ec;
@@ -7161,7 +7093,6 @@ void load_all_modules(QEmacsState *qs)
     find_file_close(ffs);
     qs->ec = ec;
 }
-
 #endif
 
 typedef struct QEArgs {
@@ -7216,21 +7147,8 @@ void qe_init(void *opaque)
     load_all_modules(qs);
 #endif
 
-#if 0
-    /* see if invoked as player */
-    {
-        const char *p;
-
-        p = basename(argv[0]);
-        if (!strcmp(p, "ffplay"))
-            is_player = 1;
-        else
-            is_player = 0;
-    }
-#else
     /* Start in dired mode when invoked with no arguments */
     is_player = 1;
-#endif
 
     /* init of the editor state */
     qs->screen = &global_screen;
@@ -7280,8 +7198,9 @@ void qe_init(void *opaque)
     }
     
 #ifndef CONFIG_TINY
+	//tiny mode wont have dired, so don't try this
     if (is_player && optind >= argc) {
-        /* if player, go to directory mode by default if no file selected */
+        /* if no file go to directory mode by default if no file selected */
         do_dired(s);
     }
 #endif

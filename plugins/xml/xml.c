@@ -199,4 +199,3 @@ int xml_init(void)
     return 0;
 }
 
-qe_module_init(xml_init);

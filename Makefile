@@ -178,8 +178,8 @@ build_plugins:
 #libqhtml: force
 #	make -C libqhtml all
 
-qe_g$(EXE): $(OBJS) $(DEP_LIBS)
-	$(CC) $(LDFLAGS) -L$(LOAD_PATH) -lplugincore -o $(LOAD_PATH)/$@ $^ $(LIBS)
+qe_g$(EXE): $(OBJS) #$(DEP_LIBS)
+	$(CC) $(LDFLAGS) -L$(LOAD_PATH) -lplugincore -lplugins -o $(LOAD_PATH)/$@ $^ $(LIBS)
 
 qi$(EXE): qe_g$(EXE)
 	rm -f $@
