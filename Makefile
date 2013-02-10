@@ -46,7 +46,7 @@ CFLAGS+=-march=i386 -falign-functions=0
 endif
 DEFINES=-DHAVE_QE_CONFIG_H
 
-LOAD_PATH=build
+LOAD_PATH=./build
 PLUGIN_LOAD_PATH=build/plugins
 
 ########################################################
@@ -96,7 +96,7 @@ endif
 LIBS+=-lm
 
 TARGETLIBS:=
-TARGETS+=qi$(EXE) qe-doc.html
+TARGETS+=qi$(EXE) #qe-doc.html
 _OBJS=qe.o charset.o buffer.o \
      input.o unicode_join.o display.o util.o hex.o list.o 
 
@@ -114,8 +114,8 @@ _OBJS+= plugin_charsetmore.o charset_table.o
 endif
 
 ifdef CONFIG_ALL_MODES
-#_OBJS+= unihex.o clang.o latex-mode.o xml.o bufed.o
-_OBJS+= plugin_unihex.o plugin_clang.o plugin_latex-mode.o plugin_xml.o plugin_bufed.o
+#_OBJS+= unihex.o clang.o latex-mode.o xml.o bufed.o  #plugin_clang.o
+_OBJS+= plugin_unihex.o  plugin_latex-mode.o plugin_xml.o plugin_bufed.o
 ifndef CONFIG_WIN32
 _OBJS+= plugin_shell.o plugin_dired.o 
 endif
@@ -181,7 +181,7 @@ qe_g$(EXE): $(OBJS) $(DEP_LIBS)
 	make -C plugins all
 	#PLUGIN_OBJS = $(wildcard $(PLUGIN_LOAD_PATH)/*.o)
 	@echo '=========== Building Plugins ==========='
-	$(CC) $(LDFLAGS) -o $(LOAD_PATH)/$@ $^ $(LIBS)
+	$(CC) $(LDFLAGS) -L$(LOAD_PATH) -lplugincore -o $(LOAD_PATH)/$@ $^ $(LIBS)
 
 qi$(EXE): qe_g$(EXE)
 	rm -f $@
@@ -221,68 +221,69 @@ clean:
 distclean: clean
 	rm -f config.h config.mak
 
-install: $(TARGETS) qe.1 kmaps ligatures
-	install -m 755 qe$(EXE) $(prefix)/bin/qemacs
-	ln -sf qemacs $(prefix)/bin/qe$(EXE)
+#install: $(TARGETS) qe.1 kmaps ligatures
+#	install -m 755 qe$(EXE) $(prefix)/bin/qemacs
+#	ln -sf qemacs $(prefix)/bin/qe$(EXE)
+
 #ifdef CONFIG_FFMPEG
 #	ln -sf qemacs $(prefix)/bin/ffplay
 #endif
-	mkdir -p $(prefix)/share/qi
-	install kmaps ligatures $(prefix)/share/qi
-	install qi.1 $(prefix)/man/man1
+#	mkdir -p $(prefix)/share/qi
+#	install kmaps ligatures $(prefix)/share/qi
+#	install qi.1 $(prefix)/man/man1
 #ifdef CONFIG_HTML
 #	install -m 755 -s html2png$(EXE) $(prefix)/bin
 #endif
 
-TAGS: force
-	etags *.[ch]
+#TAGS: force
+#	etags *.[ch]
 
-force:
+#force:
 
 #
 # tar archive for distribution
 #
 
 #FILES=Changelog COPYING README TODO qe.1 config.eg \
-#Makefile qe.tcc qemacs.spec \
-#hex.c charset.c qe.c qe.h tty.c \
-#html.c indic.c unicode_join.c input.c qeconfig.h \
-#qeend.c unihex.c arabic.c kmaptoqe.c util.c \
-#bufed.c qestyles.h x11.c buffer.c ligtoqe.c \
-#qfribidi.c clang.c latex-mode.c xml.c dired.c list.c qfribidi.h html2png.c \
-#charsetmore.c charset_table.c cptoqe.c \
-#libfbf.c fbfrender.c cfb.c fbftoqe.c libfbf.h fbfrender.h cfb.h \
-#display.c display.h mpeg.c shell.c \
-#docbook.c unifont.lig kmaps xterm-146-dw-patch \
-#ligatures qe-doc.texi qe-doc.html \
-#tests/HELLO.txt tests/TestPage.txt tests/test-hebrew \
-#tests/test-capital-rtl tests/test-capital-rtl.ref \
-#tests/testbidi.html \
-#plugin-example/Makefile  plugin-example/my_plugin.c \
-#image.c video.c win32.c configure VERSION \
-#cutils.c cutils.h unix.c
+Makefile qe.tcc qemacs.spec \
+hex.c charset.c qe.c qe.h tty.c \
+html.c indic.c unicode_join.c input.c qeconfig.h \
+qeend.c unihex.c arabic.c kmaptoqe.c util.c \
+bufed.c qestyles.h x11.c buffer.c ligtoqe.c \
+qfribidi.c clang.c latex-mode.c xml.c dired.c list.c qfribidi.h html2png.c \
+charsetmore.c charset_table.c cptoqe.c \
+libfbf.c fbfrender.c cfb.c fbftoqe.c libfbf.h fbfrender.h cfb.h \
+display.c display.h mpeg.c shell.c \
+docbook.c unifont.lig kmaps xterm-146-dw-patch \
+ligatures qe-doc.texi qe-doc.html \
+tests/HELLO.txt tests/TestPage.txt tests/test-hebrew \
+tests/test-capital-rtl tests/test-capital-rtl.ref \
+tests/testbidi.html \
+plugin-example/Makefile  plugin-example/my_plugin.c \
+image.c video.c win32.c configure VERSION \
+cutils.c cutils.h unix.c
 
 # qhtml library
 #FILES+=libqhtml/Makefile libqhtml/css.c libqhtml/cssid.h \
-#libqhtml/cssparse.c libqhtml/xmlparse.c libqhtml/htmlent.h \
-#libqhtml/css.h libqhtml/csstoqe.c \
-#libqhtml/docbook.css libqhtml/html.css 
+libqhtml/cssparse.c libqhtml/xmlparse.c libqhtml/htmlent.h \
+libqhtml/css.h libqhtml/csstoqe.c \
+libqhtml/docbook.css libqhtml/html.css 
 
 # fonts
-FILES+=fonts/fixed10.fbf  fonts/fixed12.fbf  fonts/fixed13.fbf  fonts/fixed14.fbf \
+# FILES+=fonts/fixed10.fbf  fonts/fixed12.fbf  fonts/fixed13.fbf  fonts/fixed14.fbf \
 fonts/helv10.fbf   fonts/helv12.fbf   fonts/helv14.fbf   fonts/helv18.fbf \
 fonts/helv24.fbf   fonts/helv8.fbf    fonts/times10.fbf  fonts/times12.fbf \
 fonts/times14.fbf  fonts/times18.fbf  fonts/times24.fbf  fonts/times8.fbf \
 fonts/unifont.fbf
 
-FILE=qi-$(VERSION)
+#FILE=qi-$(VERSION)
 
-tar:
-	rm -rf /tmp/$(FILE)
-	mkdir -p /tmp/$(FILE)
-	cp --parents $(FILES) /tmp/$(FILE)
-	( cd /tmp ; tar zcvf $(HOME)/$(FILE).tar.gz $(FILE) )
-	rm -rf /tmp/$(FILE)
+#tar:
+#	rm -rf /tmp/$(FILE)
+#	mkdir -p /tmp/$(FILE)
+#	cp --parents $(FILES) /tmp/$(FILE)
+#	( cd /tmp ; tar zcvf $(HOME)/$(FILE).tar.gz $(FILE) )
+#	rm -rf /tmp/$(FILE)
 
 #
 # Test for bidir algorithm
@@ -304,7 +305,7 @@ tar:
 #
 # Key maps build (Only useful if you want to build your own maps from yudit maps)
 #
-KMAPS=Arabic.kmap ArmenianEast.kmap ArmenianWest.kmap Chinese-CJ.kmap \
+#KMAPS=Arabic.kmap ArmenianEast.kmap ArmenianWest.kmap Chinese-CJ.kmap \
       Cyrillic.kmap Czech.kmap DE-RU.kmap Danish.kmap Dutch.kmap \
       Esperanto.kmap Ethiopic.kmap French.kmap Georgian.kmap German.kmap \
       Greek.kmap GreekMono.kmap Guarani.kmap Hebrew.kmap HebrewIsraeli.kmap \
@@ -313,35 +314,35 @@ KMAPS=Arabic.kmap ArmenianEast.kmap ArmenianWest.kmap Chinese-CJ.kmap \
       Russian.kmap SGML.kmap TeX.kmap Troff.kmap VNtelex.kmap \
       Vietnamese.kmap XKB_iso8859-4.kmap
 #     Hangul.kmap Hangul2.kmap Hangul3.kmap Unicode2.kmap 
-KMAPS_DIR=$(prefix)/share/yudit/data
-KMAPS:=$(addprefix $(KMAPS_DIR)/, $(KMAPS))
+#KMAPS_DIR=$(prefix)/share/yudit/data
+#KMAPS:=$(addprefix $(KMAPS_DIR)/, $(KMAPS))
 
-kmaptoqe$(EXE): kmaptoqe.c
-	$(HOST_CC) $(CFLAGS) -o $@ $<
+#kmaptoqe$(EXE): kmaptoqe.c
+#	$(HOST_CC) $(CFLAGS) -o $@ $<
 
-ifdef BUILD_ALL
-kmaps: kmaptoqe$(EXE) $(KMAPS)
-	./kmaptoqe $@ $(KMAPS)
-endif
+#ifdef BUILD_ALL
+#kmaps: kmaptoqe$(EXE) $(KMAPS)
+#	./kmaptoqe $@ $(KMAPS)
+#endif
 
 #
 # Code pages (only useful to add your own code pages)
 #
-CP=8859_2.cp  cp1125.cp  cp737.cp  koi8_r.cp \
+#CP=8859_2.cp  cp1125.cp  cp737.cp  koi8_r.cp \
    8859_4.cp  cp1250.cp  cp850.cp  koi8_u.cp    viscii.cp\
    8859_13.cp  8859_5.cp  cp1251.cp  cp852.cp  mac_lat2.cp\
    8859_15.cp  8859_7.cp  cp1257.cp  cp866.cp  macroman.cp\
    8859_16.cp  8859_9.cp  cp437.cp   kamen.cp  tcvn5712.cp \
    JIS0208.TXT JIS0212.TXT
-CP:=$(addprefix cp/,$(CP))
+#CP:=$(addprefix cp/,$(CP))
 
-cptoqe$(EXE): cptoqe.c
-	$(HOST_CC) $(CFLAGS) -o $@ $<
+#cptoqe$(EXE): cptoqe.c
+#	$(HOST_CC) $(CFLAGS) -o $@ $<
 
-ifdef BUILD_ALL
-charset_table.c: cptoqe$(EXE) $(CP)
-	./cptoqe $(CP) > $@
-endif
+#ifdef BUILD_ALL
+#charset_table.c: cptoqe$(EXE) $(CP)
+#	./cptoqe $(CP) > $@
+#endif
 
 #
 # fonts (only needed for html2png)

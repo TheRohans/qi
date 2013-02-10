@@ -3,7 +3,7 @@ QEMACS_PATH=../../
 #LOAD_PATH=../../build/plugins/
 LOAD_PATH=../
 # define the object files it contains
-OBJS=example.o
+OBJS=clang.o
 
 INCLUDES=-I$(QEMACS_PATH)
 DEFINES=-DQE_MODULE
@@ -16,4 +16,4 @@ all: $(OBJS)
 	$(CC) $(CFLAGS) -c -o $(LOAD_PATH)$@ $<
 
 clean:
-	rm -f $(LOAD_PATH)example.o
+	rm -f $(LOAD_PATH)clang.o

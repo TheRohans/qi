@@ -18,6 +18,8 @@
  */
 #include "qe.h"
 #include "qfribidi.h"
+#include "plugins/plugincore.h"
+
 #ifdef CONFIG_DLL
 #include <dlfcn.h>
 #endif
@@ -7036,13 +7038,14 @@ extern void module_list_init(void); /* list.c(102) */
 extern void module_tty_init(void); /* tty.c(567) */
 extern void module_charset_more_init(void); /* charsetmore.c(324) */
 extern void module_unihex_init(void); /* unihex.c(184) */
-extern void module_c_init(void); /* clang.c(567) */
+//extern void module_c_init(void); /* clang.c(567) */
 extern void module_latex_init(void); /* latex-mode.c(338) */
 extern void module_xml_init(void); /* xml.c(202) */
 extern void module_bufed_init(void); /* bufed.c(197) */
 extern void module_shell_init(void); /* shell.c(922) */
 extern void module_dired_init(void); /* dired.c(369) */
 extern void module_win32_init(void); /* win32.c(504) */
+	 
 //extern void module_x11_init(void); /* x11.c(1704) */
 //extern void module_html_init(void); /* html.c(894) */
 //extern void module_docbook_init(void); /* docbook.c(53) */
@@ -7073,7 +7076,9 @@ static inline void init_all_modules(void)
 #ifndef CONFIG_TINY
     module_charset_more_init(); /* charsetmore.c(324) */
     module_unihex_init(); /* unihex.c(184) */
-    module_c_init(); /* clang.c(567) */
+    //module_c_init(); /* clang.c(567) */
+	c_init();
+	example_init();
     module_latex_init(); /* latex-mode.c(338) */
     module_xml_init(); /* xml.c(202) */
     module_bufed_init(); /* bufed.c(197) */
