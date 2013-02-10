@@ -15,7 +15,6 @@ core:
 	ar rcs libplugincore.a *.o
 	mv ./libplugincore.a $(LOAD_PATH)/$< 
 	rm *.o
-	@echo "======================================== End core plugins == "
 
 extra:
 	@echo "======================================== Extra plugins == "
@@ -37,7 +36,6 @@ extra:
 	ar rcs libplugins.a *.o
 	mv ./libplugins.a $(LOAD_PATH)/$< 
 	rm *.o
-	@echo "======================================== End extra plugins == "
 
 	
 
@@ -50,7 +48,6 @@ clean:
 	make -C list clean
 	make -C tty clean
 	make -C shell clean
-	@echo "======================================== Cleaning all core plugins == "
 	@echo "======================================== Cleaning all extra plugins == "
 	make -C bufed clean
 	make -C dired clean
@@ -58,7 +55,6 @@ clean:
 	make -C unihex clean
 	make -C xml clean
 	make -C latex-mode clean
-	@echo "======================================== Cleaning all extra plugins == "
 	
 	rm -f $(LOAD_PATH)/libplugincore.a
 	rm -f $(LOAD_PATH)/libplugins.a
