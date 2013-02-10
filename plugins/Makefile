@@ -4,8 +4,14 @@ all: core
 
 core:
 	@echo " == Building all core plugins == "
-	make -C example all
-	make -C clang all
+	make -C shell all
+	make -C bufed all
+	make -C hex all
+	#make -C example all
+	#make -C clang all
+	make -C dired all
+	make -C list all
+	make -C tty all
 	# make the group header file
 	find ./ -name "*.h" -exec cat {} >> ./plugincore.g \;
 	# rename it
@@ -20,8 +26,14 @@ core:
 
 clean:
 	@echo " == Cleaning all core plugins == "
-	make -C example clean
-	make -C clang clean
+	make -C shell clean
+	make -C bufed clean
+	make -C hex clean
+	#make -C example clean
+	#make -C clang clean
+	make -C dired clean
+	make -C list clean
+	make -C tty clean
 	rm -f $(LOAD_PATH)/libplugincore.a
 	rm -f plugincore.h
 

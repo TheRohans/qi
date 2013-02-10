@@ -16,19 +16,14 @@ include config.mak
 #CONFIG_FFMPEG=yes
 
 # currently fixes
-#
 # Define CONFIG_ALL_MODES to include all edit modes
-#
 CONFIG_ALL_MODES=y
-#
-# Define CONFIG_UNICODE_JOIN to include unicode bidi/script handling
-#
-CONFIG_UNICODE_JOIN=y
-# 
-# Define CONFIG_ALL_KMAPS it to include generic key map handling
-#
-CONFIG_ALL_KMAPS=y
 
+# Define CONFIG_UNICODE_JOIN to include unicode bidi/script handling
+CONFIG_UNICODE_JOIN=y
+
+# Define CONFIG_ALL_KMAPS it to include generic key map handling
+CONFIG_ALL_KMAPS=y
 
 CFLAGS:=-Wall -g $(CFLAGS) -funsigned-char -I$(LOAD_PATH):./ #-arch i386 -m32
 #LDFLAGS+= -arch i386 -m32
@@ -47,7 +42,7 @@ endif
 DEFINES=-DHAVE_QE_CONFIG_H
 
 LOAD_PATH=./build
-PLUGIN_LOAD_PATH=build/plugins
+#PLUGIN_LOAD_PATH=build/plugins
 
 ########################################################
 # do not modify after this
@@ -98,26 +93,28 @@ LIBS+=-lm
 TARGETLIBS:=
 TARGETS+=qi$(EXE) #qe-doc.html
 _OBJS=qe.o charset.o buffer.o \
-     input.o unicode_join.o display.o util.o hex.o list.o 
+     input.o unicode_join.o display.o util.o #hex.o list.o 
 
 #ifndef CONFIG_FFMPEG
 _OBJS+= cutils.o
 #endif
 
 ifndef CONFIG_WIN32
-_OBJS+= unix.o plugin_tty.o 
+_OBJS+= unix.o #plugin_tty.o 
 endif
+
+_OBJS+= qfribidi.o
 
 # more charsets if needed
 ifndef CONFIG_TINY
-_OBJS+= plugin_charsetmore.o charset_table.o 
+#_OBJS+= plugin_charsetmore.o charset_table.o 
 endif
 
 ifdef CONFIG_ALL_MODES
 #_OBJS+= unihex.o clang.o latex-mode.o xml.o bufed.o  #plugin_clang.o
-_OBJS+= plugin_unihex.o  plugin_latex-mode.o plugin_xml.o plugin_bufed.o
+#_OBJS+= plugin_unihex.o  plugin_latex-mode.o plugin_xml.o plugin_bufed.o
 ifndef CONFIG_WIN32
-_OBJS+= plugin_shell.o plugin_dired.o 
+#_OBJS+= plugin_shell.o plugin_dired.o 
 endif
 endif
 
@@ -154,7 +151,7 @@ endif
 #endif
 
 ifdef CONFIG_UNICODE_JOIN
-_OBJS+= arabic.o indic.o qfribidi.o plugin_unihex.o
+#_OBJS+= arabic.o indic.o qfribidi.o plugin_unihex.o
 endif
 
 #ifdef CONFIG_FFMPEG
@@ -171,16 +168,17 @@ _OBJS+= qeend.o
 OBJS = $(patsubst %,$(LOAD_PATH)/%,$(_OBJS))
 #PLUGIN_OBJS_PATH = $(patsubst %,$(PLUGIN_LOAD_PATH)/%,$(PLUGIN_OBJS))
 
-all: $(TARGETLIBS) $(TARGETS)
+all: build_plugins $(TARGETLIBS) $(TARGETS)
+
+build_plugins:
+	@echo '=========== Building Plugins ==========='
+	make -C plugins all
+	@echo '=========== Building Plugins ==========='
 
 #libqhtml: force
 #	make -C libqhtml all
 
 qe_g$(EXE): $(OBJS) $(DEP_LIBS)
-	@echo '=========== Building Plugins ==========='
-	make -C plugins all
-	#PLUGIN_OBJS = $(wildcard $(PLUGIN_LOAD_PATH)/*.o)
-	@echo '=========== Building Plugins ==========='
 	$(CC) $(LDFLAGS) -L$(LOAD_PATH) -lplugincore -o $(LOAD_PATH)/$@ $^ $(LIBS)
 
 qi$(EXE): qe_g$(EXE)
@@ -192,13 +190,13 @@ qi$(EXE): qe_g$(EXE)
 #ffplay$(EXE): qe$(EXE)
 #	ln -sf $< $@
 
-$(LOAD_PATH)/qe.o: qe.c qe.h qfribidi.h qeconfig.h
+$(LOAD_PATH)/qe.o: qe.c qe.h qeconfig.h qfribidi.h
 
 $(LOAD_PATH)/charset.o: charset.c qe.h
 
 $(LOAD_PATH)/buffer.o: buffer.c qe.h
 
-$(LOAD_PATH)/tty.o: plugin_tty.c qe.h
+#$(LOAD_PATH)/tty.o: plugin_tty.c qe.h
 
 $(LOAD_PATH)/qfribidi.o: qfribidi.c qfribidi.h
 
@@ -211,12 +209,16 @@ $(LOAD_PATH)/fbfrender.o: fbfrender.c fbfrender.h libfbf.h
 $(LOAD_PATH)/%.o : %.c
 	$(CC) $(DEFINES) $(CFLAGS) -o $@ -c $<
 
+#create_version:
+#	echo "`git rev-parse --short --verify HEAD`" > VERSION
+
 clean:
 	# make -C libqhtml clean
 	make -C plugins clean
-	rm -f *.o *.exe *~ TAGS gmon.out core qe.exe.stackdump \
-           qi qe_g qfribidi kmaptoqe ligtoqe html2png fbftoqe fbffonts.c \
-		   ./build/*.o ./build/qe_g$(EXE)
+	rm -f *.o *.exe *~ ./build/*.o ./build/qe_g$(EXE)
+	#TAGS gmon.out core qe.exe.stackdump \
+    #      qi qe_g qfribidi kmaptoqe ligtoqe html2png fbftoqe fbffonts.c \
+	#	   ./build/*.o ./build/qe_g$(EXE)
 
 distclean: clean
 	rm -f config.h config.mak

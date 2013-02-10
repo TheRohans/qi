@@ -1328,7 +1328,7 @@ static CmdDef compile_commands[] = {
     CMD_DEF_END,
 };
 
-static int shell_init(void)
+int shell_init(void)
 {
     /* first register mode */
     memcpy(&shell_mode, &text_mode, sizeof(ModeDef));
@@ -1354,4 +1354,3 @@ static int shell_init(void)
     return 0;
 }
 
-qe_module_init(shell_init);

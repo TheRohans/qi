@@ -7033,18 +7033,18 @@ static inline void init_all_modules(void)
  cat $(OBJS) | tr -cs 'a-z0-9_' \\n | grep -E '^module_[a-z]+_init$'
  */
 
-extern void module_hex_init(void); /* hex.c(351) */
-extern void module_list_init(void); /* list.c(102) */
-extern void module_tty_init(void); /* tty.c(567) */
-extern void module_charset_more_init(void); /* charsetmore.c(324) */
-extern void module_unihex_init(void); /* unihex.c(184) */
-//extern void module_c_init(void); /* clang.c(567) */
-extern void module_latex_init(void); /* latex-mode.c(338) */
-extern void module_xml_init(void); /* xml.c(202) */
-extern void module_bufed_init(void); /* bufed.c(197) */
-extern void module_shell_init(void); /* shell.c(922) */
-extern void module_dired_init(void); /* dired.c(369) */
-extern void module_win32_init(void); /* win32.c(504) */
+//extern void module_hex_init(void); /* hex.c(351) */
+//extern void module_list_init(void); /* list.c(102) */
+//extern void module_tty_init(void); /* tty.c(567) */
+//extern void module_charset_more_init(void); /* charsetmore.c(324) */
+//extern void module_unihex_init(void); /* unihex.c(184) */
+////extern void module_c_init(void); /* clang.c(567) */
+//extern void module_latex_init(void); /* latex-mode.c(338) */
+//extern void module_xml_init(void); /* xml.c(202) */
+//extern void module_bufed_init(void); /* bufed.c(197) */
+//extern void module_shell_init(void); /* shell.c(922) */
+//extern void module_dired_init(void); /* dired.c(369) */
+//extern void module_win32_init(void); /* win32.c(504) */
 	 
 //extern void module_x11_init(void); /* x11.c(1704) */
 //extern void module_html_init(void); /* html.c(894) */
@@ -7070,23 +7070,40 @@ static inline void init_all_modules(void)
        OBJS+= video.o image.o
        OBJS+= qeend.o
     */
-    module_hex_init(); /* hex.c(351) */
-    module_list_init(); /* list.c(102) */
-    module_tty_init(); /* tty.c(567) */
+
+	//these are required for basic operation?
+    //module_hex_init(); /* hex.c(351) */
+    //module_list_init(); /* list.c(102) */
+    //module_tty_init(); /* tty.c(567) */
+
+	//Plugins that are needed, can not live without	
+	//Warning: these need to start in this order! Segfault otherwise
+	hex_init();
+	list_init();
+	tty_init();
+#ifndef CONFIG_WIN32
+	shell_init();
+#endif
+	dired_init();
+	
+	
+	//bufed_init();
+	
 #ifndef CONFIG_TINY
-    module_charset_more_init(); /* charsetmore.c(324) */
-    module_unihex_init(); /* unihex.c(184) */
+    //module_charset_more_init(); /* charsetmore.c(324) */
+    //module_unihex_init(); /* unihex.c(184) */
     //module_c_init(); /* clang.c(567) */
-	c_init();
-	example_init();
-    module_latex_init(); /* latex-mode.c(338) */
-    module_xml_init(); /* xml.c(202) */
-    module_bufed_init(); /* bufed.c(197) */
-    module_shell_init(); /* shell.c(922) */
-    module_dired_init(); /* dired.c(369) */
+	// -- c_init();
+	//example_init();
+    //module_latex_init(); /* latex-mode.c(338) */
+    //module_xml_init(); /* xml.c(202) */
+    //module_bufed_init(); /* bufed.c(197) */
+	// -- bufed_init();
+    //module_shell_init(); /* shell.c(922) */
+    //module_dired_init(); /* dired.c(369) */
 #endif
 #ifdef CONFIG_WIN32
-    module_win32_init(); /* win32.c(504) */
+    //module_win32_init(); /* win32.c(504) */
 #endif
 #ifdef CONFIG_X11
 //    module_x11_init(); /* x11.c(1704) */

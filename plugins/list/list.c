@@ -86,7 +86,7 @@ static void list_mode_close(EditState *s)
 
 ModeDef list_mode;
 
-static int list_init(void)
+int list_init(void)
 {
     memcpy(&list_mode, &text_mode, sizeof(ModeDef));
     list_mode.mode_probe = NULL;
@@ -99,4 +99,4 @@ static int list_init(void)
     return 0;
 }
 
-qe_module_init(list_init);
+

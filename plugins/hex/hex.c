@@ -332,7 +332,7 @@ ModeDef hex_mode = {
     mode_line: hex_mode_line,
 };
 
-static int hex_init(void)
+int hex_init(void)
 {
     /* first register mode(s) */
     qe_register_mode(&ascii_mode);
@@ -350,4 +350,4 @@ static int hex_init(void)
     return 0;
 }
 
-qe_module_init(hex_init);
+//qe_module_init(hex_init);

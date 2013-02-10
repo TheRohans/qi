@@ -2,7 +2,7 @@
 QEMACS_PATH=../../
 LOAD_PATH=../
 # define the object files it contains
-OBJS=example.o
+OBJS=tty.o
 
 INCLUDES=-I$(QEMACS_PATH)
 DEFINES=-DQE_MODULE
@@ -15,4 +15,4 @@ all: $(OBJS)
 	$(CC) $(CFLAGS) -c -o $(LOAD_PATH)$@ $<
 
 clean:
-	rm -f $(LOAD_PATH)example.o
+	rm -f $(LOAD_PATH)tty.o

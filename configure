@@ -339,7 +339,8 @@ if test "$lshared" = "yes" ; then
 fi
 echo "EXTRALIBS=$extralibs" >> config.mak
 echo -n "VERSION=" >>config.mak
-echo -n `head $source_path/VERSION` >> config.mak
+#echo -n `head $source_path/VERSION` >> config.mak
+echo -n `git rev-parse --short --verify HEAD` >> config.mak
 echo "" >> config.mak
 echo -n "#define QE_VERSION \"" >> $TMPH
 echo -n `head $source_path/VERSION` >> $TMPH
