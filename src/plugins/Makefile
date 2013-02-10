@@ -1,4 +1,4 @@
-LOAD_PATH=../build
+LOAD_PATH=../../build
 
 all: core extra
 
@@ -38,6 +38,7 @@ extra:
 	mv ./libplugins.a $(LOAD_PATH)/$< 
 	rm *.o
 	@echo "======================================== End extra plugins == "
+
 	
 
 #install: 
