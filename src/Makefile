@@ -99,11 +99,15 @@ qi$(EXE): qe_g$(EXE)
 ifdef CONFIG_TINY
 	strip ../$@
 endif
-	@ls -l ../$@
+	@echo ''
+	@echo '** Your qi is strong. **'
+	@ls -alFh ../$@
+	@echo ''
 
 $(LOAD_PATH)/%.o : %.c
-	@echo '======================================== Building qi parts == '
+	@echo '======================================== Building qi part $@ == '
 	$(CC) $(DEFINES) $(CFLAGS) -o $@ -c $<
+	@echo ''
 
 clean:
 	make -C plugins clean
