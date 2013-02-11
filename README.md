@@ -14,6 +14,8 @@ Qi's goal is to be my perfect editor.  It attempts to combine all the things I l
 
 Qi's roots are QEmacs; Qi base is a fork or QEmacs 3.2 with a lot of bits stripped out.
 
+------------------------------------------------------------
+
 ## Current Features
 
 * Emacs keybindings

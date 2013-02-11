@@ -44,11 +44,39 @@ static void markdown_colorize_line(unsigned int *buf, int len,
             break;
         case '-':
             p++;
+            short dash = 0;
             while (*p != '\n') {
                 p++;
+                dash++;
+                if(*p != '-') break;
             }
-            set_color(p_start, p - p_start, QE_STYLE_HIGHLIGHT);
+            if(dash >= 3)
+                set_color(p_start, p - p_start, QE_STYLE_HIGHLIGHT);
             break;
+        case '[':
+            p++;
+            while (*p != '\n') {
+                p++;
+                if(*p == ']') { 
+                    p++;
+                    break;
+                }
+            }
+            set_color(p_start, p - p_start, QE_STYLE_TYPE);
+            break;
+        case '_':
+            //p++;
+            while (*p != '\n') {
+                p++;
+                if(*p == '_') { 
+                    p++;
+                    break;
+                }
+            }
+            set_color(p_start, p - p_start, QE_STYLE_KEYWORD);
+            break;
+
+
         default:
             p++;
             break;
