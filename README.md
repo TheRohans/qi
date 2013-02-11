@@ -1,7 +1,7 @@
 Qi
 ===
 
-Welcome to Qi ([pronounced 'chi'](http://en.wikipedia.org/wiki/Qi)).
+Welcome to Qi ([pronounced 'chi'][qi]).
 
 Qi's goal is to be my perfect editor.  It attempts to combine all the things I like about _emacs_ with the speed of _vi_.   Qi focuses on the following goals:
 
@@ -14,7 +14,7 @@ Qi's goal is to be my perfect editor.  It attempts to combine all the things I l
 
 Qi's roots are QEmacs; Qi base is a fork or QEmacs 3.2 with a lot of bits stripped out.
 
-------------------------------------------------------------
+---------------------------------
 
 ## Current Features
 
@@ -43,6 +43,7 @@ QEmacs was released under the GNU Lesser General Public License (read the accomp
 
 QEmacs is copyright 2002 Fabrice Bellard.
 
-Qi is copyright 2013 The Rohans, LLC.
+Qi is copyright 2013 [The Rohans, LLC.][rohans]
 
-
+[qi]: http://en.wikipedia.org/wiki/Qi
+[rohans]: http://therohans.com
