@@ -14,9 +14,7 @@
 #include <errno.h>
 #include <inttypes.h>
 
-#ifdef HAVE_QE_CONFIG_H
 #include "config.h"
-#endif
 
 /* OS specific defines */
 
