@@ -7046,6 +7046,7 @@ static inline void init_all_modules(void)
 	dired_init();
 	c_init();
 	xml_init();
+	charset_more_init();
 	
 	latex_init(); //I don't care about latex.
 	

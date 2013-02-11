@@ -2,7 +2,7 @@
 QEMACS_PATH=../../
 LOAD_PATH=../
 # define the object files it contains
-OBJS=example.o
+OBJS=charsetmore.o charset_table.o
 
 INCLUDES=-I$(QEMACS_PATH)
 DEFINES=-DQE_MODULE
@@ -15,4 +15,5 @@ all: $(OBJS)
 	$(CC) $(CFLAGS) -c -o $(LOAD_PATH)$@ $<
 
 clean:
-	rm -f $(LOAD_PATH)example.o
+	rm -f $(LOAD_PATH)charsetmore.o \
+		$(LOAD_PATH)charset_table.o

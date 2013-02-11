@@ -28,6 +28,7 @@ extra:
 	make -C unihex all
 	#xml (and xml based languges)
 	make -C xml all
+	make -C charsetmore all
 	#latex, don't much care about this...
 	make -C latex-mode all
 	#just and example plugin
@@ -54,6 +55,7 @@ clean:
 	make -C clang clean
 	make -C unihex clean
 	make -C xml clean
+	make -C charsetmore clean
 	make -C latex-mode clean
 	
 	rm -f $(LOAD_PATH)/libplugincore.a
