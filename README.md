@@ -1,15 +1,15 @@
 Qi
 ===
 
-Welcome to Qi.
+Welcome to Qi ([pronounced 'chi'](http://en.wikipedia.org/wiki/Qi)).
 
 Qi's goal is to be my perfect editor.  It attempts to combine all the things I like about _emacs_ with the speed of _vi_.   Qi focuses on the following goals:
 
-* speed and large file editing
-* only terminal editor (no x11, etc)
-* emacs bindings and usage emulation (chords, minibuffer, modes, etc)
-* compiles to a single, self contained binary
-* cross platform (unix based system)
+* Speed and large file editing
+* Only terminal editor (no x11, etc)
+* Emacs bindings and usage emulation (chords, minibuffer, modes, etc)
+* Compiles to a single, self contained binary
+* Cross platform (unix based system)
 
 Qi's roots are QEmacs; Qi base is a fork or QEmacs 3.2 with a lot of bits stripped out.
 
@@ -18,9 +18,9 @@ Qi's roots are QEmacs; Qi base is a fork or QEmacs 3.2 with a lot of bits stripp
 * Emacs keybindings
 * Text editing mode
 * Open and edit large files
-* basic C mode
-* basic Markdown mode
-* basic XML mode (and HTML)
+* Basic C mode
+* Basic Markdown mode
+* Basic XML mode (and HTML)
 * Hex editing mode
 
 ## Compiling
@@ -39,6 +39,7 @@ The original QEmacs documentation is in _doc/qe-doc.html_; however, not all QEma
 QEmacs was released under the GNU Lesser General Public License (read the accompagning COPYING file) so Qi is as well.
 
 QEmacs is copyright 2002 Fabrice Bellard.
+
 Qi is copyright 2013 The Rohans, LLC.
 
 
