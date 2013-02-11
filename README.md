@@ -10,7 +10,9 @@ Qi's goal is to be my perfect editor.  It attempts to combine all the things I l
 * Emacs bindings and usage emulation (chords, minibuffer, modes, etc)
 * Compiles to a single, self contained binary
 * Cross platform (unix based system)
-* Multi-language support (with a focus on Chinese)
+* Multi-language (human) support - with a focus on English and Chinese.
+* Multi-language (computer) stupport
+* Default UTF-8
 
 Qi's roots are QEmacs; Qi's base is a fork of QEmacs 3.2 with a lot of bits stripped out.
 
@@ -25,6 +27,7 @@ Qi's roots are QEmacs; Qi's base is a fork of QEmacs 3.2 with a lot of bits stri
 * Basic Markdown mode
 * Basic XML mode (and HTML)
 * Hex editing mode
+* UTF-8 display
 
 ## Compiling
 

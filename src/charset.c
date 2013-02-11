@@ -359,7 +359,9 @@ QECharset *detect_charset (const unsigned char *buf, int size)
     if (has_utf8)
         return &charset_utf8;
     else
-        return &charset_8859_1;
+        //return &charset_8859_1;
+		//8859-1 is so last year.  Just do utf8.
+		return &charset_utf8;
 }
 
 /* the function uses '?' to indicate that no match could be found in
