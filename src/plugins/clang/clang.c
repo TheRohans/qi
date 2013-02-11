@@ -511,7 +511,7 @@ static int c_mode_probe(ModeProbeData *p)
 {
     const char *r;
 
-    /* currently, only use the file extension */
+    //currently, only use the file extension
     r = extension(p->filename);
     if (*r) {
         if (strfind("|c|e|h|js|cs|jav|java|cxx|cpp|", r + 1, 1))

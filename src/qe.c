@@ -7050,6 +7050,7 @@ static inline void init_all_modules(void)
 	charset_more_init();
 	
 	latex_init(); //I don't care about latex.
+	markdown_init();
 	
 	example_init();
 #endif
