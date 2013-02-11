@@ -1,6 +1,5 @@
 
 all: banner_help 
-	
 
 qi:
 	make -C src all

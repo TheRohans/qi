@@ -147,7 +147,7 @@ int main(int argc, char **argv)
 
     if (argc < 3) {
         printf("usage: kmaptoqe outfile kmaps...\n"
-               "Convert yudit keyboard maps to qemacs compressed format\n");
+               "Convert yudit keyboard maps to qi compressed format\n");
         exit(1);
     }
     outfile = fopen(argv[1], "w");
