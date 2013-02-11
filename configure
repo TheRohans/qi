@@ -47,17 +47,9 @@ lshared="no"
 extralibs="-lm"
 simpleidct="yes"
 bigendian="no"
-#mpegaudio_hp="yes"
-
 tiny="no"
-#x11="yes"
-#xv="yes"
-#xrender="no"
-#png="yes"
-#ffmpeg="no"
-#html="yes"
-#plugins="yes"
-#initcalls="no"
+arabic="no"
+devanagari="no"
 exe=""
 
 # OS specific
@@ -139,6 +131,10 @@ for opt do
   #;;
   --enable-tiny) tiny="yes"
   ;;
+  --enable-arabic) arabic="yes"
+  ;;
+  --enable-devanagari) devanagari="yes"
+  ;;
   #--disable-x11) x11="no"
   #;;
   #--disable-xv) xv="no"
@@ -170,15 +166,6 @@ if test "$win32" = "yes" ; then
 fi
 
 if test "$cygwin" = "yes" ; then
-    #plugins="no"
-    #x11="no"
-    #xv="no"
-    #xrender="no"
-    #png="no"
-    #ffmpeg="no"
-    #html="no"
-    #plugins="no"
-    #initcalls="no"
     exe=".exe"
 fi
 
@@ -269,6 +256,8 @@ echo "  --enable-tiny            build a very small version, no color, no extra 
 #echo "  --disable-plugins        disable plugins support"
 #echo "  --with-ffmpegdir=DIR     find ffmpeg sources and libraries in DIR"
 #echo "                           for audio/video/image support"
+echo "  --enable-arabic          enable the arabic charset"
+echo "  --enable-devanagari      enable the devanagari charset"
 echo ""
 echo "Advanced options (experts only):"
 echo "  --source-path=PATH       path of source code [$source_path]"
@@ -285,6 +274,9 @@ echo "Install prefix   $prefix"
 echo "Source path      $source_path"
 echo "C compiler       $cc"
 echo "Tiny build       $tiny"
+echo "Arabic           $arabic"
+echo "Devanagari       $devanagari"
+
 #echo "X11 support      $x11"
 #echo "Xvideo support   $xv"
 #echo "Xrender support  $xrender"
@@ -358,57 +350,22 @@ if test "$win32" = "yes" ; then
   echo "CONFIG_WIN32=yes" >> ${MAK_FILE}
 fi
 
-#if test "$cygwin" = "yes" ; then
-#  echo "#define CONFIG_CYGWIN 1" >> $TMPH
-#  echo "CONFIG_CYGWIN=yes" >> config.mak
-#fi
-
-#if test "$x11" = "yes" ; then
-#  echo "#define CONFIG_X11 1" >> $TMPH
-#  echo "CONFIG_X11=yes" >> config.mak
-#fi
-
-#if test "$xv" = "yes" ; then
-#  echo "#define CONFIG_XV 1" >> $TMPH
-#  echo "CONFIG_XV=yes" >> config.mak
-#fi
-#
-#if test "$xrender" = "yes" ; then
-#  echo "#define CONFIG_XRENDER 1" >> $TMPH
-#  echo "CONFIG_XRENDER=yes" >> config.mak
-#fi
 
 if test "$tiny" = "yes" ; then
   echo "#define CONFIG_TINY 1" >> $TMPH
   echo "CONFIG_TINY=yes" >> ${MAK_FILE}
 fi
 
-#if test "$html" = "yes" ; then
-#  echo "#define CONFIG_HTML 1" >> $TMPH
-#  echo "CONFIG_HTML=yes" >> config.mak
-#fi
-#
-#if test "$plugins" = "yes" ; then
-#  echo "#define CONFIG_DLL 1" >> $TMPH
-#  echo "CONFIG_DLL=yes" >> config.mak
-#fi
-#
-#if test "$initcalls" = "yes" ; then
-#  echo "#define CONFIG_INIT_CALLS 1" >> $TMPH
-#  echo "CONFIG_INIT_CALLS=yes" >> config.mak
-#fi
-#
-#if test "$png" = "yes" ; then
-#  echo "#define CONFIG_PNG_OUTPUT 1" >> $TMPH
-#  echo "CONFIG_PNG_OUTPUT=yes" >> config.mak
-#fi
-#
-#if test "$ffmpeg" = "yes" ; then
-#  echo "#define CONFIG_FFMPEG 1" >> $TMPH
-#  echo "CONFIG_FFMPEG=yes" >> config.mak
-#  echo "FFMPEG_SRCDIR=$ffmpeg_srcdir" >> config.mak
-#  echo "FFMPEG_LIBDIR=$ffmpeg_libdir" >> config.mak
-#fi
+if test "$arabic" = "yes" ; then
+  echo "#define CONFIG_ARABIC 1" >> $TMPH
+  echo "CONFIG_ARABIC=yes" >> ${MAK_FILE}
+fi
+
+if test "$devanagari" = "yes" ; then
+  echo "#define CONFIG_DEVANAGARI 1" >> $TMPH
+  echo "CONFIG_DEVANAGARI=yes" >> ${MAK_FILE}
+fi
+
 
 # build tree in object directory if source path is different from current one
 if test "$source_path_used" = "yes" ; then

@@ -7042,6 +7042,7 @@ static inline void init_all_modules(void)
 #ifndef CONFIG_TINY
 	//If they are not building the tiny version, init some the
 	//extra cool plugins
+	unihex_init();
 	bufed_init();
 	dired_init();
 	c_init();

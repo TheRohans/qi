@@ -169,7 +169,7 @@ ModeDef unihex_mode = {
 };
 
 
-static int unihex_init(void)
+int unihex_init(void)
 {
     /* first register mode(s) */
     qe_register_mode(&unihex_mode);
