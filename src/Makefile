@@ -91,7 +91,7 @@ endif
 
 qe_g$(EXE): $(OBJS) 
 	@echo '======================================== Building qi == '
-	$(CC) $(LDFLAGS) -L$(LOAD_PATH) $(PLUGS) -o $(LOAD_PATH)/$@ $^ $(LIBS)
+	$(CC) $(LDFLAGS) -o $(LOAD_PATH)/$@ $^ $(LIBS) -L$(LOAD_PATH) $(PLUGS) 
 
 qi$(EXE): qe_g$(EXE)
 	rm -f ../$@

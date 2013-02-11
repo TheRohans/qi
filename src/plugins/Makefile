@@ -12,7 +12,10 @@ core:
 	find ./ -name "*.h" -exec cat {} >> ./plugincore.g \;
 	# rename it
 	mv plugincore.g plugincore.h
-	ar rcs libplugincore.a *.o
+
+	#ar rcs libplugincore.a *.o
+	ar -cvq libplugincore.a *.o
+
 	mv ./libplugincore.a $(LOAD_PATH)/$< 
 	rm *.o
 
@@ -36,7 +39,9 @@ extra:
 	#just and example plugin
 	make -C example all
 	
-	ar rcs libplugins.a *.o
+	#ar rcs libplugins.a *.o
+	ar -cvq libplugins.a *.o
+
 	mv ./libplugins.a $(LOAD_PATH)/$< 
 	rm *.o
 
