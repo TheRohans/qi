@@ -25,14 +25,14 @@ Qi's roots are QEmacs; Qi base is a fork or QEmacs 3.2 with a lot of bits stripp
 
 ## Compiling
 
-* Launch the configure tool _'./configure'_. You can look at the
-  possible options by typing _'./configure --help'_.
+* Launch the configure tool _./configure_. You can look at the
+  possible options by typing _./configure --help_.
 
-* Type 'make qi' to compile Qi and it's built-in plugins
+* Type _make qi_ to compile Qi and its built-in plugins
 
 ## Documentation
 
-The original QEmacs documentation is in qe-doc.html; however, not all QEmacs features are in Qi and some exist that are not in the documentation.
+The original QEmacs documentation is in _doc/qe-doc.html_; however, not all QEmacs features are in Qi and some exist that are not in the documentation.
 
 ## Licensing
 
