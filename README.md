@@ -10,6 +10,7 @@ Qi's goal is to be my perfect editor.  It attempts to combine all the things I l
 * Emacs bindings and usage emulation (chords, minibuffer, modes, etc)
 * Compiles to a single, self contained binary
 * Cross platform (unix based system)
+* Multi-language support (with a focus on Chinese)
 
 Qi's roots are QEmacs; Qi base is a fork or QEmacs 3.2 with a lot of bits stripped out.
 
