@@ -16,8 +16,12 @@ CONFIG_UNICODE_JOIN=y
 # Define CONFIG_ALL_KMAPS it to include generic key map handling
 CONFIG_ALL_KMAPS=y
 
-CFLAGS:=-Wall -g $(CFLAGS) -funsigned-char -I$(LOAD_PATH):./ #-arch i386 -m32
-#LDFLAGS+= -arch i386 -m32
+CFLAGS:=-Wall 
+ifdef CONFIG_DEBUG
+CFLAGS+= -g 
+endif 
+CFLAGS+= $(CFLAGS) -funsigned-char -I$(LOAD_PATH):./
+
 ifdef TARGET_GPROF
 CFLAGS+= -p
 LDFLAGS+= -p

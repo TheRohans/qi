@@ -47,6 +47,7 @@ lshared="no"
 extralibs="-lm"
 simpleidct="yes"
 bigendian="no"
+debug="no"
 tiny="no"
 arabic="no"
 devanagari="no"
@@ -125,32 +126,14 @@ for opt do
   ;;
   #--enable-cygwin) cygwin="yes" ;
   #;;
-  #--enable-shared) lshared="yes"
-  #;;
-  #--disable-mpegaudio-hp) mpegaudio_hp="no"
-  #;;
+  --enable-debug) debug="yes"
+  ;;
   --enable-tiny) tiny="yes"
   ;;
   --enable-arabic) arabic="yes"
   ;;
   --enable-devanagari) devanagari="yes"
   ;;
-  #--disable-x11) x11="no"
-  #;;
-  #--disable-xv) xv="no"
-  #;;
-  #--disable-xrender) xrender="no"
-  #;;
-  #--disable-png) png="no"
-  #;;
-  #--disable-html) html="no"
-  #;;
-  #--disable-plugins) plugins="no"
-  #;;
-  #--with-ffmpegdir=*)  ffmpeg_srcdir=${opt#--with-ffmpegdir=} ; ffmpeg="yes"
-  #;;
-  #--with-ffmpeglibdir=*)  ffmpeg_libdir=${opt#--with-ffmpeglibdir=}
-  #;;
   esac
 done
 
@@ -203,17 +186,6 @@ EOF
     $cc -o $TMPO $TMPC 2> /dev/null || _memalign=no
 fi
 
-#if test "$ffmpeg" = "yes" ; then
-#    if test -z "$ffmpeg_libdir" ; then
-#        ffmpeg_libdir="$ffmpeg_srcdir"
-#    fi
-#fi
-
-#if test "$tiny" = "yes" ; then
-#    x11="no"
-#    ffmpeg="no"
-#fi
-
 if test -z "$CFLAGS"; then
     CFLAGS="-O2"
 fi
@@ -247,15 +219,8 @@ echo "  --help                   print this message"
 echo "  --prefix=PREFIX          install in PREFIX [$prefix]"
 echo "  --enable-win32           enable win32 cross compile"
 #echo "  --enable-cygwin          compile for cygwin systems"
-#echo "  --disable-x11            disable Xwindow support"
-#echo "  --disable-xv             disable Xvideo extension support"
-#echo "  --disable-xrender        disable Xrender extension support"
+echo "  --enable-debug           build with debug stuff for gdb"
 echo "  --enable-tiny            build a very small version, no color, no extra modes or features, etc"
-#echo "  --disable-html           disable graphical html support"
-#echo "  --disable-png            disable png support"
-#echo "  --disable-plugins        disable plugins support"
-#echo "  --with-ffmpegdir=DIR     find ffmpeg sources and libraries in DIR"
-#echo "                           for audio/video/image support"
 echo "  --enable-arabic          enable the arabic charset"
 echo "  --enable-devanagari      enable the devanagari charset"
 echo ""
@@ -273,18 +238,10 @@ fi
 echo "Install prefix   $prefix"
 echo "Source path      $source_path"
 echo "C compiler       $cc"
+echo "Debug            $debug"
 echo "Tiny build       $tiny"
 echo "Arabic           $arabic"
 echo "Devanagari       $devanagari"
-
-#echo "X11 support      $x11"
-#echo "Xvideo support   $xv"
-#echo "Xrender support  $xrender"
-#echo "libpng support   $png"
-#echo "Graphical HTML   $html"
-#echo "Plugins support  $plugins"
-#echo "Initcall support $initcalls"
-#echo "FFMPEG support   $ffmpeg"
 
 echo "Creating config.mak and config.h"
 
@@ -350,6 +307,10 @@ if test "$win32" = "yes" ; then
   echo "CONFIG_WIN32=yes" >> ${MAK_FILE}
 fi
 
+if test "$debug" = "yes" ; then
+  echo "#define CONFIG_DEBUG 1" >> $TMPH
+  echo "CONFIG_DEBUG=yes" >> ${MAK_FILE}
+fi
 
 if test "$tiny" = "yes" ; then
   echo "#define CONFIG_TINY 1" >> $TMPH
