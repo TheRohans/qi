@@ -12,7 +12,7 @@ Qi's goal is to be my perfect editor.  It attempts to combine all the things I l
 * Cross platform (unix based system)
 * Multi-language support (with a focus on Chinese)
 
-Qi's roots are QEmacs; Qi base is a fork or QEmacs 3.2 with a lot of bits stripped out.
+Qi's roots are QEmacs; Qi's base is a fork of QEmacs 3.2 with a lot of bits stripped out.
 
 ---------------------------------
 
@@ -41,9 +41,9 @@ The original QEmacs documentation is in _doc/qe-doc.html_; however, not all QEma
 
 QEmacs was released under the GNU Lesser General Public License (read the accompagning COPYING file) so Qi is as well.
 
-QEmacs is copyright 2002 Fabrice Bellard.
-
 Qi is copyright 2013 [The Rohans, LLC.][rohans]
+
+QEmacs is copyright 2002 Fabrice Bellard.
 
 [qi]: http://en.wikipedia.org/wiki/Qi
 [rohans]: http://therohans.com
