@@ -58,7 +58,6 @@ enum {
     PHP_COMMENT = 1,
     PHP_STRING,
     PHP_STRING_Q,
-    //PHP_PREPROCESS,
 	PHP_VARIABLE,
 };
 
@@ -73,9 +72,9 @@ void php_colorize_line(unsigned int *buf, int len,
     p = buf;
     p_start = p;
     type_decl = 0;
-    c = 0;      /* turn off stupid egcs-2.91.66 warning */
+    c = 0;      // turn off stupid egcs-2.91.66 warning
 
-    /* if already in a state, go directly in the code parsing it */
+    //if already in a state, go directly in the code parsing it
     switch (state) {
     case PHP_COMMENT:
         goto parse_comment;
@@ -84,8 +83,6 @@ void php_colorize_line(unsigned int *buf, int len,
         goto parse_string;
 	//case PHP_VARIABLE:
 	//	goto parse_variable;
-    //case PHP_PREPROCESS:
-    //    goto parse_preprocessor;
     default:
         break;
     }
@@ -124,26 +121,18 @@ void php_colorize_line(unsigned int *buf, int len,
 		case '$':
 			p++;
 			while (*p != '\n') {
-				if (*p == '-' || *p == ' ' || *p == '\t' || *p == '=') {
-					break;
-				} else {
+				//if (*p == '-' || *p == ' ' || *p == '\t' || *p == '=') {
+				if ((*p >= 'a' && *p <= 'z') ||
+				   (*p >= 'A' && *p <= 'Z') || 
+				   (*p == '_')) {
 					p++;
+				} else {
+					break;
 				}
 			}
 			set_color(p_start, p - p_start, QE_STYLE_VARIABLE);
 			//set_color(p_start, p - p_start, QE_STYLE_KEYWORD);
 			break;
-			
-        //case '#':
-        //    // preprocessor
-        //parse_preprocessor:
-        //    p = buf + len;
-        //    set_color(p_start, p - p_start, QE_STYLE_PREPROCESS);
-        //    if (p > buf && (p[-1] & CHAR_MASK) == '\\') 
-        //        state = PHP_PREPROCESS;
-        //    else
-        //        state = 0;
-        //    goto the_end;
         case '\'':
             state = PHP_STRING_Q;
             goto string;
@@ -248,12 +237,12 @@ int php_mode_init(EditState *s, ModeSavedData *saved_data)
 
 /* specific PHP commands */
 static CmdDef php_commands[] = {
-    //CMD_( KEY_CTRL('i'), KEY_NONE, "php-indent-command", do_c_indent, "*")
-    //CMD_( KEY_NONE, KEY_NONE, "php-indent-region", do_c_indent_region, "*")
-	//CMDV( ':', KEY_NONE, "php-electric-colon", do_c_electric, ':', "*v")
-	//CMDV( '{', KEY_NONE, "php-electric-obrace", do_c_electric, '{', "*v")
-	//CMDV( '}', KEY_NONE, "php-electric-cbrace", do_c_electric, '}', "*v")
-	//CMDV( KEY_RET, KEY_NONE, "php-electric-newline", do_c_electric, '\n', "*v")
+    CMD_( KEY_CTRL('i'), KEY_NONE, "php-indent-command", do_c_indent, "*")
+    CMD_( KEY_NONE, KEY_NONE, "php-indent-region", do_c_indent_region, "*")
+	CMDV( ':', KEY_NONE, "php-electric-colon", do_c_electric, ':', "*v")
+	CMDV( '{', KEY_NONE, "php-electric-obrace", do_c_electric, '{', "*v")
+	CMDV( '}', KEY_NONE, "php-electric-cbrace", do_c_electric, '}', "*v")
+	CMDV( KEY_RET, KEY_NONE, "php-electric-newline", do_c_electric, '\n', "*v")
     CMD_DEF_END,
 };
 
