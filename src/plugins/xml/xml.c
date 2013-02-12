@@ -158,9 +158,9 @@ void xml_colorize_line(unsigned int *buf, int len,
     *colorize_state_ptr = state;
 }
 
-int xml_mode_probe(ModeProbeData *p1)
+int xml_mode_probe(ModeProbeData *p)
 {
-    const char *p;
+    /* const char *p;
 
     p = (const char *)p1->buf;
     while (css_is_space(*p))
@@ -171,7 +171,19 @@ int xml_mode_probe(ModeProbeData *p1)
     if (*p != '!' && *p != '?' && *p != '/' && 
         !isalpha(*p))
         return 0;
-    return 90; /* leave some room for more specific XML parser */
+    return 90; //leave some room for more specific XML parser 
+	*/
+	
+    const char *r;
+
+    //currently, only use the file extension
+    r = extension(p->filename);
+    if (*r) {
+        if (strfind("|xml|project|classpath|config|lzx|plist|xsd|xmi|wsdl|rss|resx|rng|ixml|wsdd|gladep|glade|wddx|xsl|xslt|xdf|mxml|", r + 1, 1))
+            return 100;
+    }
+    return 0;
+	
 }
 
 int xml_mode_init(EditState *s, ModeSavedData *saved_data)
