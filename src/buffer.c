@@ -452,7 +452,8 @@ EditBuffer *eb_new(const char *name, int flags)
     qs->first_buffer = b;
 
     /* CG: default charset should be selectable */
-    eb_set_charset(b, &charset_8859_1);
+    //eb_set_charset(b, &charset_8859_1);
+    eb_set_charset(b, &charset_utf8);
     
     /* add mark move callback */
     eb_add_callback(b, eb_offset_callback, &b->mark);
