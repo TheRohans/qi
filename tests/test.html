@@ -1,0 +1,29 @@
+<html>
+<head>
+	<script type="text/javascript">
+	$(document).ready(function(){
+		for(var x=0; x<10; x++) {
+			console.log(x);
+		}
+	});
+	</script>
+	<style type="text/css">
+	.thing {
+		color: red;
+		background: url(blarg.gif) #c0c0c0;
+	}
+	</style>
+</head>
+<body>
+	<h1>This is a thing</h1>
+	<p class="thing">
+		This is some stuff here.
+	</p>
+	<?php
+		foreach($z as $q) {
+			echo $q;
+		}
+	?>
+	<p>And I think <?= $this ?> is another one too</p>
+</body>
+</html>
