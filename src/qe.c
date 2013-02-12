@@ -6406,7 +6406,7 @@ int text_mode_init(EditState *s, ModeSavedData *saved_data)
         s->tab_size = 8;
         s->indent_size = 4;
         s->default_style = QE_STYLE_DEFAULT;
-        s->wrap = WRAP_LINE;
+        s->wrap = WRAP_WORD;
     } else {
         memcpy(s, saved_data->generic_data, SAVED_DATA_SIZE);
     }
