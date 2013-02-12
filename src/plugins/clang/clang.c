@@ -526,7 +526,7 @@ static int c_mode_probe(ModeProbeData *p)
     //currently, only use the file extension
     r = extension(p->filename);
     if (*r) {
-        if (strfind("|c|e|h|js|cs|jav|java|cxx|cpp|", r + 1, 1))
+        if (strfind("|c|e|h|js|cs|jav|java|cxx|cpp|groovy|", r + 1, 1))
             return 100;
     }
     return 0;
