@@ -242,7 +242,7 @@ int html_init(void)
     html_mode.mode_init = html_mode_init;
 
     qe_register_mode(&html_mode);
-    qe_register_cmd_table(html_commands, "HTML");
+    qe_register_cmd_table(html_commands, "html");
     return 0;
 }
 
