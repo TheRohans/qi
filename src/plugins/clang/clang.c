@@ -280,7 +280,7 @@ static void insert_spaces(EditState *s, int *offset_ptr, int i)
     *offset_ptr = offset;
 }
 
-static void do_c_indent(EditState *s)
+void do_c_indent(EditState *s)
 {
     int offset, offset1, offset2, offsetl, c, pos, size, line_num, col_num;
     int i, eoi_found, len, pos1, lpos, style, line_num1, state;

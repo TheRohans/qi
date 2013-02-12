@@ -5,6 +5,9 @@ void c_colorize_line(unsigned int *buf, int len,
 //static int find_pos(EditState *s, unsigned int *buf, int size);
 //static void insert_spaces(EditState *s, int *offset_ptr, int i);
 //static void do_c_indent(EditState *s);
+
+void do_c_indent(EditState *s);
+
 void do_c_indent_region(EditState *s);
 void do_c_electric(EditState *s, int key);
 //static int c_mode_probe(ModeProbeData *p);
