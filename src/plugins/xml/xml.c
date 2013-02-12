@@ -22,10 +22,6 @@
 enum {
     XML_TAG = 1,
     XML_COMMENT, 
-    XML_TAG_SCRIPT,
-    XML_TAG_STYLE,
-    XML_STYLE,
-    XML_SCRIPT = 0x10, /* special mode for inside a script, ored with c mode */
 };
 
 void xml_colorize_line(unsigned int *buf, int len, 
@@ -38,17 +34,11 @@ void xml_colorize_line(unsigned int *buf, int len,
     p = buf;
     p_start = p;
 
-    /* if already in a state, go directly in the code parsing it */
-    if (state & XML_SCRIPT)
-        goto parse_script;
+    //if already in a state, go directly in the code parsing it
     switch (state) {
     case XML_COMMENT:
         goto parse_comment;
     case XML_TAG:
-    case XML_TAG_SCRIPT:
-        goto parse_tag;
-    case XML_STYLE:
-        goto parse_style;
     default:
         break;
     }
@@ -63,7 +53,7 @@ void xml_colorize_line(unsigned int *buf, int len,
             if (p[0] == '!' && p[1] == '-' && p[2] == '-') {
                 p += 3;
                 state = XML_COMMENT;
-                /* wait until end of comment */
+                //wait until end of comment
             parse_comment:
                 while (*p != '\n') {
                     if (p[0] == '-' && p[1] == '-' && p[2] == '>') {
@@ -75,82 +65,20 @@ void xml_colorize_line(unsigned int *buf, int len,
                     }
                 }
                 set_color(p_start, p - p_start, QE_STYLE_COMMENT);
-            } else {
-                /* we are in a tag */
-                if (ustristart(p, "SCRIPT", (const unsigned int **)&p)) {
-                    state = XML_TAG_SCRIPT;
-                } else if (ustristart(p, "STYLE", (const unsigned int **)&p)) {
-                    state = XML_TAG_STYLE;
-                }
+            }
             parse_tag:
                 while (*p != '\n') {
                     if (*p == '>') {
                         p++;
-                        if (state == XML_TAG_SCRIPT)
-                            state = XML_SCRIPT;
-                        else if (state == XML_TAG_STYLE)
-                            state = XML_STYLE;
-                        else
-                            state = 0;
-                        break;
+						state = 0;
+						break;
                     } else {
                         p++;
                     }
                 }
                 set_color(p_start, p - p_start, QE_STYLE_TAG);
-                if (state == XML_SCRIPT) {
-                    /* javascript coloring */
-                    p_start = p;
-                parse_script:
-                    for (;;) {
-                        if (*p == '\n') {
-                            state &= ~XML_SCRIPT;
-                            c_colorize_line(p_start, p - p_start, &state, state_only);
-                            state |= XML_SCRIPT;
-                            break;
-                        } else if (ustristart(p, "</SCRIPT", (const unsigned int **)&p1)) {
-                            while (*p1 != '\n' && *p1 != '>') 
-                                p1++;
-                            if (*p1 == '>')
-                                p1++;
-                            /* XXX: need to add '\n' */
-                            state &= ~XML_SCRIPT;
-                            c_colorize_line(p_start, p - p_start, &state, state_only);
-                            state |= XML_SCRIPT;
-                            set_color(p, p1 - p, QE_STYLE_TAG);
-                            p = p1;
-                            state = 0;
-                            break;
-                        } else {
-                            p++;
-                        }
-                    }
-                } else if (state == XML_STYLE) {
-                    /* stylesheet coloring */
-                    p_start = p;
-                parse_style:
-                    for (;;) {
-                        if (*p == '\n') {
-                            set_color(p_start, p - p_start, QE_STYLE_CSS);
-                            break;
-                        } else if (ustristart(p, "</STYLE", (const unsigned int **)&p1)) {
-                            while (*p1 != '\n' && *p1 != '>') 
-                                p1++;
-                            if (*p1 == '>')
-                                p1++;
-                            set_color(p_start, p - p_start, QE_STYLE_CSS);
-                            set_color(p, p1 - p, QE_STYLE_TAG);
-                            p = p1;
-                            state = 0;
-                            break;
-                        } else {
-                            p++;
-                        }
-                    }
-                }
-            }
         } else {
-            /* text */
+            //text
             p++;
         }
     }
