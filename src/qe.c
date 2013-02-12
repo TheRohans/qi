@@ -2064,7 +2064,7 @@ void do_set_system_font(EditState *s, const char *qe_font_name,
 
     font_type = css_get_enum(qe_font_name, "fixed,serif,sans");
     if (font_type < 0) {
-        put_status(s, "Invalid qemacs font");
+        put_status(s, "Invalid qi font");
         return;
     }
     pstrcpy(s->qe_state->system_fonts[font_type],
@@ -3009,7 +3009,7 @@ void generic_text_display(EditState *s)
         if (offset < 0 || ds->y >= s->height || m->xc != NO_CURSOR)
             break;
     }
-    //    printf("cursor: xc=%d yc=%d linec=%d\n", m->xc, m->yc, m->linec);
+
     if (m->xc == NO_CURSOR) {
         /* if no cursor found then we compute offset_top so that we
            have a chance to find the cursor in a small amount of time */
@@ -3021,6 +3021,7 @@ void generic_text_display(EditState *s)
         s->mode->text_display(s, ds, offset);
         if (m->xc == NO_CURSOR) {
             /* XXX: should not happen */
+			/* ROB: But does, often when swtiching to unihex with wacky chars */
             printf("ERROR: cursor not found\n");
             ds->y = 0;
         } else {
@@ -6018,11 +6019,11 @@ void do_help_for_help(EditState *s)
     if (!b)
         return;
     eb_printf(b, 
-              "QEmacs help for help - Press q to quit:\n"
+              "Qi help for help - Press C-g (q) to quit:\n"
               "\n"
-              "C-h C-h   Show this help\n"
-              "C-h b     Display table of all key bindings\n"
-              "C-h c     Describe key briefly\n"
+              "C-x ? (F1)                Show this help\n"
+              "M-x describe-bindings     Display table of all key bindings\n"
+              "M-x describe-key-briefly  Describe key briefly\n"
               );
     b->flags |= BF_READONLY;
     if (show) {
