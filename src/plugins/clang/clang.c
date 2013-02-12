@@ -289,14 +289,14 @@ static void do_c_indent(EditState *s)
     char buf1[64], *q;
     int stack_ptr;
 
-    /* find start of line */
+    //find start of line
     eb_get_pos(s->b, &line_num, &col_num, s->offset);
     line_num1 = line_num;
     offset = s->offset;
     offset = eb_goto_bol(s->b, offset);
-    /* now find previous lines and compute indent */
+    // now find previous lines and compute indent
     pos = 0;
-    lpos = -1; /* position of the last instruction start */
+    lpos = -1; //position of the last instruction start
     offsetl = offset;
     eoi_found = 0;
     stack_ptr = 0;
@@ -308,13 +308,13 @@ static void do_c_indent(EditState *s)
         eb_prevc(s->b, offsetl, &offsetl);
         offsetl = eb_goto_bol(s->b, offsetl);
         len = get_colorized_line(s, buf, MAX_BUF_SIZE - 1, offsetl, line_num);
-        /* store indent position */
+        // store indent position 
         pos1 = find_indent1(s, buf);
         p = buf + len;
         while (p > buf) {
             p--;
             c = *p;
-            /* skip strings or comments */
+            // skip strings or comments
             style = c >> STYLE_SHIFT;
             if (style == QE_STYLE_COMMENT ||
                 style == QE_STYLE_STRING ||
@@ -322,14 +322,14 @@ static void do_c_indent(EditState *s)
                 continue;
             c = c & CHAR_MASK;
             if (state == INDENT_FIND_EQ) {
-                /* special case to search '=' or ; before { to know if
-                   we are in data definition */
+                // special case to search '=' or ; before { to know if
+                //  we are in data definition 
                 if (c == '=') {
-                    /* data definition case */
+                    //data definition case
                     pos = lpos;
                     goto end_parse;
                 } else if (c == ';') {
-                    /* normal instruction case */
+                    // normal instruction case
                     goto check_instr;
                 }
             } else {
@@ -375,12 +375,12 @@ static void do_c_indent(EditState *s)
                 case '\n':
                     break;
                 case ';':
-                    /* level test needed for 'for(;;)' */
+                    // level test needed for 'for(;;)'
                     if (stack_ptr == 0) {
-                        /* ; { or } are found before an instruction */
+                        // ; { or } are found before an instruction 
                     check_instr:
                         if (lpos >= 0) {
-                            /* start of instruction already found */
+                            // start of instruction already found 
                             pos = lpos;
                             if (!eoi_found)
                                 pos += s->indent_size;
@@ -390,14 +390,14 @@ static void do_c_indent(EditState *s)
                     }
                     break;
                 case ':':
-                    /* a label line is ignored */
-                    /* XXX: incorrect */
+                    //* a label line is ignored 
+                    // XXX: incorrect 
                     goto prev_line;
                 default:
                     if (stack_ptr == 0) {
                         if ((c >> STYLE_SHIFT) == QE_STYLE_KEYWORD) {
                             unsigned int *p1, *p2;
-                            /* special case for if/for/while */
+                            // special case for if/for/while
                             p1 = p;
                             while (p > buf && 
                                    (p[-1] >> STYLE_SHIFT) == QE_STYLE_KEYWORD)
@@ -426,12 +426,12 @@ static void do_c_indent(EditState *s)
     prev_line: ;
     }
  end_parse:
-    /* compute special cases which depend on the chars on the current line */
+    // compute special cases which depend on the chars on the current line
     len = get_colorized_line(s, buf, MAX_BUF_SIZE - 1, offset, line_num1);
 
     if (stack_ptr == 0) {
         if (!pos && lpos >= 0) {
-            /* start of instruction already found */
+            //start of instruction already found 
             pos = lpos;
             if (!eoi_found)
                 pos += s->indent_size;
@@ -441,12 +441,12 @@ static void do_c_indent(EditState *s)
     for (i = 0; i < len; i++) {
         c = buf[i]; 
         style = c >> STYLE_SHIFT;
-        /* if preprocess, no indent */
+        // if preprocess, no indent 
         if (style == QE_STYLE_PREPROCESS) {
             pos = 0;
             break;
         }
-        /* NOTE: strings & comments are correctly ignored there */
+        // NOTE: strings & comments are correctly ignored there 
         if (c == '}' || c == ':') {
             pos -= s->indent_size;
             if (pos < 0)
@@ -459,9 +459,9 @@ static void do_c_indent(EditState *s)
         }
     }
     
-    /* the number of needed spaces is in 'pos' */
+    // the number of needed spaces is in 'pos'
 
-    /* suppress leading spaces */
+    // suppress leading spaces
     offset1 = offset;
     for (;;) {
         c = eb_nextc(s->b, offset1, &offset2);
@@ -476,7 +476,7 @@ static void do_c_indent(EditState *s)
         if (s->offset < offset)
             s->offset = offset;
     }
-    /* insert needed spaces */
+    // insert needed spaces
     insert_spaces(s, &offset, pos);
     s->offset = offset;
 }
