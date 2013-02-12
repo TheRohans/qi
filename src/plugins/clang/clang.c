@@ -503,8 +503,20 @@ void do_c_indent_region(EditState *s)
 
 void do_c_electric(EditState *s, int key)
 {
-    do_char(s, key);
-    do_c_indent(s);
+	do_char(s, key);
+	if(key != '\n' && key != '}') {
+		do_return(s);
+	} 
+	do_c_indent(s);
+	
+	//if its a close brace go past it and add a newline
+	if(key == '}') {
+		do_left_right(s, 1);
+		do_return(s);
+		//one more indent in case we are in a block in a block
+		//yo dawg, I hear you like blocks
+		do_c_indent(s);
+	}
 }
 
 static int c_mode_probe(ModeProbeData *p)
@@ -536,10 +548,11 @@ static CmdDef c_commands[] = {
     CMD_( KEY_CTRL('i'), KEY_NONE, "c-indent-command", do_c_indent, "*")
     CMD_( KEY_NONE, KEY_NONE, "c-indent-region", do_c_indent_region, "*")
     /* CG: should use 'k' intrinsic argument */
-    CMDV( ';', KEY_NONE, "c-electric-semi&comma", do_c_electric, ';', "*v")
-    CMDV( ':', KEY_NONE, "c-electric-colon", do_c_electric, ':', "*v")
-    CMDV( '{', KEY_NONE, "c-electric-obrace", do_c_electric, '{', "*v")
-    CMDV( '}', KEY_NONE, "c-electric-cbrace", do_c_electric, '}', "*v")
+	//CMDV( ';', KEY_NONE, "c-electric-semi&comma", do_c_electric, ';', "*v")
+	CMDV( ':', KEY_NONE, "c-electric-colon", do_c_electric, ':', "*v")
+	CMDV( '{', KEY_NONE, "c-electric-obrace", do_c_electric, '{', "*v")
+	CMDV( '}', KEY_NONE, "c-electric-cbrace", do_c_electric, '}', "*v")
+	CMDV( KEY_RET, KEY_NONE, "c-electric-newline", do_c_electric, '\n', "*v")
     CMD_DEF_END,
 };
 
