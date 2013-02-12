@@ -18,6 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include "qe.h"
+#include "plugincore.h"
 
 /* colorization states */
 enum {
@@ -26,7 +27,8 @@ enum {
     HTML_TAG_SCRIPT,
     HTML_TAG_STYLE,
     HTML_STYLE,
-    HTML_SCRIPT = 0x10, /* special mode for inside a script, colored with c mode */
+    HTML_SCRIPT = 0x10, //special mode for inside a script, colored with c mode 
+	HTML_PHP = 0x20,
 };
 
 void html_colorize_line(unsigned int *buf, int len, 
@@ -42,6 +44,9 @@ void html_colorize_line(unsigned int *buf, int len,
     /* if already in a state, go directly in the code parsing it */
     if (state & HTML_SCRIPT)
         goto parse_script;
+	else if (state & HTML_PHP)
+		goto parse_php;
+	
     switch (state) {
     case HTML_COMMENT:
         goto parse_comment;
@@ -64,7 +69,7 @@ void html_colorize_line(unsigned int *buf, int len,
             if (p[0] == '!' && p[1] == '-' && p[2] == '-') {
                 p += 3;
                 state = HTML_COMMENT;
-                /* wait until end of comment */
+                // wait until end of comment
             parse_comment:
                 while (*p != '\n') {
                     if (p[0] == '-' && p[1] == '-' && p[2] == '>') {
@@ -82,7 +87,10 @@ void html_colorize_line(unsigned int *buf, int len,
                     state = HTML_TAG_SCRIPT;
                 } else if (ustristart(p, "STYLE", (const unsigned int **)&p)) {
                     state = HTML_TAG_STYLE;
-                }
+				} else if (ustristart(p, "?PHP", (const unsigned int **)&p) || 
+					       ustristart(p, "?=", (const unsigned int **)&p)) {
+					state = HTML_PHP;
+				}
             parse_tag:
                 while (*p != '\n') {
                     if (*p == '>') {
@@ -99,6 +107,7 @@ void html_colorize_line(unsigned int *buf, int len,
                     }
                 }
                 set_color(p_start, p - p_start, QE_STYLE_TAG);
+				
                 if (state == HTML_SCRIPT) {
                     /* javascript coloring */
                     p_start = p;
@@ -126,6 +135,34 @@ void html_colorize_line(unsigned int *buf, int len,
                             p++;
                         }
                     }
+				} else if(state == HTML_PHP) {
+                    /* php coloring */
+                    p_start = p;
+				parse_php:
+	                for (;;) {
+	                    if (*p == '\n') {
+	                        state &= ~HTML_PHP;
+	                        php_colorize_line(p_start, p - p_start, &state, state_only);
+	                        state |= HTML_PHP;
+	                        break;
+	                    } else if (ustristart(p, "?", (const unsigned int **)&p1)) {
+	                        while (*p1 != '\n' && *p1 != '>') 
+	                            p1++;
+	                        if (*p1 == '>')
+	                            p1++;
+	                        /* XXX: need to add '\n' */
+	                        state &= ~HTML_PHP;
+	                        c_colorize_line(p_start, p - p_start, &state, state_only);
+	                        state |= HTML_PHP;
+	                        set_color(p, p1 - p, QE_STYLE_TAG);
+	                        p = p1;
+	                        state = 0;
+	                        break;
+	                    } else {
+	                        p++;
+	                    }
+	                }
+					
                 } else if (state == HTML_STYLE) {
                     /* stylesheet coloring */
                     p_start = p;
@@ -183,17 +220,29 @@ int html_mode_init(EditState *s, ModeSavedData *saved_data)
     return 0;
 }
 
+//specific PHP commands
+static CmdDef html_commands[] = {
+    CMD_( KEY_CTRL('i'), KEY_NONE, "html-indent-command", do_c_indent, "*")
+    CMD_( KEY_NONE, KEY_NONE, "html-indent-region", do_c_indent_region, "*")
+	CMDV( ':', KEY_NONE, "html-electric-colon", do_c_electric, ':', "*v")
+	CMDV( '{', KEY_NONE, "html-electric-obrace", do_c_electric, '{', "*v")
+	CMDV( '}', KEY_NONE, "html-electric-cbrace", do_c_electric, '}', "*v")
+	CMDV( KEY_RET, KEY_NONE, "html-electric-newline", do_c_electric, '\n', "*v")
+    CMD_DEF_END,
+};
+
+
 static ModeDef html_mode;
 
 int html_init(void)
 {
-    /* c mode is almost like the text mode, so we copy and patch it */
     memcpy(&html_mode, &text_mode, sizeof(ModeDef));
     html_mode.name = "html";
     html_mode.mode_probe = html_mode_probe;
     html_mode.mode_init = html_mode_init;
 
     qe_register_mode(&html_mode);
+    qe_register_cmd_table(html_commands, "HTML");
     return 0;
 }
 

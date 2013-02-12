@@ -12,7 +12,7 @@ CFLAGS=-O2 -Wall -g -fPIC $(INCLUDES) $(DEFINES)
 all: $(OBJS)
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c -o $(LOAD_PATH)$@ $<
+	$(CC) -I../ $(CFLAGS) -c -o $(LOAD_PATH)$@ $<
 
 clean:
 	rm -f $(LOAD_PATH)html.o

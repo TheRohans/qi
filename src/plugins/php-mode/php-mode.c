@@ -235,7 +235,7 @@ int php_mode_init(EditState *s, ModeSavedData *saved_data)
     return ret;
 }
 
-/* specific PHP commands */
+//specific PHP commands
 static CmdDef php_commands[] = {
     CMD_( KEY_CTRL('i'), KEY_NONE, "php-indent-command", do_c_indent, "*")
     CMD_( KEY_NONE, KEY_NONE, "php-indent-region", do_c_indent_region, "*")
