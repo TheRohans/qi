@@ -1197,26 +1197,10 @@ int list_get_offset(EditState *s);
 
 void get_style(EditState *e, QEStyleDef *style, int style_index);
 
-/* dired.c */
-void do_dired(EditState *s);
-
-/* c_mode.c */
-void c_colorize_line(unsigned int *buf, int len, 
-                     int *colorize_state_ptr, int state_only);
-
-/* xml.c */
-int xml_mode_probe(ModeProbeData *p1);
-
-/* html.c */
-extern ModeDef html_mode;
 
 int gxml_mode_init(EditState *s, 
                    ModeSavedData *saved_data,
                    int is_html, const char *default_stylesheet);
-
-/* image.c */
-void fill_border(EditState *s, int x, int y, int w, int h, int color);
-int qe_bitmap_format_to_pix_fmt(int format);
 
 #define QASSERT(e)      do { if (!(e)) fprintf(stderr, "%s:%d: assertion failed: %s\n", __FILE__, __LINE__, #e); } while (0)
 
