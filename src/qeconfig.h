@@ -1,5 +1,5 @@
 /*
- * default qemacs configuration 
+ * default qi configuration 
  */
 CmdDef basic_commands[] = {
     CMDV( KEY_DEFAULT, KEY_NONE, "self-insert-command", do_char, ' ', "*v")
@@ -93,9 +93,12 @@ CmdDef basic_commands[] = {
     
     // help
     // TODO: ctrl+h is backspace in terminal settings (like ssh'ing with an ipad)
-    //CMD0( KEY_CTRLH(KEY_CTRL('h')), KEY_F1, "help-for-help", do_help_for_help)
+	//CMD0( KEY_CTRLH(KEY_CTRL('h')), KEY_F1, "help-for-help", do_help_for_help)
+	CMD0( KEY_CTRLX('?'), KEY_F1, "help-for-help", do_help_for_help)
     //CMD0( KEY_CTRLH('b'), KEY_NONE, "describe-bindings", do_describe_bindings)
+	CMD0( KEY_NONE, KEY_NONE, "describe-bindings", do_describe_bindings)
     //CMD0( KEY_CTRLH('c'), KEY_CTRLH('k'), "describe-key-briefly", do_describe_key_briefly)
+	CMD0( KEY_NONE, KEY_NONE, "describe-key-briefly", do_describe_key_briefly)
     CMD0( KEY_CTRL('h'), KEY_NONE, "backward-delete-char", do_backspace)
 
     // international
