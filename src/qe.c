@@ -1811,9 +1811,6 @@ void text_mode_line(EditState *s, char *buf, int buf_size)
     if (s->input_method) {
         q += sprintf(q, "--%s", s->input_method->name);
     }
-#if 0
-    q += sprintf(q, "--[%d,%d]-[%d]", s->x_disp[0], s->x_disp[1], s->y_disp);
-#endif
     percent = 0;
     if (s->b->total_size > 0)
         percent = (s->offset * 100) / s->b->total_size;
