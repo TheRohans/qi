@@ -30,10 +30,15 @@ static void markdown_colorize_line(unsigned int *buf, int len,
             goto the_end;
         case '=':
             p++;
+            short eqdash = 0;
             while (*p != '\n') {
                 p++;
+                eqdash++;
+                if(*p != '=') break;
             }
-            set_color(p_start, p - p_start, QE_STYLE_COMMENT);
+            if(eqdash > 1) {
+                set_color(p_start, p - p_start, QE_STYLE_COMMENT);
+            }
             break;
         case '#':
             p++;
@@ -50,8 +55,9 @@ static void markdown_colorize_line(unsigned int *buf, int len,
                 dash++;
                 if(*p != '-') break;
             }
-            if(dash >= 3)
+            if(dash >= 3) {
                 set_color(p_start, p - p_start, QE_STYLE_HIGHLIGHT);
+            }
             break;
         case '[':
             p++;
@@ -75,8 +81,19 @@ static void markdown_colorize_line(unsigned int *buf, int len,
             }
             set_color(p_start, p - p_start, QE_STYLE_KEYWORD);
             break;
-
-
+        case '*':
+            while (*p != '\n') {
+                p++;
+                if( (*p == ' ' || *p == '\n') && *(p-1) == '*') {
+                    break;
+                }
+                if(*p == '*') { 
+                    p++;
+                    break;
+                }
+            }
+            set_color(p_start, p - p_start, QE_STYLE_KEYWORD);
+            break;
         default:
             p++;
             break;
