@@ -36,6 +36,7 @@ extra:
 	make -C latex-mode all
 	#markdown mode
 	make -C markdown-mode all
+	make -C html all
 	#just and example plugin
 	make -C example all
 	
@@ -65,6 +66,7 @@ clean:
 	make -C charsetmore clean
 	make -C latex-mode clean
 	make -C markdown-mode clean
+	make -C html all
 	
 	rm -f $(LOAD_PATH)/libplugincore.a
 	rm -f $(LOAD_PATH)/libplugins.a

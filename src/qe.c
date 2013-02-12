@@ -7049,6 +7049,7 @@ static inline void init_all_modules(void)
 	
 	latex_init(); //I don't care about latex.
 	markdown_init();
+	html_init();
 	
 	example_init();
 #endif
