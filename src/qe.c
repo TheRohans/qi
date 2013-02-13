@@ -7051,6 +7051,7 @@ static inline void init_all_modules(void)
 	markdown_init();
 	html_init();
 	php_init();
+    css_init();
 	
 	example_init();
 #endif

@@ -179,7 +179,8 @@ void html_colorize_line(unsigned int *buf, int len,
                 parse_style:
                     for (;;) {
                         if (*p == '\n') {
-                            set_color(p_start, p - p_start, QE_STYLE_CSS);
+                            //set_color(p_start, p - p_start, QE_STYLE_CSS);
+                            css_colorize_line(p_start, p - p_start, &state, state_only);
                             break;
                         } else if (ustristart(p, "</STYLE", (const unsigned int **)&p1)) {
                             while (*p1 != '\n' && *p1 != '>') 
