@@ -512,10 +512,10 @@ void do_c_electric(EditState *s, int key)
 	//if its a close brace go past it and add a newline
 	if(key == '}') {
 		do_left_right(s, 1);
-		do_return(s);
+		//do_return(s);
 		//one more indent in case we are in a block in a block
 		//yo dawg, I hear you like blocks
-		do_c_indent(s);
+		//do_c_indent(s);
 	}
 }
 

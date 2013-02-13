@@ -15,15 +15,21 @@
 	</style>
 </head>
 <body>
+    <!-- this is a comment -->
 	<h1>This is a thing</h1>
-	<p class="thing">
+    <!--
+        TODO: to do this right, we'll need to do a stack
+        of types being coloured.  Have to wait for now.
+    -->
+	<p id="bad" data-thing="<?= $stuff ?>" class="thing">
 		This is some stuff here.
 	</p>
 	<?php
-		foreach($z as $q) {
+        foreach($z as $q) {
 			echo $q;
+            echo $p
 		}
-	?>
-	<p>And I think <?= ($my === 'testing') ?> is another one too</p>
+    ?>
+    <p>And I think <?= $thing ?> is another one too</p>
 </body>
 </html>

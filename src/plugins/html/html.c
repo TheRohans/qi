@@ -82,7 +82,7 @@ void html_colorize_line(unsigned int *buf, int len,
                 }
                 set_color(p_start, p - p_start, QE_STYLE_COMMENT);
             } else {
-                /* we are in a tag */
+                //we are in a tag
                 if (ustristart(p, "SCRIPT", (const unsigned int **)&p)) {
                     state = HTML_TAG_SCRIPT;
                 } else if (ustristart(p, "STYLE", (const unsigned int **)&p)) {
@@ -90,26 +90,36 @@ void html_colorize_line(unsigned int *buf, int len,
 				} else if (ustristart(p, "?PHP", (const unsigned int **)&p) || 
 					       ustristart(p, "?=", (const unsigned int **)&p)) {
 					state = HTML_PHP;
-				}
+				} else {
+                    state = HTML_TAG;
+                }
             parse_tag:
+                //set_color(p_start, p - p_start, QE_STYLE_TAG);
+                
                 while (*p != '\n') {
-                    if (*p == '>') {
+                    //if we hit the end of the tag (php ends at a space)
+                    if ( (state != HTML_PHP && *p == '>') || (state == HTML_PHP && *p != ' ') ) {
                         p++;
                         if (state == HTML_TAG_SCRIPT)
                             state = HTML_SCRIPT;
                         else if (state == HTML_TAG_STYLE)
                             state = HTML_STYLE;
+                        else if (state == HTML_PHP)
+                            //we don't want to include the "<?php "
+                            // ----------------------------------^
+                            p--;
                         else
                             state = 0;
                         break;
                     } else {
+                        //state = HTML_TAG;
                         p++;
                     }
                 }
                 set_color(p_start, p - p_start, QE_STYLE_TAG);
-				
+                
                 if (state == HTML_SCRIPT) {
-                    /* javascript coloring */
+                    //javascript coloring
                     p_start = p;
                 parse_script:
                     for (;;) {
@@ -123,7 +133,7 @@ void html_colorize_line(unsigned int *buf, int len,
                                 p1++;
                             if (*p1 == '>')
                                 p1++;
-                            /* XXX: need to add '\n' */
+                            //XXX: need to add '\n'
                             state &= ~HTML_SCRIPT;
                             c_colorize_line(p_start, p - p_start, &state, state_only);
                             state |= HTML_SCRIPT;
@@ -136,7 +146,7 @@ void html_colorize_line(unsigned int *buf, int len,
                         }
                     }
 				} else if(state == HTML_PHP) {
-                    /* php coloring */
+                    //php coloring
                     p_start = p;
 				parse_php:
 	                for (;;) {
@@ -150,7 +160,7 @@ void html_colorize_line(unsigned int *buf, int len,
 	                            p1++;
 	                        if (*p1 == '>')
 	                            p1++;
-	                        /* XXX: need to add '\n' */
+	                        //XXX: need to add '\n'
 	                        state &= ~HTML_PHP;
 	                        c_colorize_line(p_start, p - p_start, &state, state_only);
 	                        state |= HTML_PHP;
@@ -164,7 +174,7 @@ void html_colorize_line(unsigned int *buf, int len,
 	                }
 					
                 } else if (state == HTML_STYLE) {
-                    /* stylesheet coloring */
+                    //stylesheet coloring
                     p_start = p;
                 parse_style:
                     for (;;) {
@@ -188,7 +198,7 @@ void html_colorize_line(unsigned int *buf, int len,
                 }
             }
         } else {
-            /* text */
+            //text
             p++;
         }
     }
@@ -224,7 +234,7 @@ int html_mode_init(EditState *s, ModeSavedData *saved_data)
 static CmdDef html_commands[] = {
     CMD_( KEY_CTRL('i'), KEY_NONE, "html-indent-command", do_c_indent, "*")
     CMD_( KEY_NONE, KEY_NONE, "html-indent-region", do_c_indent_region, "*")
-	CMDV( ':', KEY_NONE, "html-electric-colon", do_c_electric, ':', "*v")
+	//CMDV( ':', KEY_NONE, "html-electric-colon", do_c_electric, ':', "*v")
 	CMDV( '{', KEY_NONE, "html-electric-obrace", do_c_electric, '{', "*v")
 	CMDV( '}', KEY_NONE, "html-electric-cbrace", do_c_electric, '}', "*v")
 	CMDV( KEY_RET, KEY_NONE, "html-electric-newline", do_c_electric, '\n', "*v")
