@@ -133,7 +133,6 @@ void html_colorize_line(unsigned int *buf, int len,
                                 p1++;
                             if (*p1 == '>')
                                 p1++;
-                            //XXX: need to add '\n'
                             state &= ~HTML_SCRIPT;
                             c_colorize_line(p_start, p - p_start, &state, state_only);
                             state |= HTML_SCRIPT;
@@ -155,17 +154,16 @@ void html_colorize_line(unsigned int *buf, int len,
 	                        php_colorize_line(p_start, p - p_start, &state, state_only);
 	                        state |= HTML_PHP;
 	                        break;
-	                    } else if (ustristart(p, "?", (const unsigned int **)&p1)) {
-	                        while (*p1 != '\n' && *p1 != '>') 
-	                            p1++;
-	                        if (*p1 == '>')
-	                            p1++;
-	                        //XXX: need to add '\n'
+	                    } else if (ustristart(p, "?>", (const unsigned int **)&p1)) {
+	                        //while (*p1 != '\n' && *p1 != '>') 
+	                        //    p1++;
+	                        //if (*p1 == '>')
+	                        //    p1++;
 	                        state &= ~HTML_PHP;
 	                        c_colorize_line(p_start, p - p_start, &state, state_only);
 	                        state |= HTML_PHP;
-	                        set_color(p, p1 - p, QE_STYLE_TAG);
-	                        p = p1;
+	                        //set_color(p, p1 - p, QE_STYLE_TAG);
+	                        //p = p1;
 	                        state = 0;
 	                        break;
 	                    } else {
