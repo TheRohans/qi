@@ -1182,7 +1182,6 @@ EditBuffer *new_yank_buffer(void);
 void basic_mode_line(EditState *s, char *buf, int buf_size, int c1);
 void text_mode_line(EditState *s, char *buf, int buf_size);
 void do_toggle_full_screen(EditState *s);
-void do_toggle_control_h(EditState *s, int set);
 
 /* hex.c */
 void hex_write_char(EditState *s, int key);

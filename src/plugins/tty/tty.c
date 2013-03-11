@@ -154,7 +154,7 @@ static int term_init(QEditScreen *s, int w, int h)
         if (strstart(term, "ansi", NULL) ||
             strstart(term, "cygwin", NULL) ||
             strstart(term, "vt", NULL)) {
-            do_toggle_control_h(NULL, 1);
+            //do_toggle_control_h(NULL, 1);
         }
     }
     return 0;

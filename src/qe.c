@@ -208,42 +208,6 @@ static void qe_register_binding2(int key,
     qe_register_binding1(keys, nb_keys, d, m);
 }
 
-static int backspace_is_control_h;
-
-void do_toggle_control_h(EditState *s, int set)
-{
-    KeyDef *p;
-    int i;
-
-    if (set)
-        set = (set > 0);
-    else
-        set = !backspace_is_control_h;
-
-    if (backspace_is_control_h == set)
-        return;
-    
-    backspace_is_control_h = set;
-
-    for (p = first_key; p; p = p->next) {
-        for (i = 0; i < p->nb_keys; i++) {
-            switch (p->keys[i]) {
-            case KEY_CTRL('h'):
-                p->keys[i] = set ? KEY_META('h') : 127;
-                break;
-            case 127:
-                if (set)
-                    p->keys[i] = KEY_CTRL('h');
-                break;
-            case KEY_META('h'):
-                if (!set)
-                    p->keys[i] = KEY_CTRL('h');
-                break;
-            }
-        }
-    }
-}
-
 void do_set_emulation(EditState *s, const char *name)
 {
     QEmacsState *qs = s->qe_state;
