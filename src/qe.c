@@ -750,7 +750,7 @@ int cursor_func(DisplayState *ds,
         m->xc = x;
         m->yc = y;
         m->basec = ds->base;
-        m->dirc = ds->base; /* XXX: do it */
+        m->dirc = ds->base; // XXX: do it 
         m->cursor_width = w; 
         m->cursor_height = h; 
         m->linec = line_num;

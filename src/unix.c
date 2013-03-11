@@ -188,8 +188,10 @@ static inline void call_bottom_halves(void)
         __call_bottom_halves();
 }
 
-/* call timer callbacks and compute maximum next call time to
-   check_timers() */
+/*!
+ * call timer callbacks and compute maximum next call time to
+ * check_timers() 
+ */
 static inline int check_timers(int max_delay)
 {
     QETimer *ti, **pt;
@@ -228,7 +230,7 @@ static void url_block_reset(void)
 
 #define MAX_DELAY 500
 
-/* block until one event */
+/*! block until one event */
 static void url_block(void)
 {
     URLHandler *uh;
@@ -238,13 +240,7 @@ static void url_block(void)
     struct timeval tv;
 
     delay = check_timers(MAX_DELAY);
-#if 0
-    {
-        static int count;
-        
-        printf("%5d: delay=%d\n", count++, delay);
-    }
-#endif
+
     tv.tv_sec = delay / 1000;
     tv.tv_usec = (delay % 1000) * 1000;
 
@@ -252,7 +248,7 @@ static void url_block(void)
     wfds = url_wfds;
     ret = select(url_fdmax + 1, &rfds, &wfds, NULL, &tv);
 
-    /* call each handler */
+    // call each handler
     if (ret > 0) {
         uh = url_handlers;
         for (i = 0;i <= url_fdmax; i++) {
@@ -268,7 +264,7 @@ static void url_block(void)
         }
     }
     
-    /* handle terminated children */
+    // handle terminated children
     for (;;) {
         if (list_empty(&pid_handlers))
             break;
@@ -296,7 +292,7 @@ void url_main_loop(void (*init)(void *opaque), void *opaque)
     }
 }
 
-/* exit from url loop */
+/*! exit from url loop */
 void url_exit(void)
 {
     url_exit_request = 1;
