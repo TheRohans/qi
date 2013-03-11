@@ -4881,28 +4881,28 @@ static void do_load1(EditState *s, const char *filename1,
         if (find_resource_file(filename, sizeof(filename), filename1))
             return;
     } else {
-        /* compute full name */
+        // compute full name
         canonize_absolute_path(filename, sizeof(filename), filename1);
     }
 
     if (kill_buffer) {
-        /* CG: this behaviour is not correct */
-        /* CG: should have a direct primitive */
+        // CG: this behaviour is not correct 
+        // CG: should have a direct primitive 
         do_kill_buffer(s, s->b->name);
     }
 
-    /* see if file is already edited */
+    // see if file is already edited 
     b = eb_find_file(filename);
     if (b) {
         switch_to_buffer(s, b);
         return;
     }
 
-    /* create new buffer */
+    // create new buffer
     b = eb_new("", BF_SAVELOG);
     set_filename(b, filename);
 
-    /* switch to the newly created buffer */
+    // switch to the newly created buffer
     switch_to_buffer(s, b);
 
     s->offset = 0;
