@@ -396,15 +396,15 @@ static void dired_view_file(EditState *s, const char *filename)
             b = eb_new("*scratch*", BF_SAVELOG);
             e->b = b;
         }
-        /* mark buffer as preview, so that it will get recycled if needed */
-        /* CG: this is wrong if buffer existed already */
+        // mark buffer as preview, so that it will get recycled if needed 
+        // CG: this is wrong if buffer existed already
         b->flags |= BF_PREVIEW;
     }
 }
 
 static void dired_execute(EditState *s)
 {
-    /* Actually delete, copy, or move the marked items */
+    // Actually delete, copy, or move the marked items 
     put_status(s, "Not yet implemented");
 }
 
@@ -415,15 +415,14 @@ static void dired_parent(EditState *s)
     
     makepath(filename, sizeof(filename), hs->path, "..");
 
-    /* CG: Should make current directory current item in parent */
+    // CG: Should make current directory current item in parent 
     build_dired_list(s, filename);
 }
 
 static void dired_refresh(EditState *s)
 {
     DiredState *hs = s->mode_data;
-    
-    /* CG: Should try and keep current entry */
+    // CG: Should try and keep current entry 
     build_dired_list(s, hs->path);
 }
 
@@ -433,16 +432,16 @@ static void dired_display_hook(EditState *s)
     char filename[MAX_FILENAME_SIZE];
     int index;
 
-    /* Prevent point from going beyond list */
+    // Prevent point from going beyond list
     if (s->offset && s->offset == s->b->total_size)
         do_up_down(s, -1);
 
-    /* open file so that user can see it before it is selected */
-    /* XXX: find a better solution (callback) */
+    // open file so that user can see it before it is selected 
+    // XXX: find a better solution (callback) 
     index = dired_get_index(s);
     if (index < 0 || index >= ds->items.nb_items)
         return;
-    /* Should not rely on last_index! */
+    // Should not rely on last_index!
     if (index != ds->last_index) {
         ds->last_index = index;
         if (get_dired_filename(s, filename, sizeof(filename), 
@@ -472,7 +471,9 @@ static void dired_mode_close(EditState *s)
     list_mode.mode_close(s);
 }
 
-/* can only apply dired mode on directories */
+/*!
+ * can only apply dired mode on directories 
+ */
 static int dired_mode_probe(ModeProbeData *p)
 {
     if (S_ISDIR(p->mode))
@@ -483,8 +484,10 @@ static int dired_mode_probe(ModeProbeData *p)
 
 ModeDef dired_mode;
 
-/* open dired window on the left. The directory of the current file is
-   used */
+/*! 
+ * open dired window on the left. The directory of the current file is
+ * used 
+ */
 void do_dired(EditState *s)
 {
     DiredState *hs;
@@ -494,20 +497,18 @@ void do_dired(EditState *s)
     int width, index, i;
     char filename[MAX_FILENAME_SIZE], *p;
 
-    /* Should take directory argument with optional switches,
-     * find dired window if exists,
-     * else create one and do this.
-     * recursive listing and multi directory patterns.
-     */
+    // Should take directory argument with optional switches,
+    // find dired window if exists,
+    // else create one and do this.
+    // recursive listing and multi directory patterns.
 
-    /* remember current buffer for target positioning, because
-     * s may be destroyed by  insert_window_left
-     */
+    // remember current buffer for target positioning, because
+    // s may be destroyed by  insert_window_left
     b0 = s->b;
 
     b = eb_new("*dired*", BF_READONLY | BF_SYSTEM);
 
-    /* set the filename to the directory of the current file */
+    // set the filename to the directory of the current file
     pstrcpy(filename, sizeof(filename), s->b->filename);
     p = strrchr(filename, '/');
     if (p)
@@ -525,7 +526,7 @@ void do_dired(EditState *s)
         b0 = e1->b;
 
     index = 0;
-    /* CG: target file should be an argument to this command */
+    // CG: target file should be an argument to this command
     for (i = 0; i < hs->items.nb_items; i++) {
         if (get_dired_filename(e, filename, sizeof(filename), i)
         &&  !strcmp(filename, b0->filename)) {
@@ -535,11 +536,13 @@ void do_dired(EditState *s)
     }
     e->offset = eb_goto_pos(e->b, index + DIRED_HEADER, 0);
 
-    /* modify active window */
+    // modify active window
     qs->active_window = e;
 }
 
-/* specific dired commands */
+/*!
+ * specific dired commands 
+ */
 static CmdDef dired_commands[] = {
     //CMD0( KEY_RET, KEY_RIGHT, "dired-select", dired_select)
 	CMD0( KEY_CTRL('f'), KEY_RIGHT, "dired-select", dired_select)
@@ -550,9 +553,9 @@ static CmdDef dired_commands[] = {
     /* dired-abort should restore previous buffer in right-window */
     CMD1( KEY_CTRL('g'), KEY_NONE, "dired-abort", do_delete_window, 0)
     CMD0( ' ', KEY_CTRL('t'), "dired-toggle_selection", list_toggle_selection)
-    /* BS should go back to previous item and unmark it */
+    // BS should go back to previous item and unmark it
     //CMD_( 's', KEY_NONE, "dired-sort", dired_sort, "s{Sort order: }")
-    /* s -> should also change switches */
+    // s -> should also change switches
 	//TODO: While marking works, the functionality does not.
     //CMD1( 'd', KEY_NONE, "dired-delete", dired_mark, 'D')
     //CMD1( 'c', KEY_NONE, "dired-copy", dired_mark, 'C')
@@ -564,16 +567,16 @@ static CmdDef dired_commands[] = {
     CMD1( 'p', KEY_NONE, "previous-line", do_up_down, -1 )
 	//TODO: refresh does odd things
     //CMD0( 'r', KEY_NONE, "dired-refresh", dired_refresh)
-    /* g -> refresh all expanded dirs ? */
-    /* l -> relist single directory or marked files ? */
-
-    /* need commands for splitting, unsplitting, zooming, making subdirs */
-    /* h -> info */
-    /* i, + -> create subdirectory */
-    /* o -> explore in other window */
-    /* R -> rename a file or move selection to another directory */
-    /* C -> copy files */
-    /* mark files globally */
+		
+    // g -> refresh all expanded dirs ?
+    // l -> relist single directory or marked files ?
+    // need commands for splitting, unsplitting, zooming, making subdirs
+    // h -> info
+    // i, + -> create subdirectory
+    // o -> explore in other window
+    // R -> rename a file or move selection to another directory
+    // C -> copy files
+    // mark files globally
     CMD_DEF_END,
 };
 
@@ -584,8 +587,8 @@ static CmdDef dired_global_commands[] = {
 
 int dired_init(void)
 {
-    /* inherit from list mode */
-    /* CG: assuming list_mode already initialized ? */
+    // inherit from list mode
+    // CG: assuming list_mode already initialized ?
     memcpy(&dired_mode, &list_mode, sizeof(ModeDef));
     dired_mode.name = "dired";
     dired_mode.instance_size = sizeof(DiredState);
@@ -594,7 +597,7 @@ int dired_init(void)
     dired_mode.mode_close = dired_mode_close;
     dired_mode.display_hook = dired_display_hook;
     
-    /* first register mode */
+    // first register mode
     qe_register_mode(&dired_mode);
 
     qe_register_cmd_table(dired_commands, "dired");
