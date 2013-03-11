@@ -227,12 +227,14 @@ static void qe_register_binding2(int key,
 
 void do_cd(EditState *s, const char *name)
 {
-    chdir(name);
-    /* CG: Should issue diagnostics upon failure */
-    /* CG: Should display current directory after chdir */
+	chdir(name);
+	// CG: Should issue diagnostics upon failure 
+	// CG: Should display current directory after chdir
 }
 
-/* if mode is non NULL, the defined keys are only active in this mode */
+/*! 
+ * if mode is non NULL, the defined keys are only active in this mode 
+ */
 void qe_register_cmd_table(CmdDef *cmds, const char *mode)
 {
     CmdDef **ld, *d;
@@ -272,8 +274,9 @@ void qe_register_cmd_table(CmdDef *cmds, const char *mode)
     }
 }
 
-/* key binding handling */
-
+/*!
+ * key binding handling 
+ */
 void qe_register_binding(int key, const char *cmd_name, const char *mode_names)
 {
     CmdDef *d;
@@ -290,7 +293,7 @@ void qe_register_binding(int key, const char *cmd_name, const char *mode_names)
         p = mode_names;
         for (;;) {
             r = strchr(p, '|');
-            /* XXX: overflows */
+            // XXX: overflows
             if (!r) {
                 strcpy(mode_name, p);
             } else {
@@ -308,6 +311,10 @@ void qe_register_binding(int key, const char *cmd_name, const char *mode_names)
     }
 }
 
+/*!
+ * Helps build the completion string _cs_ with the given
+ * input by searching the loaded commands
+ */
 void command_completion(StringArray *cs, const char *input)
 {
     int count, len;
@@ -344,8 +351,9 @@ void do_global_set_key(EditState *s, const char *keystr, const char *cmd_name)
     qe_register_binding1(keys, nb_keys, d, NULL);
 }
 
-/* basic editing functions */
-/* CG: should indirect these through mode ! */
+////////////////////////////////////////////////////////////////////////
+// basic editing functions 
+// CG: should indirect these through mode !
 void do_bof(EditState *s)
 {
     s->offset = 0;
@@ -373,6 +381,7 @@ void do_word_right(EditState *s, int dir)
     if (s->mode->move_word_left_right) 
         s->mode->move_word_left_right(s, dir);
 }
+////////////////////////////////////////////////////////////////////////
 
 void text_move_bol(EditState *s)
 {
@@ -402,7 +411,7 @@ void text_move_eol(EditState *s)
 
 int isword(int c)
 {
-    /* XXX: any unicode char >= 128 is considered as word. */
+    //XXX: any unicode char >= 128 is considered as word.
     return (c >= 'a' && c <= 'z') ||
         (c >= 'A' && c <= 'Z') ||
         (c >= '0' && c <= '9') ||
@@ -448,7 +457,8 @@ void text_move_word_left_right(EditState *s, int dir)
     }
 }
 
-/* paragraph handling */
+////////////////////////////////////////////////////////////////////////
+/// paragraph handling 
 
 int eb_next_paragraph(EditBuffer *b, int offset)
 {
@@ -609,9 +619,12 @@ void do_fill_paragraph(EditState *s)
         word_count++;
     }
 }
+////////////////////////////////////////////////////////////////////////
 
-/* upper / lower case functions (XXX: use generic unicode
-   function). Return next offset */
+/*!
+ * upper / lower case functions (XXX: use generic unicode
+ * function). Return next offset 
+ */
 static int eb_changecase(EditBuffer *b, int offset, int up)
 {
     int offset1, ch, len;
@@ -653,8 +666,8 @@ void do_changecase_region(EditState *s, int up)
 {
     int offset;
 
-    /* WARNING: during case change, the region offsets can change, so
-       it is not so simple ! */
+    // WARNING: during case change, the region offsets can change, so
+    // it is not so simple ! 
     if (s->offset > s->b->mark) 
         offset = s->b->mark;
     else
@@ -710,16 +723,18 @@ void do_backspace(EditState *s)
     }
 }
 
-/* return the cursor position relative to the screen. Note that xc is
-   given in pixel coordinates */
+/*! 
+ * return the cursor position relative to the screen. Note that xc is
+ * given in pixel coordinates 
+ */
 typedef struct {
     int linec;
     int yc;
     int xc;
     int offsetc;
-    DirType basec; /* direction of the line */
-    DirType dirc; /* direction of the char under the cursor */
-    int cursor_width; /* can be negative depending on char orientation */
+    DirType basec; //!< direction of the line
+    DirType dirc; //!< direction of the char under the cursor 
+    int cursor_width; //<! can be negative depending on char orientation 
     int cursor_height;
 } CursorContext;
 
@@ -738,10 +753,6 @@ int cursor_func(DisplayState *ds,
         m->cursor_width = w; 
         m->cursor_height = h; 
         m->linec = line_num;
-#if 0
-        printf("cursor_func: xc=%d yc=%d linec=%d offset: %d<=%d<%d\n", 
-               m->xc, m->yc, m->linec, offset1, m->offsetc, offset2);
-#endif
         return -1;
     } else {
         return 0;
@@ -768,7 +779,9 @@ typedef struct {
     int offsetd;
 } MoveContext;
 
-/* called each time the cursor could be displayed */
+/*! 
+ * called each time the cursor could be displayed 
+ */
 static int down_cursor_func(DisplayState *ds,
                             int offset1, int offset2, int line_num,
                             int x, int y, int w, int h, int hex_mode)
@@ -777,7 +790,7 @@ static int down_cursor_func(DisplayState *ds,
     MoveContext *m = ds->cursor_opaque;
 
     if (line_num == m->yd) {
-        /* find the closest char */
+        // find the closest char
         d = abs(x - m->xd);
         if (d < m->xdmin) {
             m->xdmin = d;
@@ -785,7 +798,7 @@ static int down_cursor_func(DisplayState *ds,
         }
         return 0;
     } else if (line_num > m->yd) {
-        /* no need to explore more chars */
+        // no need to explore more chars 
         return -1;
     } else {
         return 0;
@@ -823,25 +836,25 @@ void text_move_up_down(EditState *s, int dir)
         up_down_last_x = cm.xc;
 
     if (dir < 0) {
-        /* difficult case: we need to go backward on displayed text */
+        // difficult case: we need to go backward on displayed text
         while (cm.linec <= 0) {
             if (s->offset_top <= 0)
                 return; 
             s->offset_top = s->mode->text_backward_offset(s, s->offset_top - 1);
 
-            /* adjust y_disp so that the cursor is at the same position */
+            // adjust y_disp so that the cursor is at the same position
             s->y_disp += cm.yc;
             get_cursor_pos(s, &cm);
             s->y_disp -= cm.yc;
         }
     }
 
-    /* find cursor offset */
+    // find cursor offset
     m->yd = cm.linec + dir;
     m->xd = up_down_last_x;
     m->xdmin = 0x7fffffff;
-    /* if no cursor position is found, we go to bof or eof according
-       to dir */
+    // if no cursor position is found, we go to bof or eof according
+    // to dir
     if (dir > 0)
         m->offsetd = s->b->total_size;
     else
@@ -860,7 +873,9 @@ typedef struct {
     int offsetc;
 } ScrollContext;
 
-/* called each time the cursor could be displayed */
+/*!
+ * called each time the cursor could be displayed 
+ */
 static int scroll_cursor_func(DisplayState *ds,
                               int offset1, int offset2, int line_num,
                               int x, int y, int w, int h, int hex_mode)
@@ -869,7 +884,7 @@ static int scroll_cursor_func(DisplayState *ds,
     int y1;
 
     y1 = y + h;
-    /* XXX: add bidir handling : position cursor on left / right */
+    // XXX: add bidir handling : position cursor on left / right
     if (m->dir < 0) {
         if (y >= 0 && y < m->y_found) {
             m->y_found = y;
@@ -884,8 +899,7 @@ static int scroll_cursor_func(DisplayState *ds,
     if (m->offsetc >= offset1 && m->offsetc < offset2 &&
         y >= 0 && y1 <= ds->height) {
         m->offset_found = m->offsetc;
-        m->y_found = 0x7fffffff * m->dir; /* ensure that no other
-                                             position will be found */
+        m->y_found = 0x7fffffff * m->dir; // ensure that no other position will be found
         return -1;
     }
     return 0;
@@ -908,17 +922,15 @@ void perform_scroll_up_down(EditState *s, int h)
     else
         dir = 1;
         
-    /* move display up/down */
+    // move display up/down
     s->y_disp -= h;
 
-    /* y_disp should not be > 0. So we update offset_top until we have
-       it negative */
+    // y_disp should not be > 0. So we update offset_top until we have it negative
     if (s->y_disp > 0) {
         display_init(ds, s, DISP_CURSOR_SCREEN);
         do {
             if (s->offset_top <= 0) {
-                /* cannot go back: we stay at the top of the screen and
-                   exit loop */
+                // cannot go back: we stay at the top of the screen and exit loop
                 s->y_disp = 0;
             } else {
                 s->offset_top = s->mode->text_backward_offset(s, s->offset_top - 1);
@@ -929,11 +941,11 @@ void perform_scroll_up_down(EditState *s, int h)
         } while (s->y_disp > 0);
     }
 
-    /* now update cursor position so that it is on screen */
+    // now update cursor position so that it is on screen
     m->offsetc = s->offset;
     m->dir = -dir;
     m->y_found = 0x7fffffff * dir;
-    m->offset_found = s->offset; /* default offset */
+    m->offset_found = s->offset; // default offset
     display_init(ds, s, DISP_CURSOR_SCREEN);
     ds->cursor_opaque = m;
     ds->cursor_func = scroll_cursor_func;
@@ -945,7 +957,7 @@ void perform_scroll_up_down(EditState *s, int h)
 void text_scroll_up_down(EditState *s, int dir)
 {
     int h, line_height;
-    /* try to round to a line height */
+    // try to round to a line height
     line_height = get_line_height(s->screen, s->default_style);
     h = 1;
     if (abs(dir) == 2) {
@@ -959,13 +971,15 @@ void text_scroll_up_down(EditState *s, int dir)
     perform_scroll_up_down(s, dir * h);
 }
 
-/* center the cursor in the window */
-/* XXX: make it generic to all modes */
+/*!
+ * center the cursor in the window 
+ * XXX: make it generic to all modes 
+ */
 void center_cursor(EditState *s)
 {
     CursorContext cm;
 
-    /* only apply to text modes */
+    // only apply to text modes
     if (!s->mode->text_display)
         return;
 
@@ -973,11 +987,13 @@ void center_cursor(EditState *s)
     if (cm.xc == NO_CURSOR)
         return;
 
-    /* try to center display */
+    // try to center display
     perform_scroll_up_down(s, -((s->height / 2) - cm.yc));
 }
 
-/* called each time the cursor could be displayed */
+/*!
+ * called each time the cursor could be displayed 
+ */
 typedef struct {
     int yd;
     int xd;
@@ -997,7 +1013,7 @@ static int left_right_cursor_func(DisplayState *ds,
     if (line_num == m->yd && 
         ((m->dir < 0 && x < m->xd) || 
          (m->dir > 0 && x > m->xd))) {
-        /* find the closest char in the correct direction */
+        // find the closest char in the correct direction 
         d = abs(x - m->xd);
         if (d < m->xdmin) {
             m->xdmin = d;
@@ -1006,14 +1022,16 @@ static int left_right_cursor_func(DisplayState *ds,
         return 0;
     } else if (line_num > m->yd) {
         m->after_found = 1;
-        /* no need to explore more chars */
+        // no need to explore more chars 
         return -1;
     } else {
         return 0;
     }
 }
 
-/* go to left or right in visual order */
+/*!
+ * go to left or right in visual order 
+ */
 void text_move_left_right_visual(EditState *s, int dir)
 {
     LeftRightMoveContext m1, *m = &m1;
@@ -1027,12 +1045,12 @@ void text_move_left_right_visual(EditState *s, int dir)
 
     nextline = 0;
     for (;;) {
-        /* find cursor offset */
+        // find cursor offset 
         m->yd = yc;
         if (!nextline) {
             m->xd = xc;
         } else {
-            m->xd = -dir * 0x3fffffff;  /* not too big to avoid overflow */
+            m->xd = -dir * 0x3fffffff;  // not too big to avoid overflow 
         }
         m->xdmin = 0x7fffffff;
         m->offsetd = -1;
@@ -1043,22 +1061,22 @@ void text_move_left_right_visual(EditState *s, int dir)
         ds->cursor_func = left_right_cursor_func;
         display1(ds);
         if (m->offsetd >= 0) {
-            /* position found : update and exit */
+            // position found : update and exit
             s->offset = m->offsetd;
             break;
         } else {
             if (dir > 0) {
-                /* no suitable position found : go to next line */
-                /* if no char after, no need to continue */
+                // no suitable position found : go to next line
+                // if no char after, no need to continue
                 if (!m->after_found)
                    break;
             } else {
-                /* no suitable position found : go to previous line */
+                // no suitable position found : go to previous line 
                 if (yc <= 0) {
                     if (s->offset_top <= 0)
                         break;
                     s->offset_top = s->mode->text_backward_offset(s, s->offset_top - 1);
-                    /* adjust y_disp so that the cursor is at the same position */
+                    // adjust y_disp so that the cursor is at the same position 
                     s->y_disp += cm.yc;
                     get_cursor_pos(s, &cm);
                     s->y_disp -= cm.yc;
@@ -1071,8 +1089,10 @@ void text_move_left_right_visual(EditState *s, int dir)
     }
 }
 
+//TODO: remove this.  No mouse support, don't need the extra code
 /* mouse get cursor func */
-#ifndef CONFIG_TINY
+//#ifndef CONFIG_TINY
+#if 0
 
 /* called each time the cursor could be displayed */
 typedef struct {
