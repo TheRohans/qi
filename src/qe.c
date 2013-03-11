@@ -229,7 +229,8 @@ void do_cd(EditState *s, const char *name)
 {
 	chdir(name);
 	// CG: Should issue diagnostics upon failure 
-	// CG: Should display current directory after chdir
+	// TODO: should this be in the edit state as the "project directory"?
+    put_status(s, "Current directory: %s", name);
 }
 
 /*! 
@@ -465,7 +466,7 @@ int eb_next_paragraph(EditBuffer *b, int offset)
     int text_found;
 
     offset = eb_goto_bol(b, offset);
-    /* find end of paragraph */
+    // find end of paragraph
     text_found = 0;
     for (;;) {
         if (offset >= b->total_size)
@@ -487,7 +488,7 @@ int eb_start_paragraph(EditBuffer *b, int offset)
         offset = eb_goto_bol(b, offset);
         if (offset <= 0)
             break;
-        /* check if only spaces */
+        // check if only spaces 
         if (eb_is_empty_line(b, offset)) {
             offset = eb_next_line(b, offset);
             break;
@@ -502,20 +503,20 @@ void do_backward_paragraph(EditState *s)
     int offset;
 
     offset = s->offset;
-    /* skip empty lines */
+    // skip empty lines
     for (;;) {
         if (offset <= 0)
             break;
         offset = eb_goto_bol(s->b, offset);
         if (!eb_is_empty_line(s->b, offset))
             break;
-        /* line just before */
+        // line just before 
         eb_prevc(s->b, offset, &offset);
     }
 
     offset = eb_start_paragraph(s->b, offset);
 
-    /* line just before */
+    // line just before
     eb_prevc(s->b, offset, &offset);
     offset = eb_goto_bol(s->b, offset);
 
@@ -536,11 +537,11 @@ void do_fill_paragraph(EditState *s)
     int chunk_start, word_start, word_size, word_count, space_size;
     unsigned char buf[1];
     
-    /* find start & end of paragraph */
+    // find start & end of paragraph
     par_start = eb_start_paragraph(s->b, s->offset);
     par_end = eb_next_paragraph(s->b, par_start);
     
-    /* compute indent size */
+    // compute indent size 
     indent_size = 0;
     offset = eb_next_line(s->b, par_start);
     if (!eb_is_empty_line(s->b, offset)) {
@@ -552,13 +553,13 @@ void do_fill_paragraph(EditState *s)
         }
     }
 
-    /* suppress any spaces in between */
+    // suppress any spaces in between
     col = 0;
     offset = par_start;
     word_count = 0;
     line_count = 0;
     while (offset < par_end) {
-        /* skip spaces */
+        // skip spaces 
         chunk_start = offset;
         space_size = 0;
         while (offset < par_end) {
@@ -568,7 +569,7 @@ void do_fill_paragraph(EditState *s)
             offset = offset1;
             space_size++;
         }
-        /* skip word */
+        // skip word 
         word_start = offset;
         word_size = 0;
         while (offset < par_end) {
@@ -580,17 +581,17 @@ void do_fill_paragraph(EditState *s)
         }
         
         if (word_count == 0) {
-            /* first word: preserve spaces */
+            // first word: preserve spaces
             col += space_size + word_size;
         } else {
-            /* insert space single space then word */
+            // insert space single space then word
             if (offset == par_end || 
                 (col + 1 + word_size > PARAGRAPH_WIDTH)) {
                 buf[0] = '\n';
                 eb_write(s->b, chunk_start, buf, 1);
                 chunk_start++;
                 if (offset < par_end) {
-                    /* indent */
+                    // indent
                     buf[0] = ' ';
                     for (n = indent_size; n > 0; n--)
                         eb_insert(s->b, chunk_start, buf, 1);
@@ -608,7 +609,7 @@ void do_fill_paragraph(EditState *s)
                 col += 1 + word_size;
             }
 
-            /* remove all other spaces if needed */
+            // remove all other spaces if needed
             n = word_start - chunk_start;
             if (n > 0) {
                 eb_delete(s->b, chunk_start, n);
@@ -1174,11 +1175,12 @@ void text_mouse_goto(EditState *s, int x, int y)
         s->force_highlight = 1;
 }
 #else
-void text_mouse_goto(EditState *s, int x, int y)
-{
-}
+void text_mouse_goto(EditState *s, int x, int y){ }
 #endif
 
+/*!
+ * Write a single char to the give editor state _by key_
+ */
 void do_char(EditState *s, int key)
 {
     if (s->b->flags & BF_READONLY)
@@ -1201,11 +1203,11 @@ void text_write_char(EditState *s, int key)
         const InputMethod *m;
         int match_len, offset, i, offset1;
             
-        /* use compose system only if insert mode */
+        // use compose system only if insert mode
         if (s->compose_len == 0) 
             s->compose_start_offset = s->offset;
 
-        /* insert char */
+        // insert char 
         eb_insert(s->b, s->offset, buf, len);
         s->offset += len;
 
@@ -1219,19 +1221,18 @@ void text_write_char(EditState *s, int key)
             ret = m->input_match(&match_len, m->data, s->compose_buf, 
                                  s->compose_len);
             if (ret == INPUTMETHOD_NOMATCH) {
-                /* no match : reset compose state */
-                    
+                // no match : reset compose state 
                 s->compose_len = 0;
                 break;
             } else if (ret == INPUTMETHOD_MORECHARS) {
-                /* more chars expected: do nothing and insert current key */
+                // more chars expected: do nothing and insert current key
                 break;
             } else {
-                /* match : delete matched chars */
+                // match : delete matched chars
                 key = ret;
                 offset = s->compose_start_offset;
-                offset1 = s->offset; /* save offset so that we are not disturb
-                                        when it moves in eb_delete() */
+                offset1 = s->offset; // save offset so that we are not disturb
+                                     // when it moves in eb_delete()
                 for (i = 0; i < match_len; i++)
                     eb_nextc(s->b, offset, &offset);
                 eb_delete(s->b, s->compose_start_offset, 
@@ -1239,12 +1240,12 @@ void text_write_char(EditState *s, int key)
                 s->compose_len -= match_len;
                 umemmove(s->compose_buf, s->compose_buf + match_len,
                          s->compose_len);
-                /* then insert match */
+                // then insert match 
                 len = unicode_to_charset(buf, key, s->b->charset);
                 eb_insert(s->b, s->compose_start_offset, buf, len);
                 s->offset = offset1 + len - (offset - s->compose_start_offset);
                 s->compose_start_offset += len;
-                /* if some compose chars are left, we iterate */
+                // if some compose chars are left, we iterate
                 if (s->compose_len == 0)
                     break;
             }
@@ -1260,10 +1261,12 @@ void text_write_char(EditState *s, int key)
     }
 }
 
-/* XXX: may be better to move it into qe_key_process() */
+/*!
+ * XXX: may be better to move it into qe_key_process() 
+ */
 static void quote_key(void *opaque, int key)
 {
-    /* CG: should pass s as opaque */
+    // CG: should pass s as opaque 
     QEmacsState *qs = &qe_state;
     EditState *s;
 
@@ -1271,7 +1274,7 @@ static void quote_key(void *opaque, int key)
     if (!s)
         return;
 
-    /* CG: why not insert special keys as well? */
+    // CG: why not insert special keys as well? 
     if (!KEY_SPECIAL(key) ||
         (key >= 0 && key <= 31)) {
         do_char(s, key);
@@ -1316,11 +1319,12 @@ void do_return(EditState *s)
 
 void do_break(EditState *s)
 {
-    /* well, currently nothing needs to be aborted in global context */
-    /* CG: Should remove popups, sidepanes, helppanes... */
+    // well, currently nothing needs to be aborted in global context
+    // CG: Should remove popups, side panes, help panes... 
 }
 
-/* block functions */
+///////////////////////////////////////////////////////////////////
+// block functions
 void do_set_mark(EditState *s)
 {
     s->b->mark = s->offset;
@@ -1359,7 +1363,7 @@ void do_kill_region(EditState *s, int kill)
 
     p2 = s->offset;
     if (kill == 2) {
-        /* kill line */
+        // kill line 
         if (eb_nextc(s->b, p2, &offset1) == '\n') {
             p1 = offset1;
         } else {
@@ -1369,7 +1373,7 @@ void do_kill_region(EditState *s, int kill)
             }
         }
     } else {
-        /* kill/copy region */
+        // kill/copy region 
         p1 = s->b->mark;
     }
 
@@ -1397,7 +1401,7 @@ void do_yank(EditState *s)
     if (s->b->flags & BF_READONLY)
         return;
 
-    /* if the GUI selection is used, it will be handled in the GUI code */
+    // if the GUI selection is used, it will be handled in the GUI code
     selection_request(qs->screen);
 
     b = qs->yank_buffers[qs->yank_current];
@@ -1414,9 +1418,9 @@ void do_yank_pop(EditState *s)
 {
     QEmacsState *qs = s->qe_state;
 
-    /* XXX: should verify if last command was a yank */
+    // XXX: should verify if last command was a yank 
     do_undo(s);
-    /* XXX: not strictly correct if the ring is not full */
+    // XXX: not strictly correct if the ring is not full 
     if (--qs->yank_current < 0)
         qs->yank_current = NB_YANK_BUFFERS - 1;
     do_yank(s);
@@ -1430,13 +1434,14 @@ void do_exchange_point_and_mark(EditState *s)
     s->b->mark = s->offset;
     s->offset = tmp;
 }
+///////////////////////////////////////////////////////////////////
 
 static int reload_buffer(EditState *s, EditBuffer *b, FILE *f1)
 {
     FILE *f;
     int ret, saved;
 
-    /* if no file associated, cannot do anything */
+    // if no file associated, cannot do anything 
     if (b->filename[0] == '\0')
         return 0;
 
@@ -1478,9 +1483,9 @@ static void do_set_mode_file(EditState *s, ModeDef *m,
 
     b = s->b;
 
-    /* if a mode is already defined, try to close it */
+    // if a mode is already defined, try to close it 
     if (s->mode) {
-        /* save mode data if necessary */
+        // save mode data if necessary
         if (!saved_data) {
             saved_data = s->mode->mode_save_data(s);
             if (saved_data)
@@ -1491,8 +1496,8 @@ static void do_set_mode_file(EditState *s, ModeDef *m,
         s->mode_data = NULL;
         s->mode = NULL;
 
-        /* try to remove the raw or mode specific data if it is no
-           longer used. */
+        // try to remove the raw or mode specific data if it is no
+        // longer used.
         data_count = 0;
         for (e = s->qe_state->first_window; e != NULL; e = e->next_window) {
             if (e != s && e->b == b) {
@@ -1500,11 +1505,11 @@ static void do_set_mode_file(EditState *s, ModeDef *m,
                     data_count++;
             }
         }
-        /* we try to remove mode specific data if it is redundant with
-           the buffer raw data */
+        // we try to remove mode specific data if it is redundant with
+        // the buffer raw data 
         if (data_count == 0 && !b->modified) {
-            /* close mode specific buffer representation because it is
-               always redundant if it was not modified */
+            // close mode specific buffer representation because it is
+            //  always redundant if it was not modified
             if (b->data_type != &raw_data_type) {
                 b->data_type->buffer_close(b);
                 b->data = NULL;
@@ -1512,37 +1517,37 @@ static void do_set_mode_file(EditState *s, ModeDef *m,
             }
         }
     }
-    /* if a new mode is wanted, open it */
+    // if a new mode is wanted, open it 
     if (m) {
         size = m->instance_size;
         s->mode_data = NULL;
         if (m->data_type != &raw_data_type) {
-            /* if a non raw data type is requested, we see if we can use it */
+            // if a non raw data type is requested, we see if we can use it 
             if (b->data_type == &raw_data_type) {
-                /* non raw data type: we must call a mode specific
-                   load method */
+                // non raw data type: we must call a mode specific
+                //   load method 
                 b->data_type = m->data_type;
                 if (reload_buffer(s, b, f1) < 0) {
-                    /* error: reset to text mode */
+                    // error: reset to text mode
                     m = &text_mode;
                     b->data_type = &raw_data_type;
                 }
             } else if (b->data_type != m->data_type) {
-                /* non raw data type requested, but the the buffer has
-                   a different type: we cannot switch mode, so we fall
-                   back to text */
+                // non raw data type requested, but the the buffer has
+                // a different type: we cannot switch mode, so we fall
+                // back to text
                 m = &text_mode;
             } else {
-                /* same data type: nothing more to do */
+                // same data type: nothing more to do
             }
         } else {
-            /* if raw data and nothing loaded, we try to load */
+            // if raw data and nothing loaded, we try to load
             if (b->total_size == 0 && !b->modified)
                 reload_buffer(s, b, f1);
         }
         if (size > 0) {
             s->mode_data = malloc(size);
-            /* safe fall back: use text mode */
+            // safe fall back: use text mode
             if (!s->mode_data)
                 m = &text_mode;
             else
@@ -1550,9 +1555,9 @@ static void do_set_mode_file(EditState *s, ModeDef *m,
         }
         s->mode = m;
         
-           /* init mode */
+        // init mode
         m->mode_init(s, saved_data);
-        /* modify offset_top so that its value is correct */
+        // modify offset_top so that its value is correct
         if (s->mode->text_backward_offset)
             s->offset_top = s->mode->text_backward_offset(s, s->offset_top);
     }
@@ -1608,7 +1613,9 @@ void do_set_buffer_file_coding_system(EditState *s, const char *charset_str)
     eb_set_charset(s->b, charset);
 }
 
-/* convert the charset of a buffer to another charset */
+/*!
+ * convert the charset of a buffer to another charset
+ */ 
 void do_convert_buffer_file_coding_system(EditState *s, 
                                           const char *charset_str)
 {
@@ -1623,7 +1630,7 @@ void do_convert_buffer_file_coding_system(EditState *s,
 
     b1 = eb_new("*tmp*", BF_SYSTEM);
 
-    /* well, not very fast, but simple */
+    //well, not very fast, but simple 
     b = s->b;
     for (offset = 0; offset < b->total_size;) {
         c = eb_nextc(b, offset, &offset);
@@ -1631,7 +1638,7 @@ void do_convert_buffer_file_coding_system(EditState *s,
         eb_write(b1, b1->total_size, buf, len);
     }
     
-    /* replace current buffer with convertion */
+    // replace current buffer with convertion 
     eb_delete(b, 0, b->total_size);
     eb_insert_buffer(b, 0, b1, 0, b1->total_size);
 
