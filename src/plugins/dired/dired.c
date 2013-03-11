@@ -32,9 +32,9 @@ enum {
 
 typedef struct DiredState {
     StringArray items;
-    int sort_mode; /* DIRED_SORT_GROUP | DIRED_SORT_NAME */
+    int sort_mode; //!< DIRED_SORT_GROUP | DIRED_SORT_NAME
     int last_index;
-    char path[MAX_FILENAME_SIZE]; /* current path */
+    char path[MAX_FILENAME_SIZE]; //!< current path
 } DiredState;
 
 /* opaque structure for sorting DiredState.items StringArray */
@@ -72,7 +72,9 @@ void dired_free(EditState *s)
     s->offset = 0;
 }
 
-/* sort alphabetically with directories first */
+/*!
+ * sort alphabetically with directories first 
+ */
 static int dired_sort_func(const void *p1, const void *p2)
 {
     const StringItem *item1 = *(const StringItem **)p1;
@@ -112,7 +114,9 @@ static int dired_sort_func(const void *p1, const void *p2)
     return (mode & DIRED_SORT_DESCENDING) ? -res : res;
 }
 
-/* select current item */
+/*!
+ * select current item 
+ */
 static void do_dired_sort(EditState *s)
 {
     DiredState *hs = s->mode_data;
@@ -225,10 +229,10 @@ void build_dired_list(EditState *s, const char *path)
     int ct, len;
     StringItem *item;
 
-    /* free previous list, if any */
+    // free previous list, if any
     dired_free(s);
 
-    /* CG: should make absolute ? */
+    // CG: should make absolute ?
     canonize_path(hs->path, sizeof(hs->path), path);
     set_filename(s->b, hs->path);
     s->b->flags |= BF_DIRED;
@@ -239,8 +243,8 @@ void build_dired_list(EditState *s, const char *path)
             continue;
         p = basename(filename);
 
-#if 1   /* CG: bad idea, but causes spurious bugs */
-        /* exclude redundant '.' and '..' */
+#if 1   // CG: bad idea, but causes spurious bugs 
+        // exclude redundant '.' and '..' 
         if (!strcmp(p, ".") || !strcmp(p, ".."))
             continue;
 #endif
@@ -262,12 +266,12 @@ void build_dired_list(EditState *s, const char *path)
             buf[1] = '\0';
             pstrcat(line, sizeof(line), buf);
         }
-        /* pad with ' ' */
+        // pad with ' '
         len = strlen(line);
         while (len < MAX_COL_FILE_SIZE)
             line[len++] = ' ';
         line[len] = '\0';
-        /* add file size or file info */
+        // add file size or file info 
         if (S_ISREG(st.st_mode)) {
             sprintf(buf, "%9ld", (long)st.st_size);
         } else if (S_ISDIR(st.st_mode)) {
@@ -315,7 +319,7 @@ static char *get_dired_filename(EditState *s,
     const StringItem *item;
     const DiredItem *dip;
 
-    /* CG: assuming buf_size > 0 */
+    // CG: assuming buf_size > 0
     buf[0] = '\0';
     
     if (index < 0 || index >= hs->items.nb_items)
@@ -324,24 +328,25 @@ static char *get_dired_filename(EditState *s,
     item = hs->items.items[index];
     dip = item->opaque;
     
-    /* build filename */
-    /* CG: Should canonize path */
+    // build filename 
+    // CG: Should canonize path
     return makepath(buf, buf_size, hs->path, dip->name);
 }
 
-/* select current item */
+/*!
+ * select current item 
+ */
 static void dired_select(EditState *s)
 {
     struct stat st;
     char filename[MAX_FILENAME_SIZE];
     EditState *e;
 
-    if (!get_dired_filename(s, filename, sizeof(filename), 
-                            dired_get_index(s))) {
+    if (!get_dired_filename(s, filename, sizeof(filename), dired_get_index(s))) {
         return;
     }
 
-    /* now we can act */
+    // now we can act
     if (lstat(filename, &st) < 0)
         return;
     if (S_ISDIR(st.st_mode)) {
@@ -349,9 +354,9 @@ static void dired_select(EditState *s)
     } else if (S_ISREG(st.st_mode)) {
         e = find_window(s, KEY_RIGHT);
         if (e) {
-            /* delete dired window */
+            // delete dired window
             do_delete_window(s, 1);
-            /* remove preview flag */
+            // remove preview flag
             e->b->flags &= ~BF_PREVIEW;
         } else {
             do_load(s, filename);
@@ -367,13 +372,13 @@ static void dired_view_file(EditState *s, const char *filename)
     e = find_window(s, KEY_RIGHT);
     if (!e)
         return;
-    /* close previous temporary buffers, if any */
-    /* CG: Should use the do_find_alternate to replace buffer */
+    // close previous temporary buffers, if any
+    // CG: Should use the do_find_alternate to replace buffer
     b = e->b;
     if ((b->flags & BF_PREVIEW) && !b->modified) {
         switch_to_buffer(e, NULL);
-        /* Before freeing buffer, make sure it isn't used by another window.
-         * This could happen if we split the view window and continue browsing. */
+        // Before freeing buffer, make sure it isn't used by another window.
+        // This could happen if we split the view window and continue browsing.
         for (e1 = s->qe_state->first_window; e1 != NULL; e1 = e1->next_window) {
             if (e1 != s && e1->b == b)
                 break;
@@ -384,8 +389,8 @@ static void dired_view_file(EditState *s, const char *filename)
 
     if (e) {
         do_load(e, filename);
-        /* disable wrapping to get nicer display */
-        e->wrap = WRAP_TRUNCATE;
+        // disable wrapping to get nicer display 
+        //e->wrap = WRAP_TRUNCATE;
         b = e->b;
         if (!b) {
             b = eb_new("*scratch*", BF_SAVELOG);
