@@ -109,10 +109,10 @@ CmdDef basic_commands[] = {
     CMD0( KEY_CTRLX(KEY_CTRL('\\')), KEY_NONE, "switch-input-method", do_switch_input_method)
 
     // styles & display
-    CMD_( KEY_NONE, KEY_NONE, "define-color", do_define_color, "s{Color name: }[color]|color|s{Color value: }[color]|color|")
-    CMD_( KEY_NONE, KEY_NONE, "set-style", do_set_style, "s{Style: }[style]|style|s{CSS Property Name: }" "s{CSS Property Value: }")
-    CMD_( KEY_NONE, KEY_NONE, "set-display-size", do_set_display_size, "i{Width: }i{Height: }")
-    CMD_( KEY_NONE, KEY_NONE, "set-system-font", do_set_system_font, "s{Font family: }s{System fonts: }")
+    //CMD_( KEY_NONE, KEY_NONE, "define-color", do_define_color, "s{Color name: }[color]|color|s{Color value: }[color]|color|")
+    //CMD_( KEY_NONE, KEY_NONE, "set-style", do_set_style, "s{Style: }[style]|style|s{CSS Property Name: }" "s{CSS Property Value: }")
+    //CMD_( KEY_NONE, KEY_NONE, "set-display-size", do_set_display_size, "i{Width: }i{Height: }")
+    //CMD_( KEY_NONE, KEY_NONE, "set-system-font", do_set_system_font, "s{Font family: }s{System fonts: }")
     CMD0( KEY_CTRLX('f'), KEY_NONE, "toggle-full-screen", do_toggle_full_screen)
     CMD0( KEY_NONE, KEY_NONE, "toggle-mode-line", do_toggle_mode_line)
 
