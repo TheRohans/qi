@@ -25,11 +25,6 @@
 #include "cutils.h"
 
 #if !defined(CONFIG_NOCUTILS)
-/* these functions are defined in ffmpeg/libavformat/cutils.c and
- * conflict with this module because of extra functions referenced
- * in the ffmpeg module.  This module should not be linked with
- * qemacs with ffmpeg support.
- */
 
 /**
  * Return TRUE if val is a prefix of str. If it returns TRUE, ptr is
