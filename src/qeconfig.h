@@ -70,10 +70,10 @@ CmdDef basic_commands[] = {
     CMDV( KEY_CTRLX(KEY_CTRL('u')), KEY_NONE, "upcase-region", do_changecase_region, 1, "*v")
 
     // keyboard macros
-    CMD0( KEY_CTRLX('('), KEY_NONE, "start-kbd-macro", do_start_macro)
-    CMD0( KEY_CTRLX(')'), KEY_NONE, "end-kbd-macro", do_end_macro)
-    CMD0( KEY_CTRLX('e'), KEY_CTRL('\\'), "call-last-kbd-macro", do_call_macro)
-    CMD_( KEY_NONE, KEY_NONE, "define-kbd-macro", do_define_kbd_macro, "s{Macro name: }[command]s{Macro keys: }s{Bind to key: }[key]")
+    //CMD0( KEY_CTRLX('('), KEY_NONE, "start-kbd-macro", do_start_macro)
+    //CMD0( KEY_CTRLX(')'), KEY_NONE, "end-kbd-macro", do_end_macro)
+    //CMD0( KEY_CTRLX('e'), KEY_CTRL('\\'), "call-last-kbd-macro", do_call_macro)
+    //CMD_( KEY_NONE, KEY_NONE, "define-kbd-macro", do_define_kbd_macro, "s{Macro name: }[command]s{Macro keys: }s{Bind to key: }[key]")
     CMD_( KEY_NONE, KEY_NONE, "global-set-key", do_global_set_key, "s{Set key globally: }[key]s{command: }[command]|command|")
 
     // window handling

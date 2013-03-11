@@ -3551,132 +3551,132 @@ static const char *keys_to_str(char *buf, int buf_size,
     return buf;
 }
 
-//////////////////////////////////////////////////////////////////
-/* macros */
-void do_start_macro(EditState *s)
-{
-    QEmacsState *qs = s->qe_state;
-
-    if (qs->defining_macro) {
-        qs->defining_macro = 0;
-        put_status(s, "Already defining kbd macro");
-        return;
-    }
-    qs->defining_macro = 1;
-    free(qs->macro_keys);
-    qs->macro_keys = NULL;
-    qs->nb_macro_keys = 0;
-    qs->macro_keys_size = 0;
-    put_status(s, "Defining kbd macro...");
-}
-
-void do_end_macro(EditState *s)
-{
-    QEmacsState *qs = s->qe_state;
-
-    // if called inside a macro, it is last recorded keys, so ignore
-    // it
-    if (qs->macro_key_index != -1)
-        return;
-
-    if (!qs->defining_macro) {
-        put_status(s, "Not defining kbd macro");
-        return;
-    }
-    qs->defining_macro = 0;
-    put_status(s, "Keyboard macro defined");
-}
-
-static void do_call_macro_bh(void *opaque)
-{
-    QEmacsState *qs = &qe_state;
-    int key;
-
-    // XXX: what to do if asynchronous commands ? Command completion
-    //   should be wait
-    for (qs->macro_key_index = 0; 
-         qs->macro_key_index < qs->nb_macro_keys;
-         qs->macro_key_index++) {
-        key = qs->macro_keys[qs->macro_key_index];
-        qe_key_process(key);
-    }
-    qs->macro_key_index = -1;
-}
-
-void do_call_macro(EditState *s)
-{
-    QEmacsState *qs = s->qe_state;
-
-    if (qs->defining_macro) {
-        qs->defining_macro = 0;
-        put_status(s, "Can't execute macro while defining one");
-        return;
-    }
-
-    if (qs->nb_macro_keys > 0) {
-        register_bottom_half(do_call_macro_bh, NULL);
-    }
-}
-
-void do_execute_macro_keys(EditState *s, const char *keys)
-{
-    int key;
-    const char *p;
-
-    p = keys;
-    for (;;) {
-        skip_spaces(&p);
-        if (*p == '\0')
-            break;
-        key = strtokey(&p);
-        qe_key_process(key);
-    }
-}
-
-void do_define_kbd_macro(EditState *s, const char *name, const char *keys,
-                         const char *key_bind)
-{
-    CmdDef *def;
-    int size;
-    char *macro_name, *p;
-
-    size = strlen(name) + 1;
-    macro_name = malloc(size + 2);
-    memcpy(macro_name, name, size);
-    p = macro_name + size;
-    *p++ = 'S';
-    *p++ = '\0';
-
-    def = malloc(2 * sizeof(CmdDef));
-    memset(def, 0, sizeof(CmdDef) * 2);
-    def->key = def->alt_key = KEY_NONE;
-    def->name = macro_name;
-    def->action.func = do_execute_macro_keys;
-    def->val = strdup(keys);
-
-    qe_register_cmd_table(def, NULL);
-    do_global_set_key(s, key_bind, name);
-}
-
-#define MACRO_KEY_INCR 64
-
-static void macro_add_key(int key)
-{
-    QEmacsState *qs = &qe_state;
-    unsigned short *keys;
-    int new_size;
-
-    if (qs->nb_macro_keys >= qs->macro_keys_size) {
-        new_size = qs->macro_keys_size + MACRO_KEY_INCR;
-        keys = realloc(qs->macro_keys, new_size * sizeof(unsigned short));
-        if (!keys)
-            return;
-        qs->macro_keys = keys;
-        qs->macro_keys_size = new_size;
-    }
-    qs->macro_keys[qs->nb_macro_keys++] = key;
-}
-//////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//// macros
+//void do_start_macro(EditState *s)
+//{
+//    QEmacsState *qs = s->qe_state;
+//
+//    if (qs->defining_macro) {
+//        qs->defining_macro = 0;
+//        put_status(s, "Already defining kbd macro");
+//        return;
+//    }
+//    qs->defining_macro = 1;
+//    free(qs->macro_keys);
+//    qs->macro_keys = NULL;
+//    qs->nb_macro_keys = 0;
+//    qs->macro_keys_size = 0;
+//    put_status(s, "Defining kbd macro...");
+//}
+//
+//void do_end_macro(EditState *s)
+//{
+//    QEmacsState *qs = s->qe_state;
+//
+//    // if called inside a macro, it is last recorded keys, so ignore
+//    // it
+//    if (qs->macro_key_index != -1)
+//        return;
+//
+//    if (!qs->defining_macro) {
+//        put_status(s, "Not defining kbd macro");
+//        return;
+//    }
+//    qs->defining_macro = 0;
+//    put_status(s, "Keyboard macro defined");
+//}
+//
+//static void do_call_macro_bh(void *opaque)
+//{
+//    QEmacsState *qs = &qe_state;
+//    int key;
+//
+//    // XXX: what to do if asynchronous commands ? Command completion
+//    //   should be wait
+//    for (qs->macro_key_index = 0; 
+//         qs->macro_key_index < qs->nb_macro_keys;
+//         qs->macro_key_index++) {
+//        key = qs->macro_keys[qs->macro_key_index];
+//        qe_key_process(key);
+//    }
+//    qs->macro_key_index = -1;
+//}
+//
+//void do_call_macro(EditState *s)
+//{
+//    QEmacsState *qs = s->qe_state;
+//
+//    if (qs->defining_macro) {
+//        qs->defining_macro = 0;
+//        put_status(s, "Can't execute macro while defining one");
+//        return;
+//    }
+//
+//    if (qs->nb_macro_keys > 0) {
+//        register_bottom_half(do_call_macro_bh, NULL);
+//    }
+//}
+//
+//void do_execute_macro_keys(EditState *s, const char *keys)
+//{
+//    int key;
+//    const char *p;
+//
+//    p = keys;
+//    for (;;) {
+//        skip_spaces(&p);
+//        if (*p == '\0')
+//            break;
+//        key = strtokey(&p);
+//        qe_key_process(key);
+//    }
+//}
+//
+//void do_define_kbd_macro(EditState *s, const char *name, const char *keys,
+//                         const char *key_bind)
+//{
+//    CmdDef *def;
+//    int size;
+//    char *macro_name, *p;
+//
+//    size = strlen(name) + 1;
+//    macro_name = malloc(size + 2);
+//    memcpy(macro_name, name, size);
+//    p = macro_name + size;
+//    *p++ = 'S';
+//    *p++ = '\0';
+//
+//    def = malloc(2 * sizeof(CmdDef));
+//    memset(def, 0, sizeof(CmdDef) * 2);
+//    def->key = def->alt_key = KEY_NONE;
+//    def->name = macro_name;
+//    def->action.func = do_execute_macro_keys;
+//    def->val = strdup(keys);
+//
+//    qe_register_cmd_table(def, NULL);
+//    do_global_set_key(s, key_bind, name);
+//}
+//
+//#define MACRO_KEY_INCR 64
+//
+//static void macro_add_key(int key)
+//{
+//    QEmacsState *qs = &qe_state;
+//    unsigned short *keys;
+//    int new_size;
+//
+//    if (qs->nb_macro_keys >= qs->macro_keys_size) {
+//        new_size = qs->macro_keys_size + MACRO_KEY_INCR;
+//        keys = realloc(qs->macro_keys, new_size * sizeof(unsigned short));
+//        if (!keys)
+//            return;
+//        qs->macro_keys = keys;
+//        qs->macro_keys_size = new_size;
+//    }
+//    qs->macro_keys[qs->nb_macro_keys++] = key;
+//}
+////////////////////////////////////////////////////////////////////
 
 typedef struct QEKeyContext {
     int argval;
@@ -3742,9 +3742,9 @@ static void qe_key_process(int key)
     char buf1[128];
     int len;
 
-    if (qs->defining_macro) {
-        macro_add_key(key);
-    }
+    //if (qs->defining_macro) {
+    //    macro_add_key(key);
+    //}
     
 again:
     if (c->grab_key_cb) {
