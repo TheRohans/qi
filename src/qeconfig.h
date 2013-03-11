@@ -126,7 +126,7 @@ CmdDef basic_commands[] = {
     CMD0( KEY_CTRLXRET('l'), KEY_NONE, "toggle-line-numbers", do_toggle_line_numbers)
     CMD0( KEY_CTRLXRET('t'), KEY_NONE, "toggle-truncate-lines", do_toggle_truncate_lines)
     CMD0( KEY_CTRLXRET('w'), KEY_NONE, "word-wrap", do_word_wrap)
-    CMD_( KEY_NONE, KEY_NONE, "set-emulation", do_set_emulation, "s{Emulation mode: }")
+    //CMD_( KEY_NONE, KEY_NONE, "set-emulation", do_set_emulation, "s{Emulation mode: }")
     CMD_( KEY_NONE, KEY_NONE, "cd", do_cd, "s{Change default directory: }[file]|file|")
     CMD_( KEY_NONE, KEY_NONE, "set-mode", do_cmd_set_mode, "s{Set mode: }[mode]")
     CMD0( KEY_CTRLX('h'), KEY_NONE, "mark-whole-buffer", do_mark_whole_buffer)

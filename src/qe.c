@@ -208,22 +208,22 @@ static void qe_register_binding2(int key,
     qe_register_binding1(keys, nb_keys, d, m);
 }
 
-void do_set_emulation(EditState *s, const char *name)
-{
-    QEmacsState *qs = s->qe_state;
-
-    if (!strcmp(name, "epsilon")) {
-        qs->flag_split_window_change_focus = 1;
-    } else
-    if (!strcmp(name, "emacs") || !strcmp(name, "xemacs")) {
-        qs->flag_split_window_change_focus = 0;
-    } else
-    if (!strcmp(name, "vi") || strcmp(name, "vim")) {
-        put_status(s, "emulation '%s' not available yet", name);
-    } else {
-        put_status(s, "unknown emulation '%s'", name);
-    }
-}
+//void do_set_emulation(EditState *s, const char *name)
+//{
+//    QEmacsState *qs = s->qe_state;
+//
+//    if (!strcmp(name, "epsilon")) {
+//        qs->flag_split_window_change_focus = 1;
+//    } else
+//    if (!strcmp(name, "emacs") || !strcmp(name, "xemacs")) {
+//        qs->flag_split_window_change_focus = 0;
+//    } else
+//    if (!strcmp(name, "vi") || strcmp(name, "vim")) {
+//        put_status(s, "emulation '%s' not available yet", name);
+//    } else {
+//        put_status(s, "unknown emulation '%s'", name);
+//    }
+//}
 
 void do_cd(EditState *s, const char *name)
 {
