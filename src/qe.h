@@ -867,29 +867,29 @@ typedef struct QErrorContext {
 typedef struct QEmacsState {
     QEditScreen *screen;
     struct EditState *first_window;
-    struct EditState *active_window; /* window in which we edit */
+    struct EditState *active_window; //!< window in which we edit
     struct EditBuffer *first_buffer;
     /* global layout info : DO NOT modify these directly. do_refresh
        does it */
     int status_height;
     int mode_line_height;
-    int content_height; /* height excluding status line */
+    int content_height; //!< height excluding status line
     int width, height;
     int border_width;
     int separator_width;
     /* full screen state */
-    int hide_status; /* true if status should be hidden */
+    int hide_status; //!< true if status should be hidden
     int complete_refresh;
     int is_full_screen;
     /* commands */
     int flag_split_window_change_focus;
-    void *last_cmd_func; /* last executed command function call */
+    void *last_cmd_func; //!< last executed command function call 
     /* keyboard macros */
     int defining_macro;
     unsigned short *macro_keys;
     int nb_macro_keys;
     int macro_keys_size;
-    int macro_key_index; /* -1 means no macro is being executed */
+    int macro_key_index; //!< -1 means no macro is being executed 
     int ungot_key;
     /* yank buffers */
     EditBuffer *yank_buffers[NB_YANK_BUFFERS];

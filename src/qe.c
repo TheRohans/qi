@@ -4865,6 +4865,11 @@ static ModeDef *probe_mode(EditState *s, int mode, uint8_t *buf, int len)
     return selected_mode;
 }
 
+/*!
+ * Load a file into a buffer, either by full path or
+ * or assuming the filename is within one of the resource folders
+ * _load\_resource_
+ */
 static void do_load1(EditState *s, const char *filename1,
                      int kill_buffer, int load_resource)
 {
@@ -5725,7 +5730,7 @@ void edit_invalidate(EditState *s)
 
 void do_refresh(EditState *s1)
 {
-    /* CG: s1 may be NULL */
+    // CG: s1 may be NULL
     QEmacsState *qs = &qe_state;
     EditState *e;
     int new_status_height, new_mode_line_height, content_height;
@@ -5736,13 +5741,13 @@ void do_refresh(EditState *s1)
             qs->screen->dpy.dpy_invalidate();
     }
 
-    /* recompute various dimensions */
+    // recompute various dimensions
     if (qs->screen->media & CSS_MEDIA_TTY) {
         qs->separator_width = 1;
     } else {
         qs->separator_width = 4;
     }
-    qs->border_width = 1; /* XXX: adapt to display type */
+    qs->border_width = 1; // XXX: adapt to display type
     
     width = qs->screen->width;
     height = qs->screen->height;
@@ -5756,31 +5761,31 @@ void do_refresh(EditState *s1)
 
     resized = 0;
 
-    /* see if resize is necessary */
+    // see if resize is necessary
     if (qs->width != width ||
         qs->height != height ||
         qs->status_height != new_status_height ||
         qs->mode_line_height != new_mode_line_height ||
         qs->content_height != content_height) {
 
-        /* do the resize */
+        // do the resize 
         resized = 1;
         for (e = qs->first_window; e != NULL; e = e->next_window) {
             if (e->minibuf) {
-                /* first resize minibuffer if present */
+                // first resize minibuffer if present 
                 e->x1 = 0;
                 e->y1 = content_height;
                 e->x2 = width;
                 e->y2 = height;
             } else if (qs->height == 0) {
-                /* needed only to init the window size for the first time */
+                // needed only to init the window size for the first time
                 e->x1 = 0;
                 e->y1 = 0;
                 e->y2 = content_height;
                 e->x2 = width;
             } else {
-                /* NOTE: to ensure that no rounding errors are made,
-                   we resize the absolute coordinates */
+                // NOTE: to ensure that no rounding errors are made,
+                //  we resize the absolute coordinates
                 e->x1 = (e->x1 * width) / qs->width;
                 e->x2 = (e->x2 * width) / qs->width;
                 e->y1 = (e->y1 * content_height) / qs->content_height;
@@ -5794,16 +5799,16 @@ void do_refresh(EditState *s1)
         qs->mode_line_height = new_mode_line_height;
         qs->content_height = content_height;
     }
-    /* compute client area */
+    // compute client area 
     for (e = qs->first_window; e != NULL; e = e->next_window)
         compute_client_area(e);
 
-    /* invalidate all the edit windows and draw borders */
+    // invalidate all the edit windows and draw borders
     for (e = qs->first_window; e != NULL; e = e->next_window) {
         edit_invalidate(e);
         e->borders_invalid = 1;
     }
-    /* invalidate status line */
+    // invalidate status line
     qs->status_shadow[0] = '\0';
 
     if (resized) {
@@ -6154,7 +6159,9 @@ void window_get_min_size(EditState *s, int *w_ptr, int *h_ptr)
     *h_ptr = h;
 }
 
-/* resize a window on bottom right edge */
+/*!
+ * resize a window on bottom right edge 
+ */
 void window_resize(EditState *s, int target_w, int target_h)
 {
     QEmacsState *qs = s->qe_state;
@@ -6421,7 +6428,9 @@ void unget_key(int key)
 }
 
 
-/* handle an event sent by the GUI */
+/*!
+ * handle an event sent by the GUI 
+ */
 void qe_handle_event(QEEvent *ev)
 {
     QEmacsState *qs = &qe_state;
@@ -7167,7 +7176,9 @@ typedef struct QEArgs {
     char **argv;
 } QEArgs;
 
-/* init function */
+/*!
+ * init function 
+ */
 void qe_init(void *opaque)
 {
     QEmacsState *qs = &qe_state;
@@ -7180,10 +7191,10 @@ void qe_init(void *opaque)
     int i, optind, is_player;
 
     qs->ec.function = "qe-init";
-    qs->macro_key_index = -1; /* no macro executing */
-    qs->ungot_key = -1; /* no unget key */
+    qs->macro_key_index = -1; // no macro executing
+    qs->ungot_key = -1; // no unget key
     
-    /* setup resource path */
+    // setup resource path
     set_user_option(NULL);
 
     eb_init();
@@ -7191,7 +7202,7 @@ void qe_init(void *opaque)
     init_input_methods();
     load_ligatures();
 
-    /* init basic modules */
+    // init basic modules
     qe_register_mode(&text_mode);
     qe_register_cmd_table(basic_commands, NULL);
     qe_register_cmd_line_options(cmd_options);
@@ -7201,47 +7212,46 @@ void qe_init(void *opaque)
     register_completion("style", style_completion);
     register_completion("file", file_completion);
     register_completion("buffer", buffer_completion);
-    register_completion("color", color_completion);
+    //register_completion("color", color_completion);
     
     minibuffer_init();
     less_mode_init();
 
-    /* init all external modules in link order */
+    // init all external modules in link order
     init_all_modules();
 
 #ifdef CONFIG_DLL
-    /* load all dynamic modules */
+    // load all dynamic modules
     load_all_modules(qs);
 #endif
 
-    /* Start in dired mode when invoked with no arguments */
+    // Start in dired mode when invoked with no arguments 
     is_player = 1;
 
-    /* init of the editor state */
+    // init of the editor state
     qs->screen = &global_screen;
 
-    /* create first buffer */
+    // create first buffer 
     b = eb_new("*scratch*", BF_SAVELOG);
 
-    /* will be positionned by do_refresh() */
+    // will be positionned by do_refresh()
     s = edit_new(b, 0, 0, 0, 0, WF_MODELINE);
     
-    /* at this stage, no screen is defined. Initialize a
-     * dummy display driver to have a consistent state
-     * else many commands such as put_status would crash.
-     */
+    // at this stage, no screen is defined. Initialize a
+    // dummy display driver to have a consistent state
+    // else many commands such as put_status would crash.
     dummy_dpy.dpy_init(&global_screen, screen_width, screen_height);
 
-    /* handle options */
+    // handle options
     optind = parse_command_line(argc, argv);
 
-    /* load config file unless command line option given */
+    // load config file unless command line option given 
     if (!no_init_file)
         parse_config(s, NULL);
 
     qe_key_init();
 
-    /* select the suitable display manager */
+    // select the suitable display manager
     dpy = probe_display();
     if (!dpy) {
         fprintf(stderr, "No suitable display found, exiting\n");
@@ -7249,8 +7259,7 @@ void qe_init(void *opaque)
     }
 
     if (dpy->dpy_init(&global_screen, screen_width, screen_height) < 0) {
-        fprintf(stderr, "Could not initialize display '%s', exiting\n", 
-                dpy->name);
+        fprintf(stderr, "Could not initialize display '%s', exiting\n", dpy->name);
         exit(1);
     }
 
@@ -7258,16 +7267,16 @@ void qe_init(void *opaque)
 
     do_refresh(s);
 
-    /* load file(s) */
+    // load file(s)
     for (i = optind; i < argc; i++) {
         do_load(s, argv[i]);
-        /* CG: handle +linenumber */
+        // CG: handle +linenumber
     }
     
 #ifndef CONFIG_TINY
 	//tiny mode wont have dired, so don't try this
     if (is_player && optind >= argc) {
-        /* if no file go to directory mode by default if no file selected */
+        // if no file go to directory mode by default if no file selected
         do_dired(s);
     }
 #endif
@@ -7283,6 +7292,7 @@ void qe_init(void *opaque)
         edit_display(qs);
         dpy_flush(&global_screen);
     }
+	
 }
 
 
