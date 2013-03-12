@@ -6085,16 +6085,43 @@ static void poll_action(int sig)
     __fast_test_event_poll_flag = 1;
 }
 
-/* init event system */
+/*!
+ * Callback for GUI window resize 
+ */
+static void sigwinch_handler(int sig)
+{
+	QEmacsState *qs = &qe_state;
+	qs->complete_refresh = 1;
+	
+	QEEvent *ev = malloc(sizeof(QEEvent));
+	ev->type = QE_EXPOSE_EVENT;
+	qe_handle_event(ev);
+	//do_refresh(NULL);
+	free(ev);
+}
+
+/*!
+ * init event system 
+ */
 void qe_event_init(void)
 {
     struct sigaction sigact;
+	struct sigaction sigwinsize;
+	
     struct itimerval itimer;
 
     sigact.sa_flags = SA_RESTART;
     sigact.sa_handler = poll_action;
+	
     sigemptyset(&sigact.sa_mask);
     sigaction(SIGVTALRM, &sigact, NULL);
+	
+	//// Window resizing ////
+	sigemptyset(&sigwinsize.sa_mask);
+	sigwinsize.sa_flags = 0;
+	sigwinsize.sa_handler = sigwinch_handler;
+	sigaction(SIGWINCH, &sigwinsize, NULL);
+	//// Window resizing ////
 
     itimer.it_interval.tv_sec = 0;
     itimer.it_interval.tv_usec = 20 * 1000; /* 50 times per second */
