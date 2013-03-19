@@ -6839,10 +6839,11 @@ void qe_register_cmd_line_options(CmdOptionDef *table)
 
 static void show_version(void)
 {
-    printf("QEmacs version " QE_VERSION "\n"
+    printf("Qi version " QE_VERSION "\n"
+           "Copyright (c) 2013 The Rohans, LLC\n"
            "Copyright (c) 2000-2003 Fabrice Bellard\n"
-           "QEmacs comes with ABSOLUTELY NO WARRANTY.\n"
-           "You may redistribute copies of QEmacs\n"
+           "Qi comes with ABSOLUTELY NO WARRANTY.\n"
+           "You may redistribute copies of Qi\n"
            "under the terms of the GNU Lesser General Public License.\n");
     exit(1);
 }
