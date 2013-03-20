@@ -55,7 +55,7 @@ LIBS+=-lm
 TARGETLIBS:=
 TARGETS+=qi$(EXE)
 
-_OBJS=qe.o charset.o buffer.o input.o unicode_join.o display.o util.o cutils.o
+_OBJS=qe.o charset.o buffer.o input.o unicode_join.o display.o util.o cutils.o qstack.o
 
 ifndef CONFIG_WIN32
 _OBJS+= unix.o
