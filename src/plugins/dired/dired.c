@@ -180,35 +180,35 @@ static void dired_sort(EditState *s, const char *sort_order)
     
     for (p = sort_order; *p; p++) {
         switch (tolower(*p)) {
-        case 'n':       /* name */
+        case 'n':       // name
             hs->sort_mode &= ~DIRED_SORT_MASK;
             hs->sort_mode |= DIRED_SORT_NAME;
             break;
-        case 'e':       /* extension */
+        case 'e':       // extension
             hs->sort_mode &= ~DIRED_SORT_MASK;
             hs->sort_mode |= DIRED_SORT_EXTENSION;
             break;
-        case 's':       /* size */
+        case 's':       // size 
             hs->sort_mode &= ~DIRED_SORT_MASK;
             hs->sort_mode |= DIRED_SORT_SIZE;
             break;
-        case 'd':       /* direct */
+        case 'd':       // direct 
             hs->sort_mode &= ~DIRED_SORT_MASK;
             hs->sort_mode |= DIRED_SORT_DATE;
             break;
-        case 'u':       /* ungroup */
+        case 'u':       // ungroup
             hs->sort_mode &= ~DIRED_SORT_GROUP;
             break;
-        case 'g':       /* group */
+        case 'g':       // group
             hs->sort_mode |= DIRED_SORT_GROUP;
             break;
-        case '+':       /* ascending */
+        case '+':       // ascending
             hs->sort_mode &= ~DIRED_SORT_DESCENDING;
             break;
-        case '-':       /* descending */
+        case '-':       // descending
             hs->sort_mode |= DIRED_SORT_DESCENDING;
             break;
-        case 'r':       /* reverse */
+        case 'r':       // reverse 
             hs->sort_mode ^= DIRED_SORT_DESCENDING;
             break;
         }
@@ -243,11 +243,10 @@ void build_dired_list(EditState *s, const char *path)
             continue;
         p = basename(filename);
 
-#if 1   // CG: bad idea, but causes spurious bugs 
         // exclude redundant '.' and '..' 
         if (!strcmp(p, ".") || !strcmp(p, ".."))
             continue;
-#endif
+        
         pstrcpy(line, sizeof(line), p);
         ct = 0;
         if (S_ISDIR(st.st_mode)) {
