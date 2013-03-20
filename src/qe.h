@@ -16,20 +16,18 @@
 
 #include "config.h"
 
-/* OS specific defines */
-
+// OS specific defines
 #ifdef WIN32
 #define snprintf _snprintf
 #define vsnprintf _vsnprintf
 #endif
 
-/************************/
-
+/////////////////////////////
 #include "cutils.h"
+/////////////////////////////
 
-/************************/
-
-/* low level I/O events */
+/////////////////////////////////////////
+// low level I/O events 
 void set_read_handler(int fd, void (*cb)(void *opaque), void *opaque);
 void set_write_handler(int fd, void (*cb)(void *opaque), void *opaque);
 int set_pid_handler(int pid, 
@@ -149,8 +147,8 @@ static inline int min(int a, int b)
 /* string arrays */
 
 typedef struct StringItem {
-    void *opaque; /* opaque data that the user can use */
-    char selected; /* true if selected */
+    void *opaque; //!< opaque data that the user can use
+    char selected; //!< true if selected 
     char str[1];
 } StringItem;
 
@@ -164,11 +162,11 @@ StringItem *set_string(StringArray *cs, int index, const char *str);
 StringItem *add_string(StringArray *cs, const char *str);
 void free_strings(StringArray *cs);
 
-/* command line option */
-#define CMD_OPT_ARG      0x0001 /* argument */
-#define CMD_OPT_STRING   0x0002 /* string */
-#define CMD_OPT_BOOL     0x0004 /* boolean */
-#define CMD_OPT_INT      0x0008 /* int */
+// command line option
+#define CMD_OPT_ARG      0x0001 //!< argument
+#define CMD_OPT_STRING   0x0002 //!< string
+#define CMD_OPT_BOOL     0x0004 //!< boolean 
+#define CMD_OPT_INT      0x0008 //!< int
 
 typedef struct CmdOptionDef {
     const char *name;
@@ -189,7 +187,9 @@ void qe_register_cmd_line_options(CmdOptionDef *table);
 
 /* charset.c */
 
-/* maximum number of bytes for a character in all the supported charsets */
+/*!
+ * maximum number of bytes for a character in all the supported charsets 
+ */
 #define MAX_CHAR_BYTES 6
 
 struct CharsetDecodeState;
@@ -211,8 +211,8 @@ typedef struct QECharset {
 } QECharset;
 
 extern QECharset *first_charset;
-extern QECharset charset_utf8, charset_8859_1; /* predefined charsets */
-extern QECharset charset_vt100; /* used for the tty output */
+extern QECharset charset_utf8, charset_8859_1; //!< predefined charsets 
+extern QECharset charset_vt100; //!< used for the tty output 
 extern QECharset charset_8859_2;
 extern QECharset charset_cp1125;
 extern QECharset charset_cp737;
@@ -300,16 +300,17 @@ int unicode_to_glyphs(unsigned int *dst, unsigned int *char_to_glyph_pos,
                       int reverse);
 void load_ligatures(void);
 
-/* qe event handling */
-
+/*!
+ * qe event handling 
+ */
 enum QEEventType {
     QE_KEY_EVENT,
-    QE_EXPOSE_EVENT, /* full redraw */
-    QE_UPDATE_EVENT, /* update content */
-    QE_BUTTON_PRESS_EVENT, /* mouse button press event */
-    QE_BUTTON_RELEASE_EVENT, /* mouse button release event */
-    QE_MOTION_EVENT, /* mouse motion event */
-    QE_SELECTION_CLEAR_EVENT, /* request selection clear (X11 type selection) */
+    QE_EXPOSE_EVENT, //!< full redraw
+    QE_UPDATE_EVENT, //!< update content
+    QE_BUTTON_PRESS_EVENT, //!< mouse button press event 
+    QE_BUTTON_RELEASE_EVENT, //!< mouse button release event
+    QE_MOTION_EVENT, //!< mouse motion event
+    QE_SELECTION_CLEAR_EVENT, //!< request selection clear (X11 type selection)
 };
 
 #define KEY_CTRL(c)     ((c) & 0x001f)
@@ -321,19 +322,19 @@ enum QEEventType {
 #define KEY_SPECIAL(c)  (((c) >= 0xe000 && (c) < 0xf000) || ((c) >= 0 && (c) < 32))
 
 #define KEY_NONE        0xffff
-#define KEY_DEFAULT     0xe401 /* to handle all non special keys */
+#define KEY_DEFAULT     0xe401 //!< to handle all non special keys 
 
 #define KEY_TAB         KEY_CTRL('i')
 #define KEY_RET         KEY_CTRL('m')
 #define KEY_ESC         KEY_CTRL('[')
 #define KEY_SPC         0x0020
-#define KEY_DEL         127             // kbs
-#define KEY_BS          KEY_CTRL('h')   // kbs
+#define KEY_DEL         127             //!< kbs
+#define KEY_BS          KEY_CTRL('h')   //!< kbs
 
-#define KEY_UP          KEY_ESC1('A')   // kcuu1
-#define KEY_DOWN        KEY_ESC1('B')   // kcud1
-#define KEY_RIGHT       KEY_ESC1('C')   // kcuf1
-#define KEY_LEFT        KEY_ESC1('D')   // kcub1
+#define KEY_UP          KEY_ESC1('A')   //!< kcuu1
+#define KEY_DOWN        KEY_ESC1('B')   //!< kcud1
+#define KEY_RIGHT       KEY_ESC1('C')   //!< kcuf1
+#define KEY_LEFT        KEY_ESC1('D')   //!< kcub1
 #define KEY_CTRL_UP     KEY_ESC1('a')
 #define KEY_CTRL_DOWN   KEY_ESC1('b')
 #define KEY_CTRL_RIGHT  KEY_ESC1('c')
@@ -342,13 +343,13 @@ enum QEEventType {
 #define KEY_CTRL_HOME   KEY_ESC1('h')
 #define KEY_CTRL_PAGEUP KEY_ESC1('i')
 #define KEY_CTRL_PAGEDOWN KEY_ESC1('j')
-#define KEY_SHIFT_TAB   KEY_ESC1('Z')   // kcbt
-#define KEY_HOME        KEY_ESC1(1)     // khome
-#define KEY_INSERT      KEY_ESC1(2)     // kich1
-#define KEY_DELETE      KEY_ESC1(3)     // kdch1
-#define KEY_END         KEY_ESC1(4)     // kend
-#define KEY_PAGEUP      KEY_ESC1(5)     // kpp
-#define KEY_PAGEDOWN    KEY_ESC1(6)     // knp
+#define KEY_SHIFT_TAB   KEY_ESC1('Z')   //!< kcbt
+#define KEY_HOME        KEY_ESC1(1)     //!< khome
+#define KEY_INSERT      KEY_ESC1(2)     //!< kich1
+#define KEY_DELETE      KEY_ESC1(3)     //!< kdch1
+#define KEY_END         KEY_ESC1(4)     //!< kend
+#define KEY_PAGEUP      KEY_ESC1(5)     //!< kpp
+#define KEY_PAGEDOWN    KEY_ESC1(6)     //!< knp
 #define KEY_F1          KEY_ESC1(11)
 #define KEY_F2          KEY_ESC1(12)
 #define KEY_F3          KEY_ESC1(13)
@@ -386,8 +387,10 @@ typedef struct QEExposeEvent {
 #define QE_WHEEL_UP      0x0008
 #define QE_WHEEL_DOWN    0x0010
 
-/* should probably go somewhere else, or in the config file */
-/* how many text lines to scroll when mouse wheel is used */
+/*!
+ * should probably go somewhere else, or in the config file
+ * how many text lines to scroll when mouse wheel is used 
+ */
 #define WHEEL_SCROLL_STEP 4
 
 typedef struct QEButtonEvent {
@@ -417,7 +420,9 @@ void qe_ungrab_keys(void);
 
 /* buffer.c */
 
-/* begin to mmap files from this size */
+/*!
+ * begin to mmap files from this size 
+ */
 #define MIN_MMAP_SIZE (1024*1024)
 
 #define MAX_PAGE_SIZE 4096
@@ -425,19 +430,19 @@ void qe_ungrab_keys(void);
 
 #define NB_LOGS_MAX 50
 
-#define PG_READ_ONLY    0x0001 /* the page is read only */
-#define PG_VALID_POS    0x0002 /* set if the nb_lines / col fields are up to date */
-#define PG_VALID_CHAR   0x0004 /* nb_chars is valid */
-#define PG_VALID_COLORS 0x0008 /* color state is valid */
+#define PG_READ_ONLY    0x0001 //!< the page is read only
+#define PG_VALID_POS    0x0002 //!< set if the nb_lines / col fields are up to date
+#define PG_VALID_CHAR   0x0004 //!< nb_chars is valid
+#define PG_VALID_COLORS 0x0008 //!< color state is valid 
 
 typedef struct Page {
-    int size; /* data size */ 
+    int size; //!< data size
     u8 *data;
     int flags;
-    /* the following are needed to handle line / column computation */
-    int nb_lines; /* Number of '\n' in data */
-    int col;      /* Number of chars since the last '\n' */
-    /* the following is needed for char offset computation */
+    // the following are needed to handle line / column computation 
+    int nb_lines; //!< Number of '\n' in data 
+    int col;      //!< Number of chars since the last '\n'
+    // the following is needed for char offset computation 
     int nb_chars;
 } Page;
 
@@ -455,7 +460,9 @@ enum LogOperation {
 
 struct EditBuffer;
 
-/* each buffer modification can be catched with this callback */
+/*!
+ * each buffer modification can be catched with this callback 
+ */
 typedef void (*EditBufferCallback)(struct EditBuffer *,
                                    void *opaque,
                                    enum LogOperation op,
@@ -468,81 +475,76 @@ typedef struct EditBufferCallbackList {
     struct EditBufferCallbackList *next;
 } EditBufferCallbackList;
 
-/* buffer flags */
-#define BF_SAVELOG   0x0001  /* activate buffer logging */
-#define BF_SYSTEM    0x0002  /* buffer system, cannot be seen by the user */
-#define BF_READONLY  0x0004  /* read only buffer */
-#define BF_PREVIEW   0x0008  /* used in dired mode to mark previewed files */
-#define BF_LOADING   0x0010  /* buffer is being loaded */
-#define BF_SAVING    0x0020  /* buffer is being saved */
-#define BF_DIRED     0x0100  /* buffer is interactive dired */
+// buffer flags 
+#define BF_SAVELOG   0x0001  //!< activate buffer logging 
+#define BF_SYSTEM    0x0002  //!< buffer system, cannot be seen by the user
+#define BF_READONLY  0x0004  //!< read only buffer
+#define BF_PREVIEW   0x0008  //!< used in dired mode to mark previewed files 
+#define BF_LOADING   0x0010  //!< buffer is being loaded 
+#define BF_SAVING    0x0020  //!< buffer is being saved 
+#define BF_DIRED     0x0100  //!< buffer is interactive dired 
 
 typedef struct EditBuffer {
     Page *page_table;
     int nb_pages;
-    int mark;       /* current mark (moved with text) */
-    int total_size; /* total size of the buffer */
+    int mark;       //!< current mark (moved with text) 
+    int total_size; //!< total size of the buffer 
     int modified;
 
-    /* page cache */
+    // page cache 
     Page *cur_page;
     int cur_offset;
-    int file_handle; /* if the file is kept open because it is mapped,
-                        its handle is there */
+    int file_handle; //!< if the file is kept open because it is mapped, its handle is there
     int flags;
 
-    /* buffer data type (default is raw) */
-    struct EditBufferDataType *data_type;
-    void *data; /* associated buffer data, used if data_type != raw_data */
+    struct EditBufferDataType *data_type;    //!< buffer data type (default is raw) 
+    void *data; //!< associated buffer data, used if data_type != raw_data
     
-    /* charset handling */
-    CharsetDecodeState charset_state;
+    CharsetDecodeState charset_state;    //!< charset handling 
     QECharset *charset;
 
-    /* undo system */
-    int save_log;    /* if true, each buffer operation is loged */
+    // undo system 
+    int save_log;    //!< if true, each buffer operation is loged 
     int log_new_index, log_current;
     struct EditBuffer *log_buffer;
     int nb_logs;
 
-    /* modification callbacks */
-    EditBufferCallbackList *first_callback;
+    EditBufferCallbackList *first_callback;    //!< modification callbacks
     
-    /* asynchronous loading/saving support */
-    struct BufferIOState *io_state;
+    struct BufferIOState *io_state; //!< asynchronous loading/saving support
     
-    /* used during loading */
-    int probed;
+    int probed; //!< used during loading
+    
+    void *priv_data; //!< buffer polling & private data
+    void (*close)(struct EditBuffer *); //!< called when deleting the buffer
 
-    /* buffer polling & private data */
-    void *priv_data;
-    /* called when deleting the buffer */
-    void (*close)(struct EditBuffer *);
-
-    /* saved data from the last opened mode, needed to restore mode */
-    /* CG: should instead keep a pointer to last window using this
-     * buffer, even if no longer on screen
-     */
+    // saved data from the last opened mode, needed to restore mode 
+    // CG: should instead keep a pointer to last window using this
+    // buffer, even if no longer on screen
     struct ModeSavedData *saved_data; 
 
-    struct EditBuffer *next; /* next editbuffer in qe_state buffer list */
-    char name[256];     /* buffer name */
-    char filename[MAX_FILENAME_SIZE]; /* file name */
+    struct EditBuffer *next; //!< next editbuffer in qe_state buffer_loadffer list
+    char name[256];     //!< buffer name 
+    char filename[MAX_FILENAME_SIZE]; //!< file name
 } EditBuffer;
 
 struct ModeProbeData;
 
-/* high level buffer type handling */
+/*!
+ * high level buffer type handling
+ */
 typedef struct EditBufferDataType {
-    const char *name; /* name of buffer data type (text, image, ...) */
+    const char *name; //!< name of buffer data type (text, image, ...)
     int (*buffer_load)(EditBuffer *b, FILE *f);
     int (*buffer_save)(EditBuffer *b, const char *filename);
     void (*buffer_close)(EditBuffer *b);
     struct EditBufferDataType *next;
 } EditBufferDataType;
 
-/* the log buffer is used for the undo operation */
-/* header of log operation */
+/*! 
+ * the log buffer is used for the undo operation 
+ * header of log operation 
+ */
 typedef struct LogBuffer {
     u8 op;
     u8 was_modified;
