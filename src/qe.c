@@ -7125,8 +7125,11 @@ static inline void init_all_modules(void)
 	html_init();
 	php_init();
     css_init();
+    python_init();
 	
-	example_init();
+	//quick_open_init();
+	
+	//example_init();
 #endif
 	
 }

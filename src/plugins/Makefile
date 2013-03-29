@@ -41,6 +41,8 @@ extra:
 	make -C example all
 	make -C php-mode all
 	make -C css-mode all
+	#make -C quick-open all
+	make -C python-mode all
 	
 	#ar rcs libplugins.a *.o
 	ar -cvq libplugins.a *.o
@@ -71,6 +73,8 @@ clean:
 	make -C html clean
 	make -C php-mode clean
 	make -C css-mode clean
+	#make -C quick-open clean
+	make -C python-mode clean
 	
 	rm -f $(LOAD_PATH)/libplugincore.a
 	rm -f $(LOAD_PATH)/libplugins.a
