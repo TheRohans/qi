@@ -2,6 +2,7 @@
 all: banner_help 
 
 qi:
+	mkdir build
 	make -C src all
 	
 clean:
