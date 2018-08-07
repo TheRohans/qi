@@ -2,17 +2,31 @@
 all: banner_help 
 
 qi:
+	@echo '======================================== Building qi == '
 	mkdir build
 	make -C src all
 	
 clean:
+	@echo '======================================== Cleaning qi == '
 	make -C src clean
+	rm -rf build
+
+test:
+	@echo '======================================= Running Tests == '
+	make -C src test
+
+dist: clean qi doc
+	@echo '======================================= Making Distro == '
+	mkdir dist
+	mv qi dist/qi
+	mv doc/output dist/doc
 
 distclean: clean
 	rm -f config.h config.mak
+	rm -rf dist
 
-test:
-	make -C tests test
+doc:
+	doxygen doc/doxygen/Doxyfile
 
 banner_help:
 	@echo '=================================================================='
@@ -29,4 +43,5 @@ banner_help:
 	@echo '                  you are after)'
 	@echo 'make clean     - clean up build files'
 	@echo 'make distclean - clean build and config files (aka start over)'
+	@echo 'make doc       - run doxygen on the code base'
 	@echo ''

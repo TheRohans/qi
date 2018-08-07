@@ -1,3 +1,4 @@
+.DS_Store
 #build stuff
 *.o
 config.mak
@@ -9,3 +10,4 @@ qe_g
 *~
 plugincore.h
 build
+doc/output

@@ -6,8 +6,7 @@ OBJS=list.o
 
 INCLUDES=-I$(QEMACS_PATH)
 DEFINES=-DQE_MODULE
-CC=gcc
-CFLAGS=-O2 -Wall -g -fPIC $(INCLUDES) $(DEFINES)
+CFLAGS+= -g -fPIC $(INCLUDES) $(DEFINES)
 
 all: $(OBJS)
 
@@ -16,3 +15,6 @@ all: $(OBJS)
 
 clean:
 	rm -f $(LOAD_PATH)list.o
+
+test:
+	@echo 'list has no tests'

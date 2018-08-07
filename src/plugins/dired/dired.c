@@ -152,7 +152,7 @@ static void do_dired_sort(EditState *s)
     b->flags |= BF_READONLY;
 }
 
-static void dired_mark(EditState *s, int mark)
+/* static void dired_mark(EditState *s, int mark)
 {
     DiredState *hs = s->mode_data;
     const StringItem *item;
@@ -171,9 +171,9 @@ static void dired_mark(EditState *s, int mark)
     eb_write(s->b, dip->offset, &ch, 1);
 
     text_move_up_down(s, 1);
-}
+} */
 
-static void dired_sort(EditState *s, const char *sort_order)
+/* static void dired_sort(EditState *s, const char *sort_order)
 {
     DiredState *hs = s->mode_data;
     const char *p;
@@ -214,7 +214,7 @@ static void dired_sort(EditState *s, const char *sort_order)
         }
     }
     do_dired_sort(s);
-}
+} */
 
 #define MAX_COL_FILE_SIZE 32
 
@@ -401,11 +401,11 @@ static void dired_view_file(EditState *s, const char *filename)
     }
 }
 
-static void dired_execute(EditState *s)
+/* static void dired_execute(EditState *s)
 {
     // Actually delete, copy, or move the marked items 
     put_status(s, "Not yet implemented");
-}
+} */
 
 static void dired_parent(EditState *s)
 {
@@ -418,12 +418,12 @@ static void dired_parent(EditState *s)
     build_dired_list(s, filename);
 }
 
-static void dired_refresh(EditState *s)
+/* static void dired_refresh(EditState *s)
 {
     DiredState *hs = s->mode_data;
     // CG: Should try and keep current entry 
     build_dired_list(s, hs->path);
-}
+} */
 
 static void dired_display_hook(EditState *s)
 {

@@ -62,6 +62,8 @@ struct EditState;
 
 #define CSS_MEDIA_ALL     0xffff
 
+#define INT2VOIDP(i) (void*)(uintptr_t)(i)
+
 typedef struct CSSRect {
     int x1, y1, x2, y2;
 } CSSRect;
@@ -576,6 +578,7 @@ int eb_get_pos(EditBuffer *b, int *line_ptr, int *col_ptr, int offset);
 int eb_goto_char(EditBuffer *b, int pos);
 int eb_get_char_offset(EditBuffer *b, int offset);
 void do_undo(struct EditState *s);
+void do_left_right(struct EditState *s, int dir);
 
 int raw_load_buffer1(EditBuffer *b, FILE *f, int offset);
 int save_buffer(EditBuffer *b);

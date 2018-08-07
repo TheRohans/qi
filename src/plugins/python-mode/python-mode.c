@@ -389,7 +389,7 @@ enum {
                     }
                     break;
                 case ':':
-                    //* a label line is ignored 
+                    // a label line is ignored 
                     // XXX: incorrect 
                     goto prev_line;
                 default:

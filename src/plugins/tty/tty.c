@@ -31,6 +31,8 @@
 
 #include "qe.h"
 
+#include "tty.h"
+
 typedef struct TTYChar {
     unsigned short ch;
     unsigned char bgcolor;
@@ -417,13 +419,12 @@ static void tty_read_handler(void *opaque)
 
 static inline int color_dist(unsigned int c1, unsigned c2)
 {
-
-    return (abs( (c1 & 0xff) - (c2 & 0xff)) +
-            2 * abs( ((c1 >> 8) & 0xff) - ((c2 >> 8) & 0xff)) +
-            abs( ((c1 >> 16) & 0xff) - ((c2 >> 16) & 0xff)));
+    int r = (c1 & 0xff) - (c2 & 0xff);
+    int g = 2 * ((c1 >> 8) & 0xff) - ((c2 >> 8) & 0xff);
+    int b = ((c1 >> 16) & 0xff) - ((c2 >> 16) & 0xff);
+    
+    return abs(r + g + b);
 }
-
-#define NB_COLORS 8
 
 unsigned int tty_colors[NB_COLORS] = {
     QERGB(0x00, 0x00, 0x00),

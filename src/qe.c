@@ -3320,11 +3320,11 @@ static void parse_args(ExecCmdState *es)
             break;
         case CMD_ARG_INT:
             if (es->argval != NO_ARG) {
-                es->args[es->nb_args] = (void *)es->argval;
+                es->args[es->nb_args] = INT2VOIDP(es->argval);
                 es->argval = NO_ARG;
             } else {
                 // CG: Should add syntax for default value if no prompt
-                es->args[es->nb_args] = (void *)NO_ARG;
+                es->args[es->nb_args] = INT2VOIDP(NO_ARG);
                 no_arg = 1;
             }
             break;
@@ -3439,7 +3439,7 @@ static void arg_edit_cb(void *opaque, char *str)
             put_status(NULL, "Invalid number");
             goto fail;
         }
-        es->args[index] = (void *)val;
+        es->args[index] = INT2VOIDP(val);
         break;
     case CMD_ARG_STRING:
         if (str[0] == '\0' && es->default_input[0] != '\0') {
@@ -3819,7 +3819,7 @@ again:
                 if (kd) {
                     // horrible kludge to pass key as intrinsic argument
                     // CG: should have an argument type for key 
-                    kd->cmd->val = (void *)key;
+                    kd->cmd->val = INT2VOIDP(key);
                     goto exec_cmd;
                 }
             }
@@ -5030,7 +5030,7 @@ void do_set_visited_file_name(EditState *s, const char *filename,
     char path[MAX_FILENAME_SIZE];
 
     canonize_absolute_path(path, sizeof(path), filename);
-    if (*renamefile == 'y' && s->b->filename) {
+    if (*renamefile == 'y') {
         if (rename(s->b->filename, path))
             put_status(s, "Cannot rename file to %s", path);
     }
@@ -6508,22 +6508,22 @@ void text_mode_close(EditState *s)
 
 ModeDef text_mode = {
     "text", 
-    instance_size: 0,
-    mode_probe: text_mode_probe,
-    mode_init: text_mode_init,
-    mode_close: text_mode_close,
+    .instance_size = 0,
+    .mode_probe = text_mode_probe,
+    .mode_init = text_mode_init,
+    .mode_close = text_mode_close,
 
-    text_display: text_display,
-    text_backward_offset: text_backward_offset, 
+    .text_display = text_display,
+    .text_backward_offset = text_backward_offset, 
 
-    move_up_down: text_move_up_down,
-    move_left_right: text_move_left_right_visual,
-    move_bol: text_move_bol,
-    move_eol: text_move_eol,
-    move_word_left_right: text_move_word_left_right,
-    scroll_up_down: text_scroll_up_down,
-    write_char: text_write_char,
-    mouse_goto: text_mouse_goto,
+    .move_up_down = text_move_up_down,
+    .move_left_right = text_move_left_right_visual,
+    .move_bol = text_move_bol,
+    .move_eol = text_move_eol,
+    .move_word_left_right = text_move_word_left_right,
+    .scroll_up_down = text_scroll_up_down,
+    .write_char = text_write_char,
+    .mouse_goto = text_mouse_goto,
 };
 
 /* find a resource file */
@@ -6971,13 +6971,13 @@ void set_user_option(const char *user)
 
 static CmdOptionDef cmd_options[] = {
     { "help", "h", NULL, 0, "display this help message and exit", 
-      {func_noarg: show_usage}},
+      {.func_noarg = show_usage}},
     { "no-init-file", "q", NULL, CMD_OPT_BOOL, "do not load config files", 
-      {int_ptr: &no_init_file}},
+      {.int_ptr = &no_init_file}},
     { "user", "u", "USER", CMD_OPT_ARG, "load ~USER/.qe/config instead of your own", 
-      {func_arg: set_user_option}},
+      {.func_arg = set_user_option}},
     { "version", "V", NULL, 0, "display version information and exit", 
-      {func_noarg: show_version}},
+      {.func_noarg = show_version}},
     { NULL },
 };
 

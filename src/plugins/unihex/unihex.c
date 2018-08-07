@@ -152,20 +152,20 @@ void unihex_move_up_down(EditState *s, int dir)
 
 ModeDef unihex_mode = {
     "unihex", 
-    instance_size: 0,
-    mode_probe: NULL,
-    mode_init: unihex_mode_init, 
-    mode_close: text_mode_close,
-    text_display: unihex_display, 
-    text_backward_offset: unihex_backward_offset,
+    .instance_size = 0,
+    .mode_probe = NULL,
+    .mode_init = unihex_mode_init, 
+    .mode_close = text_mode_close,
+    .text_display = unihex_display, 
+    .text_backward_offset = unihex_backward_offset,
 
-    move_up_down: unihex_move_up_down,
-    move_left_right: unihex_move_left_right,
-    move_bol: unihex_move_bol,
-    move_eol: unihex_move_eol,
-    scroll_up_down: text_scroll_up_down,
-    write_char: hex_write_char,
-    mouse_goto: text_mouse_goto,
+    .move_up_down = unihex_move_up_down,
+    .move_left_right = unihex_move_left_right,
+    .move_bol = unihex_move_bol,
+    .move_eol = unihex_move_eol,
+    .scroll_up_down = text_scroll_up_down,
+    .write_char = hex_write_char,
+    .mouse_goto = text_mouse_goto,
 };
 
 

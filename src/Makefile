@@ -36,12 +36,6 @@ CFLAGS+=-march=i386 -falign-functions=0
 endif
 DEFINES=-DHAVE_QE_CONFIG_H
 
-LOAD_PATH=../build
-
-#############################################################################
-#############################################################################
-#############################################################################
-
 ifdef CONFIG_DLL
 LIBS+=-ldl
 # export some qemacs symbols
@@ -50,7 +44,22 @@ LIBS+=-ldl
 LDFLAGS+=-Wl
 endif
 
+ifdef CONFIG_WIN32
+_OBJS+= win32.o
+LIBS+= -lgdi32
+endif
+
+#ifdef CONFIG_UNICODE_JOIN
+#_OBJS+= arabic.o indic.o qfribidi.o plugin_unihex.o
+#endif
+
 LIBS+=-lm
+
+LOAD_PATH=../build
+
+#############################################################################
+#############################################################################
+#############################################################################
 
 TARGETLIBS:=
 TARGETS+=qi$(EXE)
@@ -63,22 +72,18 @@ endif
 
 _OBJS+= qfribidi.o
 
-ifdef CONFIG_WIN32
-_OBJS+= win32.o
-LIBS+= -lgdi32
-endif
-
-#ifdef CONFIG_UNICODE_JOIN
-#_OBJS+= arabic.o indic.o qfribidi.o plugin_unihex.o
-#endif
-
 OBJS = $(patsubst %,$(LOAD_PATH)/%,$(_OBJS))
+
+TEST_SRC=$(wildcard *_test.c)
 
 # Inlucde all the plugin libraries (extras if not doing a tiny build)
 PLUGS=-lplugincore
 ifndef CONFIG_TINY
 PLUGS+= -lplugins
 endif
+
+export CC
+export CFLAGS
 
 #############################################################################
 #############################################################################
@@ -87,14 +92,12 @@ endif
 all: build_plugins $(TARGETLIBS) $(TARGETS)
 
 build_plugins:
-	
 	make -C plugins core
 ifndef CONFIG_TINY
 	make -C plugins extra
 endif
 
-qe_g$(EXE): $(OBJS) 
-	@echo '======================================== Building qi == '
+qe_g$(EXE): $(OBJS)
 	$(CC) $(LDFLAGS) -o $(LOAD_PATH)/$@ $^ $(LIBS) -L$(LOAD_PATH) $(PLUGS) 
 
 qi$(EXE): qe_g$(EXE)
@@ -115,13 +118,13 @@ $(LOAD_PATH)/%.o : %.c
 
 clean:
 	make -C plugins clean
-	@echo '======================================== Cleaning qi == '
-	rm -f *.o *.exe *~ ../build/*.o ../build/qe_g$(EXE)
+	rm -f *.o *.exe *~ ../build/*.o ../build/qe_g$(EXE) test
 	rm -f ../qi$(EXE)
 
 distclean: clean
 	rm -f config.h config.mak
 
-test:
-	make -C tests test
+#############################################################################
 
+test: $(TEST_SRC)
+	make -C plugins test

@@ -218,7 +218,7 @@ static QECharset charset_euc_jp = {
     decode_euc_jp_init,
     decode_euc_jp_func,
     encode_euc_jp,
-    table_alloc : 1,
+    .table_alloc = 1,
 };
 
 
@@ -289,7 +289,7 @@ static QECharset charset_sjis = {
     decode_sjis_init,
     decode_sjis_func,
     encode_sjis,
-    table_alloc : 1,
+    .table_alloc = 1,
 };
 
 int charset_more_init(void)

@@ -23,10 +23,10 @@ aliases_8859_2,
 decode_8bit_init,
 NULL,
 encode_8bit,
-table_alloc: 1,
-min_char: 161,
-max_char: 255,
-private_table: table_8859_2,
+.table_alloc = 1,
+.min_char = 161,
+.max_char = 255,
+.private_table = table_8859_2,
 };
 
 static const char *aliases_cp1125[] = { "x-cp866-u", "ruscii", "1125", NULL };
@@ -56,10 +56,10 @@ aliases_cp1125,
 decode_8bit_init,
 NULL,
 encode_8bit,
-table_alloc: 1,
-min_char: 128,
-max_char: 255,
-private_table: table_cp1125,
+.table_alloc = 1,
+.min_char = 128,
+.max_char = 255,
+.private_table = table_cp1125,
 };
 
 static const char *aliases_cp737[] = { "cp737", "737", NULL };
@@ -89,10 +89,10 @@ aliases_cp737,
 decode_8bit_init,
 NULL,
 encode_8bit,
-table_alloc: 1,
-min_char: 128,
-max_char: 255,
-private_table: table_cp737,
+.table_alloc = 1,
+.min_char = 128,
+.max_char = 255,
+.private_table = table_cp737,
 };
 
 static const char *aliases_koi8_r[] = { "koi8-r", NULL };
@@ -122,10 +122,10 @@ aliases_koi8_r,
 decode_8bit_init,
 NULL,
 encode_8bit,
-table_alloc: 1,
-min_char: 128,
-max_char: 255,
-private_table: table_koi8_r,
+.table_alloc = 1,
+.min_char = 128,
+.max_char = 255,
+.private_table = table_koi8_r,
 };
 
 static const char *aliases_8859_4[] = { "ISO-8859-4", "8859-4", "iso-ir-110", "latin4", "l4", NULL };
@@ -151,10 +151,10 @@ aliases_8859_4,
 decode_8bit_init,
 NULL,
 encode_8bit,
-table_alloc: 1,
-min_char: 161,
-max_char: 255,
-private_table: table_8859_4,
+.table_alloc = 1,
+.min_char = 161,
+.max_char = 255,
+.private_table = table_8859_4,
 };
 
 static const char *aliases_cp1250[] = { "windows-1250", "1250", NULL };
@@ -184,10 +184,10 @@ aliases_cp1250,
 decode_8bit_init,
 NULL,
 encode_8bit,
-table_alloc: 1,
-min_char: 128,
-max_char: 255,
-private_table: table_cp1250,
+.table_alloc = 1,
+.min_char = 128,
+.max_char = 255,
+.private_table = table_cp1250,
 };
 
 static const char *aliases_cp850[] = { "cp850", "850", NULL };
@@ -217,10 +217,10 @@ aliases_cp850,
 decode_8bit_init,
 NULL,
 encode_8bit,
-table_alloc: 1,
-min_char: 128,
-max_char: 255,
-private_table: table_cp850,
+.table_alloc = 1,
+.min_char = 128,
+.max_char = 255,
+.private_table = table_cp850,
 };
 
 static const char *aliases_koi8_u[] = { "koi8-u", NULL };
@@ -250,10 +250,10 @@ aliases_koi8_u,
 decode_8bit_init,
 NULL,
 encode_8bit,
-table_alloc: 1,
-min_char: 128,
-max_char: 255,
-private_table: table_koi8_u,
+.table_alloc = 1,
+.min_char = 128,
+.max_char = 255,
+.private_table = table_koi8_u,
 };
 
 static const char *aliases_viscii[] = { "VISCII", "VISCII-1", "VISCII 1.1", "VISCII-1.1", "VISCII1.1-1", NULL };
@@ -299,10 +299,10 @@ aliases_viscii,
 decode_8bit_init,
 NULL,
 encode_8bit,
-table_alloc: 1,
-min_char: 2,
-max_char: 255,
-private_table: table_viscii,
+.table_alloc = 1,
+.min_char = 2,
+.max_char = 255,
+.private_table = table_viscii,
 };
 
 static const char *aliases_8859_13[] = { "ISO-8859-13", "8859-13", "iso-ir-179", "latin7", "l7", NULL };
@@ -328,10 +328,10 @@ aliases_8859_13,
 decode_8bit_init,
 NULL,
 encode_8bit,
-table_alloc: 1,
-min_char: 161,
-max_char: 255,
-private_table: table_8859_13,
+.table_alloc = 1,
+.min_char = 161,
+.max_char = 255,
+.private_table = table_8859_13,
 };
 
 static const char *aliases_8859_5[] = { "ISO-8895-5", "8859-5" , NULL };
@@ -357,10 +357,10 @@ aliases_8859_5,
 decode_8bit_init,
 NULL,
 encode_8bit,
-table_alloc: 1,
-min_char: 161,
-max_char: 255,
-private_table: table_8859_5,
+.table_alloc = 1,
+.min_char = 161,
+.max_char = 255,
+.private_table = table_8859_5,
 };
 
 static const char *aliases_cp1251[] = { "windows-1251", "1251", NULL };
@@ -390,10 +390,10 @@ aliases_cp1251,
 decode_8bit_init,
 NULL,
 encode_8bit,
-table_alloc: 1,
-min_char: 128,
-max_char: 255,
-private_table: table_cp1251,
+.table_alloc = 1,
+.min_char = 128,
+.max_char = 255,
+.private_table = table_cp1251,
 };
 
 static const char *aliases_cp852[] = { "cp852", "852", NULL };
@@ -423,10 +423,10 @@ aliases_cp852,
 decode_8bit_init,
 NULL,
 encode_8bit,
-table_alloc: 1,
-min_char: 128,
-max_char: 255,
-private_table: table_cp852,
+.table_alloc = 1,
+.min_char = 128,
+.max_char = 255,
+.private_table = table_cp852,
 };
 
 static const char *aliases_mac_lat2[] = { "x-mac-ce", "mac-ce", "maclatin2", "10029", NULL };
@@ -456,10 +456,10 @@ aliases_mac_lat2,
 decode_8bit_init,
 NULL,
 encode_8bit,
-table_alloc: 1,
-min_char: 128,
-max_char: 255,
-private_table: table_mac_lat2,
+.table_alloc = 1,
+.min_char = 128,
+.max_char = 255,
+.private_table = table_mac_lat2,
 };
 
 static const char *aliases_8859_15[] = { "ISO-8859-15", "8859-15", "latin9", "l9", "latin0", "l0", NULL };
@@ -477,10 +477,10 @@ aliases_8859_15,
 decode_8bit_init,
 NULL,
 encode_8bit,
-table_alloc: 1,
-min_char: 164,
-max_char: 190,
-private_table: table_8859_15,
+.table_alloc = 1,
+.min_char = 164,
+.max_char = 190,
+.private_table = table_8859_15,
 };
 
 static const char *aliases_8859_7[] = { "ISO-8859-7", "8859-7", "iso-ir-126", "elot-928", NULL };
@@ -506,10 +506,10 @@ aliases_8859_7,
 decode_8bit_init,
 NULL,
 encode_8bit,
-table_alloc: 1,
-min_char: 161,
-max_char: 254,
-private_table: table_8859_7,
+.table_alloc = 1,
+.min_char = 161,
+.max_char = 254,
+.private_table = table_8859_7,
 };
 
 static const char *aliases_cp1257[] = { "windows-1257", "1257", NULL };
@@ -539,10 +539,10 @@ aliases_cp1257,
 decode_8bit_init,
 NULL,
 encode_8bit,
-table_alloc: 1,
-min_char: 128,
-max_char: 255,
-private_table: table_cp1257,
+.table_alloc = 1,
+.min_char = 128,
+.max_char = 255,
+.private_table = table_cp1257,
 };
 
 static const char *aliases_cp866[] = { "cp866", "866", NULL };
@@ -572,10 +572,10 @@ aliases_cp866,
 decode_8bit_init,
 NULL,
 encode_8bit,
-table_alloc: 1,
-min_char: 128,
-max_char: 255,
-private_table: table_cp866,
+.table_alloc = 1,
+.min_char = 128,
+.max_char = 255,
+.private_table = table_cp866,
 };
 
 static const char *aliases_macroman[] = { "x-mac", "mac", "macroman", NULL };
@@ -605,10 +605,10 @@ aliases_macroman,
 decode_8bit_init,
 NULL,
 encode_8bit,
-table_alloc: 1,
-min_char: 128,
-max_char: 255,
-private_table: table_macroman,
+.table_alloc = 1,
+.min_char = 128,
+.max_char = 255,
+.private_table = table_macroman,
 };
 
 static const char *aliases_8859_16[] = { "ISO-8859-16", "8859-16", "latin10", "l10", NULL };
@@ -634,10 +634,10 @@ aliases_8859_16,
 decode_8bit_init,
 NULL,
 encode_8bit,
-table_alloc: 1,
-min_char: 161,
-max_char: 254,
-private_table: table_8859_16,
+.table_alloc = 1,
+.min_char = 161,
+.max_char = 254,
+.private_table = table_8859_16,
 };
 
 static const char *aliases_8859_9[] = { "ISO-8895-9", "8859-9" , NULL };
@@ -657,10 +657,10 @@ aliases_8859_9,
 decode_8bit_init,
 NULL,
 encode_8bit,
-table_alloc: 1,
-min_char: 208,
-max_char: 254,
-private_table: table_8859_9,
+.table_alloc = 1,
+.min_char = 208,
+.max_char = 254,
+.private_table = table_8859_9,
 };
 
 static const char *aliases_cp437[] = { "cp437", "437", NULL };
@@ -690,10 +690,10 @@ aliases_cp437,
 decode_8bit_init,
 NULL,
 encode_8bit,
-table_alloc: 1,
-min_char: 128,
-max_char: 255,
-private_table: table_cp437,
+.table_alloc = 1,
+.min_char = 128,
+.max_char = 255,
+.private_table = table_cp437,
 };
 
 static const char *aliases_kamen[] = { "x-kam-cs", "kam", "867", "869", NULL };
@@ -739,10 +739,10 @@ aliases_kamen,
 decode_8bit_init,
 NULL,
 encode_8bit,
-table_alloc: 1,
-min_char: 1,
-max_char: 255,
-private_table: table_kamen,
+.table_alloc = 1,
+.min_char = 1,
+.max_char = 255,
+.private_table = table_kamen,
 };
 
 static const char *aliases_tcvn5712[] = { "TCVN-5712", "TCVN", "TCVN-0", "TCVN-1", NULL };
@@ -788,10 +788,10 @@ aliases_tcvn5712,
 decode_8bit_init,
 NULL,
 encode_8bit,
-table_alloc: 1,
-min_char: 1,
-max_char: 255,
-private_table: table_tcvn5712,
+.table_alloc = 1,
+.min_char = 1,
+.max_char = 255,
+.private_table = table_tcvn5712,
 };
 
 /* max row = 83. The following rows are excluded: 8 9 10 11 12 13 14, density=95% */

@@ -66,7 +66,7 @@ enum {
 void css_colorize_line(unsigned int *buf, int len, 
                                 int *colorize_state_ptr, int state_only)
 {
-    int c, state, l, type_decl;
+    int c, state, l;
     unsigned int *p, *p_start, *p1;
     char kbuf[32];
     

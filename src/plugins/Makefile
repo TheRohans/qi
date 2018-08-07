@@ -2,6 +2,13 @@ LOAD_PATH=../../build
 
 all: core extra
 
+test:
+	@echo "======================================== Core tests == "
+	make -C hex test
+	make -C list test
+	make -C tty test
+	make -C shell test
+	
 core:
 	@echo "======================================== Core plugins == "
 	make -C hex all
@@ -50,11 +57,6 @@ extra:
 	mv ./libplugins.a $(LOAD_PATH)/$< 
 	rm *.o
 
-	
-
-#install: 
-#	make -C example install
-
 clean:
 	@echo "======================================== Cleaning all core plugins == "
 	make -C hex clean
@@ -79,10 +81,3 @@ clean:
 	rm -f $(LOAD_PATH)/libplugincore.a
 	rm -f $(LOAD_PATH)/libplugins.a
 	rm -f plugincore.h
-
-# NOTES:
-#	gcc -c -o out.o out.c
-#	-c means to create an intermediary object file, rather than an executable.
-#	ar rcs libout.a out.o
-# lipo -info yourlib.a
-# nm yourlib.a | grep the_symbol_without_args

@@ -28,7 +28,7 @@ void xml_colorize_line(unsigned int *buf, int len,
                        int *colorize_state_ptr, int state_only)
 {
     int c, state;
-    unsigned int *p, *p_start, *p1;
+    unsigned int *p, *p_start;
     
     state = *colorize_state_ptr;
     p = buf;
@@ -66,7 +66,7 @@ void xml_colorize_line(unsigned int *buf, int len,
                 }
                 set_color(p_start, p - p_start, QE_STYLE_COMMENT);
             }
-            parse_tag:
+            // parse_tag:
                 while (*p != '\n') {
                     if (*p == '>') {
                         p++;
