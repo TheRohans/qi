@@ -10,7 +10,7 @@ Qi's goal is to be my perfect editor. It attempts to combine all the things I li
 - Compiles to a single, self contained binary
 - Cross platform (unix based system)
 - Multi-language (human) support - with a focus on English and Chinese.
-- Multi-language (computer) stupport
+- Multi-language (computer) support
 - Default UTF-8
 
 Qi's roots are QEmacs; Qi's base is a fork of QEmacs 3.2 with a lot of bits stripped out.
@@ -26,24 +26,39 @@ Qi's roots are QEmacs; Qi's base is a fork of QEmacs 3.2 with a lot of bits stri
 - Hex editing mode
 - UTF-8 display
 
-## Compiling
+## Building
 
-- Launch the configure tool _./configure_. You can look at the
-  possible options by typing _./configure --help_.
+1. Run the configure tool:
 
-- Type _make qi_ to compile Qi and its built-in plugins
+```shell
+./configure
+```
+
+You can see the possible options by typing 
+
+```shell
+./configure --help
+```
+
+2. Run the make file to build the core editor and plugins:
+
+```shell
+make qi
+```
+
+If everything worked, you should have a `qi` binary in the main project directory.
+
 
 ## Documentation
 
-The original QEmacs documentation is in _doc/qe-doc.html_; however, not all QEmacs features are in Qi and some exist that are not in the documentation.
+The original QEmacs documentation is in _doc/qe-doc.html_; however, not all QEmacs features are in Qi, and some exist that are not in the current documentation. However most of the documentation is still relevant.
 
 ## Licensing
 
-QEmacs was released under the GNU Lesser General Public License (read the accompagning COPYING file) so Qi is as well.
+QEmacs was released under the GNU Lesser General Public License v2 (read the accompanying LICENSE file) so Qi is as well.
 
-Qi is copyright 2013 [The Rohans, LLC.][rohans]
-
-QEmacs is copyright 2002 Fabrice Bellard.
+- Qi is copyright 2013 [The Rohans, LLC.][rohans]
+- QEmacs is copyright 2002 Fabrice Bellard.
 
 [qi]: http://en.wikipedia.org/wiki/Qi
 [rohans]: http://therohans.com
