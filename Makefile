@@ -1,9 +1,10 @@
+.PHONY: doc
 
 all: banner_help 
 
 qi:
 	@echo '======================================== Building qi == '
-	mkdir build
+	mkdir -p build
 	make -C src all
 	
 clean:
@@ -17,7 +18,7 @@ test:
 
 dist: clean qi doc
 	@echo '======================================= Making Distro == '
-	mkdir dist
+	mkdir -p dist
 	mv qi dist/qi
 	mv doc/output dist/doc
 

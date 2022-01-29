@@ -15,12 +15,12 @@ core:
 	make -C list all
 	make -C tty all
 	make -C shell all
-	# make the group header file
+# make the group header file
 	find ./ -name "*.h" -exec cat {} >> ./plugincore.g \;
-	# rename it
+# rename it
 	mv plugincore.g plugincore.h
 
-	#ar rcs libplugincore.a *.o
+# ar rcs libplugincore.a *.o
 	ar -cvq libplugincore.a *.o
 
 	mv ./libplugincore.a $(LOAD_PATH)/$< 
