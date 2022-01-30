@@ -6798,7 +6798,7 @@ void parse_config(EditState *e, const char *file)
         do_refresh(e);
 }
 
-/* Load .qerc files in all parent directories of filename */
+/* Load .qirc files in all parent directories of filename */
 /* CG: should keep a cache of failed attempts */
 void do_load_qerc(EditState *e, const char *filename)
 {
@@ -6811,7 +6811,7 @@ void do_load_qerc(EditState *e, const char *filename)
         if (!p)
             break;
         p += 1;
-        pstrcpy(p, buf + sizeof(buf) - p, ".qerc");
+        pstrcpy(p, buf + sizeof(buf) - p, ".qirc");
         parse_config_file(e, buf);
     }
 }
@@ -6840,7 +6840,7 @@ void qe_register_cmd_line_options(CmdOptionDef *table)
 static void show_version(void)
 {
     printf("Qi version " QE_VERSION "\n"
-           "Copyright (c) 2013 The Rohans, LLC\n"
+           "Copyright (c) 2013-2022 The Rohans\n"
            "Copyright (c) 2000-2003 Fabrice Bellard\n"
            "Qi comes with ABSOLUTELY NO WARRANTY.\n"
            "You may redistribute copies of Qi\n"
@@ -6974,7 +6974,7 @@ static CmdOptionDef cmd_options[] = {
       {.func_noarg = show_usage}},
     { "no-init-file", "q", NULL, CMD_OPT_BOOL, "do not load config files", 
       {.int_ptr = &no_init_file}},
-    { "user", "u", "USER", CMD_OPT_ARG, "load ~USER/.qe/config instead of your own", 
+    { "user", "u", "USER", CMD_OPT_ARG, "load ~USER/.qi/config instead of your own", 
       {.func_arg = set_user_option}},
     { "version", "V", NULL, 0, "display version information and exit", 
       {.func_noarg = show_version}},
