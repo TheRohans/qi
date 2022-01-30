@@ -19,21 +19,21 @@
 */
     // root style, must be complete
     STYLE_DEF(QE_STYLE_DEFAULT, "default",
-              QERGB(0xf8, 0xd8, 0xb0), QERGB(0x00, 0x00, 0x00),
+              QERGB(255, 255, 255), QERGB(0, 0, 0),
               QE_FAMILY_FIXED, 12)
 
     // system styles
     STYLE_DEF(QE_STYLE_MODE_LINE, "mode-line",
-              QERGB(0x00, 0x00, 0x00), QERGB(0xe0, 0xe0, 0xe0),
+              QERGB(0, 0, 0), QERGB(192,192,192),
               0, 0)
     STYLE_DEF(QE_STYLE_WINDOW_BORDER, "window-border",
-              QERGB(0x00, 0x00, 0x00), QERGB(0xe0, 0xe0, 0xe0),
+              QERGB(0x00, 0x00, 0x00), QERGB(128,128,128),
               0, 0)
     STYLE_DEF(QE_STYLE_MINIBUF, "minibuf",
-              QERGB(0xff, 0xff, 0x00), COLOR_TRANSPARENT,
+              QERGB(0xff, 0xff, 0xff), COLOR_TRANSPARENT,
               0, 0)
     STYLE_DEF(QE_STYLE_STATUS, "status",
-              QERGB(0xff, 0xff, 0x00), COLOR_TRANSPARENT,
+              QERGB(0xff, 0xff, 0xff), COLOR_TRANSPARENT,
               0, 0)
 
     // default style for HTML/CSS2 pages 
@@ -43,34 +43,36 @@
 
     // coloring styles
     STYLE_DEF(QE_STYLE_HIGHLIGHT, "highlight",
-              QERGB(0x00, 0x00, 0x00), QERGB(0xff, 0xcc, 0x99),
+              QERGB(0x00, 0x00, 0x00), QERGB(192, 192, 192),
               0, 0)
     STYLE_DEF(QE_STYLE_SELECTION, "selection",
-              QERGB(0xff, 0xff, 0xff), QERGB(0x00, 0x00, 0xff),
+              QERGB(0, 0, 0), QERGB(192, 192, 192),
               0, 0)
     STYLE_DEF(QE_STYLE_COMMENT, "comment",
-              QERGB(0xff, 0x00, 0x00), COLOR_TRANSPARENT,
+              QERGB(128, 128, 128), COLOR_TRANSPARENT,
               0, 0)
     STYLE_DEF(QE_STYLE_PREPROCESS, "preprocess",
-              QERGB(0x00, 0x00, 0xff), COLOR_TRANSPARENT,
+              QERGB(0, 128, 128), COLOR_TRANSPARENT,
               0, 0)
     STYLE_DEF(QE_STYLE_STRING, "string",
               QERGB(0x00, 0xff, 0x00), COLOR_TRANSPARENT,
               0, 0)
     STYLE_DEF(QE_STYLE_KEYWORD, "keyword",
-              QERGB(0x00, 0xff, 0xff), COLOR_TRANSPARENT,
+              QERGB(0xff, 0x00, 0xff), COLOR_TRANSPARENT,
               0, 0)
     STYLE_DEF(QE_STYLE_FUNCTION, "function",
-              QERGB(0xff, 0xff, 0xff), COLOR_TRANSPARENT,
+            //   QERGB(0, 128, 128), COLOR_TRANSPARENT,
+              QERGB(0, 0, 0xff), QERGB(0xff, 0xff, 0xff), 
               0, 0)
     STYLE_DEF(QE_STYLE_VARIABLE, "variable",
-              QERGB(0xff, 0xff, 0x00), COLOR_TRANSPARENT,
+              QERGB(0xff, 0xff, 0xff), COLOR_TRANSPARENT,
               0, 0)
     STYLE_DEF(QE_STYLE_TYPE, "type",
-              QERGB(0x80, 0x80, 0x00), COLOR_TRANSPARENT,
+              QERGB(0, 128, 128), COLOR_TRANSPARENT,
               0, 0)
+
     STYLE_DEF(QE_STYLE_TAG, "tag",
-              QERGB(0x00, 0xff, 0x00), COLOR_TRANSPARENT,
+              QERGB(128, 0, 128), COLOR_TRANSPARENT,
               0, 0)
     STYLE_DEF(QE_STYLE_CSS, "css",
               QERGB(0x00, 0xff, 0xff), COLOR_TRANSPARENT,
