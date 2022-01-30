@@ -6853,7 +6853,7 @@ static void show_usage(void)
     CmdOptionDef *p;
     int pos;
 
-    printf("Usage: qe [OPTIONS] [filename ...]\n"
+    printf("Usage: qi [OPTIONS] [filename ...]\n"
            "\n"
            "Options:\n"
            "\n");
@@ -6875,8 +6875,8 @@ static void show_usage(void)
         p = p->u.next;
     }
     printf("\n"
-           "Report bugs to bug@qemacs.org.  First, please see the Bugs\n"
-           "section of the QEmacs manual or the file BUGS.\n");
+           "Report bugs to support@therohans.com.  First, please see the Bugs\n"
+           "section of the manual or the file BUGS.\n");
     exit(1);
 }
 
