@@ -1,5 +1,11 @@
+:root {
+  --blue: #1e90ff;
+  --white: #ffffff;
+}
+
 ol, ul {
 	list-style: none;
+	background-color: var(--white);
 }
 
 @media screen and (min-width: 600px) {

@@ -27,7 +27,7 @@
               QERGB(0, 0, 0), QERGB(192,192,192),
               0, 0)
     STYLE_DEF(QE_STYLE_WINDOW_BORDER, "window-border",
-              QERGB(0x00, 0x00, 0x00), QERGB(128,128,128),
+              QERGB(0, 0, 0), QERGB(128, 128, 128),
               0, 0)
     STYLE_DEF(QE_STYLE_MINIBUF, "minibuf",
               QERGB(0xff, 0xff, 0xff), COLOR_TRANSPARENT,
@@ -36,12 +36,7 @@
               QERGB(0xff, 0xff, 0xff), COLOR_TRANSPARENT,
               0, 0)
 
-    // default style for HTML/CSS2 pages 
-    //STYLE_DEF(QE_STYLE_CSS_DEFAULT, "css-default",
-    //          QERGB(0x00, 0x00, 0x00), QERGB(0xbb, 0xbb, 0xbb),
-    //          QE_FAMILY_SERIF, 12)
-
-    // coloring styles
+    // generic coloring styles
     STYLE_DEF(QE_STYLE_HIGHLIGHT, "highlight",
               QERGB(0x00, 0x00, 0x00), QERGB(192, 192, 192),
               0, 0)
@@ -49,7 +44,7 @@
               QERGB(0, 0, 0), QERGB(192, 192, 192),
               0, 0)
     STYLE_DEF(QE_STYLE_COMMENT, "comment",
-              QERGB(128, 128, 128), COLOR_TRANSPARENT,
+              QERGB(0, 255, 0), COLOR_TRANSPARENT,
               0, 0)
     STYLE_DEF(QE_STYLE_PREPROCESS, "preprocess",
               QERGB(0, 128, 128), COLOR_TRANSPARENT,
@@ -61,8 +56,7 @@
               QERGB(0xff, 0x00, 0xff), COLOR_TRANSPARENT,
               0, 0)
     STYLE_DEF(QE_STYLE_FUNCTION, "function",
-            //   QERGB(0, 128, 128), COLOR_TRANSPARENT,
-              QERGB(0, 0, 0xff), QERGB(0xff, 0xff, 0xff), 
+              QERGB(0, 0, 0), QERGB(192,192,192), 
               0, 0)
     STYLE_DEF(QE_STYLE_VARIABLE, "variable",
               QERGB(0xff, 0xff, 0xff), COLOR_TRANSPARENT,
@@ -71,6 +65,7 @@
               QERGB(0, 128, 128), COLOR_TRANSPARENT,
               0, 0)
 
+    // mostly html
     STYLE_DEF(QE_STYLE_TAG, "tag",
               QERGB(128, 0, 128), COLOR_TRANSPARENT,
               0, 0)
