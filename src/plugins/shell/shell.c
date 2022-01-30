@@ -94,8 +94,8 @@ static int shell_mode_init(EditState *s, ModeSavedData *saved_data)
 #define PTYCHAR1 "pqrstuvwxyz"
 #define PTYCHAR2 "0123456789abcdef"
 
-/* allocate one pty/tty pair */
-static int get_pty(char *tty_str)
+/* allocate one pty/tty pair (old way) */
+static int get_pty_old(char *tty_str, int buf_size)
 {
    int fd;
    char ptydev[] = "/dev/pty??";
@@ -109,7 +109,8 @@ static int get_pty(char *tty_str)
            ptydev[len-1] = ttydev[len-1] = *c2;
            if ((fd = open(ptydev, O_RDWR)) >= 0) {
                if (access(ttydev, R_OK|W_OK) == 0) {
-                   strcpy(tty_str, ttydev);
+                //    strcpy(tty_str, ttydev);
+                   pstrcpy(tty_str, buf_size, ttydev);
                    return fd;
                }
                close(fd);
@@ -119,19 +120,42 @@ static int get_pty(char *tty_str)
    return -1;
 }
 
-static int run_process(const char *path, const char **argv, 
+/* allocate one pty/tty pair (Unix 98 way) */
+static int get_pty(char *tty_buf, int tty_buf_size)
+{
+    int fd;
+    char *str;
+
+    fd = posix_openpt(O_RDWR | O_NOCTTY);
+    if (fd < 0) {
+        return get_pty_old(tty_buf, tty_buf_size);
+    }
+    if (grantpt(fd) < 0)
+        goto fail;
+    if (unlockpt(fd) < 0)
+        goto fail;
+    str = ptsname(fd);
+    if (!str)
+        goto fail;
+    pstrcpy(tty_buf, tty_buf_size, str);
+    return fd;
+ fail:
+    close(fd);
+    return -1;
+}
+
+static int run_process(const char *path, char **argv, 
                        int *fd_ptr, int *pid_ptr)
 {
     int pty_fd, pid, i, nb_fds;
-    char tty_name[32];
+    char tty_name[1024];
     struct winsize ws;
 
-    pty_fd = get_pty(tty_name);
-    if (pty_fd < 0) {
-        put_status(NULL, "can not get tty");
-        return -1;
-    }
+    pty_fd = get_pty(tty_name, sizeof(tty_name));
     fcntl(pty_fd, F_SETFL, O_NONBLOCK);
+    if (pty_fd < 0)
+        return -1;
+
     /* set dummy screen size */
     ws.ws_col = 80;
     ws.ws_row = 25;
@@ -140,14 +164,12 @@ static int run_process(const char *path, const char **argv,
     ioctl(pty_fd, TIOCSWINSZ, &ws);
     
     pid = fork();
-    if (pid < 0) {
-        put_status(NULL, "cannot fork");
+    if (pid < 0)
         return -1;
-    }
     if (pid == 0) {
         /* child process */
         nb_fds = getdtablesize();
-        for (i = 0; i < nb_fds; i++)
+        for(i=0;i<nb_fds;i++)
             close(i);
         /* open pseudo tty for standard i/o */
         open(tty_name, O_RDWR);
@@ -164,6 +186,52 @@ static int run_process(const char *path, const char **argv,
     *pid_ptr = pid;
     return 0;
 }
+
+// static int run_process(const char *path, const char **argv, 
+//                        int *fd_ptr, int *pid_ptr)
+// {
+//     int pty_fd, pid, i, nb_fds;
+//     char tty_name[1024];
+//     struct winsize ws;
+
+//     pty_fd = get_pty(tty_name, sizeof(tty_name));
+//     if (pty_fd < 0) {
+//         put_status(NULL, "can not get tty");
+//         return -1;
+//     }
+//     fcntl(pty_fd, F_SETFL, O_NONBLOCK);
+//     /* set dummy screen size */
+//     ws.ws_col = 80;
+//     ws.ws_row = 25;
+//     ws.ws_xpixel = ws.ws_col;
+//     ws.ws_ypixel = ws.ws_row;
+//     ioctl(pty_fd, TIOCSWINSZ, &ws);
+    
+//     pid = fork();
+//     if (pid < 0) {
+//         put_status(NULL, "cannot fork");
+//         return -1;
+//     }
+//     if (pid == 0) {
+//         /* child process */
+//         nb_fds = getdtablesize();
+//         for (i = 0; i < nb_fds; i++)
+//             close(i);
+//         /* open pseudo tty for standard i/o */
+//         open(tty_name, O_RDWR);
+//         dup(0);
+//         dup(0);
+
+//         setsid();
+
+//         execv(path, (char *const*)argv);
+//         exit(1);
+//     }
+//     /* return file info */
+//     *fd_ptr = pty_fd;
+//     *pid_ptr = pid;
+//     return 0;
+// }
 
 /* VT100 emulation */
 

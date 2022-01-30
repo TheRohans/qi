@@ -1882,10 +1882,10 @@ static void apply_style(QEStyleDef *style, int style_index)
 {
     QEStyleDef *s;
 #ifndef WIN32
-    if (style_index & QE_STYLE_TTY) {
-        style->fg_color = tty_colors[TTY_GET_FG(style_index)];
-        style->bg_color = tty_colors[TTY_GET_BG(style_index)];
-    } else 
+    // if (style_index & QE_STYLE_TTY) {
+    //     style->fg_color = tty_colors[TTY_GET_FG(style_index)];
+    //     style->bg_color = tty_colors[TTY_GET_BG(style_index)];
+    // } else 
 #endif
     {
         s = &qe_styles[style_index & ~QE_STYLE_SEL];
@@ -7107,7 +7107,7 @@ static inline void init_all_modules(void)
 #ifndef CONFIG_WIN32
 	//I think this is only needed on non-w32 system, need to test
 	//but I don't care really since I only use mac, linux and freebsd
-	shell_init();
+	// shell_init();
 #endif
 	
 #ifndef CONFIG_TINY
@@ -7128,7 +7128,6 @@ static inline void init_all_modules(void)
     python_init();
 	
 	//quick_open_init();
-	
 	//example_init();
 #endif
 	

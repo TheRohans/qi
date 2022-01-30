@@ -7,14 +7,14 @@ test:
 	make -C hex test
 	make -C list test
 	make -C tty test
-	make -C shell test
+#	make -C shell test
 	
 core:
 	@echo "======================================== Core plugins == "
 	make -C hex all
 	make -C list all
 	make -C tty all
-	make -C shell all
+#	make -C shell all
 # make the group header file
 	find ./ -name "*.h" -exec cat {} >> ./plugincore.g \;
 # rename it
@@ -30,28 +30,28 @@ extra:
 	@echo "======================================== Extra plugins == "
 	#buffers
 	make -C bufed all
-	#direcotry browing
+# direcotry browing
 	make -C dired all
-	#basic c language stuff (java, javascript, etc too)
+# basic c language stuff (java, javascript, etc too)
 	make -C clang all
-	#hex mode for unicode files
+# hex mode for unicode files
 	make -C unihex all
-	#xml (and xml based languges)
+# xml (and xml based languges)
 	make -C xml all
 	make -C charsetmore all
-	#latex, don't much care about this...
+# latex mode
 	make -C latex-mode all
-	#markdown mode
+# markdown mode
 	make -C markdown-mode all
 	make -C html all
-	#just and example plugin
+# just and example plugin
 	make -C example all
 	make -C php-mode all
 	make -C css-mode all
-	#make -C quick-open all
+# make -C quick-open all
 	make -C python-mode all
 	
-	#ar rcs libplugins.a *.o
+# ar rcs libplugins.a *.o
 	ar -cvq libplugins.a *.o
 
 	mv ./libplugins.a $(LOAD_PATH)/$< 
@@ -75,7 +75,7 @@ clean:
 	make -C html clean
 	make -C php-mode clean
 	make -C css-mode clean
-	#make -C quick-open clean
+# make -C quick-open clean
 	make -C python-mode clean
 	
 	rm -f $(LOAD_PATH)/libplugincore.a

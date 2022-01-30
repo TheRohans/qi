@@ -250,11 +250,13 @@ static void latex_cmd_run(void *opaque, char *cmd)
         }
 
         /* create new buffer */
-        b = new_shell_buffer("*LaTeX output*", "/bin/sh", argv, 0);
-        if (b) {
-            /* XXX: try to split window if necessary */
-            switch_to_buffer(func->es, b);
-        }
+        // TODO: fix the shell plugin to get this to work, but
+        // I don't think this should rely on the other plugin being loaded
+        // b = new_shell_buffer("*LaTeX output*", "/bin/sh", argv, 0);
+        // if (b) {
+        //     /* XXX: try to split window if necessary */
+        //     switch_to_buffer(func->es, b);
+        // }
     } else {
         int pid = fork();
         if (pid == 0) {
