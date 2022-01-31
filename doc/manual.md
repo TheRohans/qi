@@ -12,6 +12,14 @@ Qi is a small UNIX editor. Some of it's features include:
 - Works on any VT100 terminals without termcap. UTF8 VT100 support included with double width glyphs.
 - Small footprint. About 480K.
 
+While reading this document you will see `C` and `M` referenced when talking about keybindings. These are almost always:
+- `C` = Control key
+- `M` = Alt key (or Esc key)
+
+So, when you see `C-x` that means press the _control key_ while also pressing the _x key_.
+
+These can, however, be mapped differently based on your system.
+
 ## Invocation
 
 ```
@@ -20,12 +28,15 @@ usage: qi [-h] [filename...]
 
 | Flag | Does |
 | -- | -- |
-| -h | show help |
+| --help,-h | show help and exit |
+| --verson,-V | show version and exit |
 
 
 Qi will start in _dired_ mode automatically so that you can browse your files easily (same as _C-x C-d_ key).
 
 ## Common editing commands
+
+The best way to see all the most up to date keybinding is to type `M-x describe-bindings` while running the editor.
 
 ### Concepts
 
@@ -47,12 +58,10 @@ For example, if you type `C-u 5 M-x next-line RET` the cursor will move down 5 l
 You can press _C-h b_ to have the list of all the currently active bindings, including the ones of the current editing mode.
 
 ```
-C-h C-h, F1             : help-for-help
-C-h b                   : describe-bindings
-C-h c                   : describe-key-briefly
+C-x ?, F1               : help-for-help
 ```
 
-### Movement commands
+### Text and Movement keys (commands)
 
 ```
 default                 : self-insert-command

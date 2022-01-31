@@ -1,7 +1,5 @@
 # Qi
 
-Welcome to Qi ([pronounced 'chi'][qi]).
-
 ![docs](doc/qi.svg)
 
 Qi's goal is to be my perfect editor. It attempts to combine the things I like about _emacs_ with the speed and system integration of _vi_. Qi focuses on the following goals:
@@ -46,15 +44,15 @@ make dist
 
 If everything worked, you should have a `qi` binary in the `dist` project directory.
 
-## Documentation
+## Documentation / Manual
 
-The original QEmacs documentation is in _doc/qe-doc.html_; however, not all QEmacs features are in Qi, and some exist that are not in the current documentation. However most of the documentation is still relevant.
+[Read the Manual](docs/manual.md)
 
 ## Licensing
 
 QEmacs was released under the GNU Lesser General Public License v2 (read the accompanying LICENSE file) so Qi is as well.
 
-- Qi is copyright 2013 [The Rohans, LLC.][rohans]
+- Qi is copyright 2013 [The Rohans][rohans]
 - QEmacs is copyright 2002 Fabrice Bellard.
 
 [qi]: http://en.wikipedia.org/wiki/Qi
