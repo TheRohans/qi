@@ -5811,9 +5811,9 @@ void do_refresh(EditState *s1)
     // invalidate status line
     qs->status_shadow[0] = '\0';
 
-    if (resized) {
+    // if (resized) {
         put_status(NULL, "Screen is now %d by %d", width, height);
-    }
+    // }
 }
 
 void do_refresh_complete(EditState *s)

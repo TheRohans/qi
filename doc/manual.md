@@ -151,9 +151,6 @@ M-q                     : fill-paragraph
 C-x RET l               : toggle-line-numbers
 C-x RET t               : truncate-lines
 C-x RET w               : word-wrap
-C-x C-e                 : compile
-C-x C-p                 : previous-error
-C-x C-n                 : next-error
 C-x C-d                 : dired
 ```
 
