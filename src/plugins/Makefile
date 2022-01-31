@@ -50,6 +50,7 @@ extra:
 	make -C css-mode all
 # make -C quick-open all
 	make -C python-mode all
+	make -C config-mode all
 	
 # ar rcs libplugins.a *.o
 	ar -cvq libplugins.a *.o

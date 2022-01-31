@@ -18,13 +18,18 @@
  */
 #include "qe.h"
 
+/* NOTE: 'var' is added for javascript */
 static const char c_keywords[] = 
 "|auto|break|case|const|continue|do|else|enum|extern|for|goto|"
-"if|register|return|static|struct|switch|typedef|union|volatile|while|";
+"if|register|return|static|struct|switch|typedef|union|volatile|while|"
+"package|var|let|go|";
 
-/* NOTE: 'var' is added for javascript */
 static const char c_types[] = 
-"|char|double|float|int|long|unsigned|short|signed|void|var|function|";
+"|char|double|float|int|long|unsigned|short|signed|void|"
+"func|function|bool|int8|int16|int32|int64|int|uint8|"
+"uint16|uint32|uint64|uint|float32|float64|complex64|"
+"complex128|byte|rune|string|";       
+
 
 static int get_c_keyword(char *buf, int buf_size, unsigned int **pp)
 {
@@ -552,7 +557,7 @@ static int c_mode_probe(ModeProbeData *p)
     //currently, only use the file extension
     r = extension(p->filename);
     if (*r) {
-        if (strfind("|c|e|h|js|cs|jav|java|cxx|cpp|", r + 1, 1))
+        if (strfind("|c|e|h|js|ts|cs|jav|java|cxx|cpp|go|", r + 1, 1))
             return 100;
     }
     return 0;

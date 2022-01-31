@@ -1,8 +1,7 @@
 /*
  * Markdown mode for Qi
- * Copyright (c) 2013 Rob Rohan <mhe@home.se>
+ * Copyright (c) 2013 Rob Rohan
  * Based on c-mode by Fabrice Bellard
- * Requires the shell mode
  */
 #include "qe.h"
 
@@ -227,7 +226,6 @@ int css_init(void)
 
     qe_register_mode(&css_mode);
     qe_register_cmd_table(css_commands, "CSS");
-    //register_completion("markdown", markdown_completion);
 
     return 0;
 }

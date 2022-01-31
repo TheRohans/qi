@@ -7127,6 +7127,7 @@ static inline void init_all_modules(void)
 	// php_init();
     css_init();
     python_init();
+    config_init();
 	//quick_open_init();
 	//example_init();
 #endif

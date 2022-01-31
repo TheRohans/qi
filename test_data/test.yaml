@@ -1,0 +1,129 @@
+# **NOTE**
+# This is setting up fluentd to output to standard out
+# In production, you'll need to pick a real place to
+# send the logs so you can actually query / monitor
+---
+apiVersion: apps/v1
+# For Kubernetes, a DaemonSet ensures that all (or some) nodes
+# run a copy of a pod. In order to solve log collection we are
+# going to implement a Fluentd DaemonSet.
+kind: DaemonSet
+metadata:
+  name: fluentd
+  namespace: kube-system
+  labels:
+    k8s-app: fluentd-logging
+    version: v1
+spec:
+  selector:
+    matchLabels:
+      k8s-app: fluentd-logging
+      version: v1
+  template:
+    metadata:
+      labels:
+        k8s-app: fluentd-logging
+        version: v1
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+      containers:
+        - name: fluentd
+          image: fluent/fluentd-kubernetes-daemonset:v1-debian-elasticsearch
+          env:
+            - name: FLUENT_ELASTICSEARCH_HOST
+              value: "elasticsearch-logging"
+            - name: FLUENT_ELASTICSEARCH_PORT
+              value: "9200"
+            - name: FLUENT_ELASTICSEARCH_SCHEME
+              value: "http"
+            # Option to configure elasticsearch plugin with self signed certs
+            # ================================================================
+            - name: FLUENT_ELASTICSEARCH_SSL_VERIFY
+              value: "true"
+            # Option to configure elasticsearch plugin with tls
+            # ================================================================
+            - name: FLUENT_ELASTICSEARCH_SSL_VERSION
+              value: "TLSv1_2"
+            # X-Pack Authentication
+            # =====================
+            - name: FLUENT_ELASTICSEARCH_USER
+              value: "elastic"
+            - name: FLUENT_ELASTICSEARCH_PASSWORD
+              value: "changeme"
+            # Logz.io Authentication
+            # ======================
+            - name: LOGZIO_TOKEN
+              value: "ThisIsASuperLongToken"
+            - name: LOGZIO_LOGTYPE
+              value: "kubernetes"
+          resources:
+            limits:
+              memory: 200Mi
+            requests:
+              cpu: 100m
+              memory: 200Mi
+          volumeMounts:
+            - name: varlog
+              mountPath: /var/log
+            # When actual pod logs in /var/lib/docker/containers, the following lines should be used.
+            # - name: dockercontainerlogdirectory
+            #   mountPath: /var/lib/docker/containers
+            #   readOnly: true
+            # When actual pod logs in /var/log/pods, the following lines should be used.
+            - name: dockercontainerlogdirectory
+              mountPath: /var/log/pods
+              readOnly: true
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: varlog
+          hostPath:
+            path: /var/log
+        # When actual pod logs in /var/lib/docker/containers, the following lines should be used.
+        # - name: dockercontainerlogdirectory
+        #   hostPath:
+        #     path: /var/lib/docker/containers
+        # When actual pod logs in /var/log/pods, the following lines should be used.
+        - name: dockercontainerlogdirectory
+          hostPath:
+            path: /var/log/pods
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fluentd
+  annotations:
+    prometheus.io/probe: "false"
+spec:
+  ports:
+    - port: 80
+      targetPort: 9200
+  selector:
+    name: fluentd
+
+---
+# **WARNING**
+# You might not want to expose grafana to the outside world
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fluentd
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    # nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+    - host: elastic.local
+      http:
+        paths:
+          - path: /
+            #- path: /grafana(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: fluentd
+                port:
+                  number: 9200
+
