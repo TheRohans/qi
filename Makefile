@@ -11,6 +11,7 @@ clean:
 	@echo '======================================== Cleaning qi == '
 	make -C src clean
 	rm -rf build
+	rm -rf dist
 
 test:
 	@echo '======================================= Running Tests == '
