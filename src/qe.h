@@ -1183,6 +1183,12 @@ void basic_mode_line(EditState *s, char *buf, int buf_size, int c1);
 void text_mode_line(EditState *s, char *buf, int buf_size);
 void do_toggle_full_screen(EditState *s);
 
+void do_bof(EditState *s);
+void do_eof(EditState *s);
+void do_bol(EditState *s);
+void do_eol(EditState *s);
+void do_word_right(EditState *s, int dir);
+
 /* hex.c */
 void hex_write_char(EditState *s, int key);
 
