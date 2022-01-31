@@ -6495,6 +6495,7 @@ static inline void init_all_modules(void)
 	hex_init();
 	list_init();
 	tty_init();
+	runner_init();
 	
 #ifndef CONFIG_TINY
 	//If they are not building the tiny version, init some the
