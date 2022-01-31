@@ -2,7 +2,9 @@
 
 Welcome to Qi ([pronounced 'chi'][qi]).
 
-Qi's goal is to be my perfect editor. It attempts to combine all the things I like about _emacs_ with the speed of _vi_. Qi focuses on the following goals:
+![docs](doc/qi.svg)
+
+Qi's goal is to be my perfect editor. It attempts to combine the things I like about _emacs_ with the speed and system integration of _vi_. Qi focuses on the following goals:
 
 - Speed and large file editing
 - Only terminal editor (no x11, etc)
@@ -11,20 +13,16 @@ Qi's goal is to be my perfect editor. It attempts to combine all the things I li
 - Cross platform (unix based system)
 - Multi-language (human) support - with a focus on English and Chinese.
 - Multi-language (computer) support
-- Default UTF-8
+	- C
+	- Markdown
+	- HTML (XML)
+	- Golang
+	- YAML
+	- Lua
+- Default encoding UTF-8
+- Hex editing
 
-Qi's roots are QEmacs; Qi's base is a fork of QEmacs 3.2 with a lot of bits stripped out.
-
-## Current Features
-
-- Emacs keybindings
-- Text editing mode
-- Open and edit large files
-- Basic C mode
-- Basic Markdown mode
-- Basic XML mode (and HTML)
-- Hex editing mode
-- UTF-8 display
+Qi was forked from QEmacs 3.2 with a lot of features stripped out.
 
 ## Building
 
@@ -43,11 +41,10 @@ You can see the possible options by typing
 2. Run the make file to build the core editor and plugins:
 
 ```shell
-make qi
+make dist
 ```
 
-If everything worked, you should have a `qi` binary in the main project directory.
-
+If everything worked, you should have a `qi` binary in the `dist` project directory.
 
 ## Documentation
 

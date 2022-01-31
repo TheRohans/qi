@@ -5,9 +5,11 @@ config.mak
 config.h
 qi
 qe_g
+dist
 
 #temp files
 *~
+*.bak
 plugincore.h
 build
 doc/output
