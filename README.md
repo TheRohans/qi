@@ -46,7 +46,7 @@ If everything worked, you should have a `qi` binary in the `dist` project direct
 
 ## Documentation / Manual
 
-[Read the Manual](docs/manual.md)
+[Read the Manual](doc/manual.md)
 
 ## Licensing
 
