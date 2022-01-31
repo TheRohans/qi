@@ -118,7 +118,7 @@ void qe_register_mode(ModeDef *m)
     }
 }
 
-/*!
+/**
  * Find a mode from within the loaded modes
  */
 static ModeDef *find_mode(const char *mode_name)
@@ -136,7 +136,7 @@ static ModeDef *find_mode(const char *mode_name)
 /////////////////////////////////////////////////////////////////
 /* commands handling */
 
-/*!
+/**
  * Find a loaded command
  */
 CmdDef *qe_find_cmd(const char *cmd_name)
@@ -155,7 +155,7 @@ CmdDef *qe_find_cmd(const char *cmd_name)
     return NULL;
 }
 
-/*!
+/**
  * Register a key binding
  */
 static int qe_register_binding1(unsigned int *keys, int nb_keys,
@@ -184,7 +184,7 @@ static int qe_register_binding1(unsigned int *keys, int nb_keys,
     return 0;
 }
 
-/*! convert compressed mappings to real ones */
+/** convert compressed mappings to real ones */
 static void qe_register_binding2(int key,
                                  CmdDef *d, ModeDef *m)
 {
@@ -233,7 +233,7 @@ void do_cd(EditState *s, const char *name)
     put_status(s, "Current directory: %s", name);
 }
 
-/*! 
+/** 
  * if mode is non NULL, the defined keys are only active in this mode 
  */
 void qe_register_cmd_table(CmdDef *cmds, const char *mode)
@@ -275,7 +275,7 @@ void qe_register_cmd_table(CmdDef *cmds, const char *mode)
     }
 }
 
-/*!
+/**
  * key binding handling 
  */
 void qe_register_binding(int key, const char *cmd_name, const char *mode_names)
@@ -312,7 +312,7 @@ void qe_register_binding(int key, const char *cmd_name, const char *mode_names)
     }
 }
 
-/*!
+/**
  * Helps build the completion string _cs_ with the given
  * input by searching the loaded commands
  */
@@ -666,7 +666,7 @@ void do_changecase_word(EditState *s, int up)
 void do_changecase_region(EditState *s, int up)
 {
     int offset;
-
+    
     // WARNING: during case change, the region offsets can change, so
     // it is not so simple ! 
     if (s->offset > s->b->mark) 
@@ -3728,7 +3728,7 @@ static void qe_key_init(void)
     c->buf[0] = '\0';
 }
 
-/*!
+/**
  * Process the given key.  Translate the key press into a
  * command
  */
@@ -4865,7 +4865,7 @@ static ModeDef *probe_mode(EditState *s, int mode, uint8_t *buf, int len)
     return selected_mode;
 }
 
-/*!
+/**
  * Load a file into a buffer, either by full path or
  * or assuming the filename is within one of the resource folders
  * _load\_resource_
@@ -6159,7 +6159,7 @@ void window_get_min_size(EditState *s, int *w_ptr, int *h_ptr)
     *h_ptr = h;
 }
 
-/*!
+/**
  * resize a window on bottom right edge 
  */
 void window_resize(EditState *s, int target_w, int target_h)
@@ -6270,11 +6270,12 @@ static void save_selection(void)
 
 /* XXX: need a more general scheme for other modes such as HTML/image */
 /* CG: remove this */
+/*
 void wheel_scroll_up_down(EditState *s, int dir)
 {
     int line_height;
 
-    /* only apply to text modes */
+    // only apply to text modes
     if (!s->mode->text_display)
         return;
 
@@ -6298,7 +6299,7 @@ void mouse_event(QEEvent *ev)
 
     case QE_BUTTON_PRESS_EVENT:
         for (e = qs->first_window; e != NULL; e = e->next_window) {
-            /* test if mouse is inside the text area */
+            // test if mouse is inside the text area
             if (mouse_x >= e->xleft && mouse_x < e->xleft + e->width &&
                 mouse_y >= e->ytop && mouse_y < e->ytop + e->height) {
                 if (e->mode->mouse_goto) {
@@ -6308,7 +6309,7 @@ void mouse_event(QEEvent *ev)
                     switch (ev->button_event.button) {
                     case QE_BUTTON_LEFT:
                         motion_type = MOTION_TEXT;
-                        motion_x = 0; /* indicate first move */
+                        motion_x = 0; // indicate first move
                         motion_target = e;
                         break;
                     case QE_BUTTON_MIDDLE:
@@ -6326,22 +6327,22 @@ void mouse_event(QEEvent *ev)
                 }
                 break;
             }
-            /* test if inside modeline */
+            // test if inside modeline
             if ((e->flags & WF_MODELINE) &&
                 mouse_x >= e->xleft && mouse_x < e->xleft + e->width &&
                 mouse_y >= e->ytop + e->height && 
                 mouse_y < e->ytop + e->height + qs->mode_line_height) {
-                /* mark that motion can occur */
+                // mark that motion can occur
                 motion_type = MOTION_MODELINE;
                 motion_target = e;
                 motion_y = e->ytop + e->height;
                 break;
             }
-            /* test if inside right window separator */
+            // test if inside right window separator
             if ((e->flags & WF_RSEPARATOR) &&
                 mouse_x >= e->x2 - qs->separator_width && mouse_x < e->x2 &&
                 mouse_y >= e->ytop && mouse_y < e->ytop + e->height) {
-                /* mark that motion can occur */
+                // mark that motion can occur
                 motion_type = MOTION_RSEPARATOR;
                 motion_target = e;
                 motion_x = e->x2 - qs->separator_width;
@@ -6361,19 +6362,19 @@ void mouse_event(QEEvent *ev)
                     e->show_selection = 0;
                     motion_type = MOTION_NONE;
                 } else {
-                    /* put a mark if first move */
+                    // put a mark if first move
                     if (!motion_x) {
-                        /* test needed for list mode */
+                        // test needed for list mode
                         if (e->b)
                             e->b->mark = e->offset;
                         motion_x = 1;
                     }
-                    /* highlight selection */
+                    // highlight selection
                     e->show_selection = 1;
                     if (mouse_x >= e->xleft && mouse_x < e->xleft + e->width &&
                         mouse_y >= e->ytop && mouse_y < e->ytop + e->height) {
-                            /* if inside the buffer, then update cursor 
-                            position */
+                            // if inside the buffer, then update cursor 
+                            // position
                             e->mode->mouse_goto(e, mouse_x - e->xleft,
                                                 mouse_y - e->ytop);
                             edit_display(qs);
@@ -6418,6 +6419,7 @@ void mouse_event(QEEvent *ev)
         break;
     }
 }
+*/
 #endif
 
 /* put key in the unget buffer so that get_key() will return it */
@@ -6428,7 +6430,7 @@ void unget_key(int key)
 }
 
 
-/*!
+/**
  * handle an event sent by the GUI 
  */
 void qe_handle_event(QEEvent *ev)
@@ -6451,7 +6453,7 @@ void qe_handle_event(QEEvent *ev)
     case QE_BUTTON_PRESS_EVENT:
     case QE_BUTTON_RELEASE_EVENT:
     case QE_MOTION_EVENT:
-        mouse_event(ev);
+        // mouse_event(ev);
         break;
     case QE_SELECTION_CLEAR_EVENT:
         save_selection();
@@ -7119,14 +7121,12 @@ static inline void init_all_modules(void)
 	c_init();
 	xml_init();
 	charset_more_init();
-	
-	latex_init(); //I don't care about latex.
+	latex_init();
 	markdown_init();
 	html_init();
-	php_init();
+	// php_init();
     css_init();
     python_init();
-	
 	//quick_open_init();
 	//example_init();
 #endif

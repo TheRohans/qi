@@ -1,4 +1,4 @@
-/*
+/**
  * default qi configuration 
  */
 CmdDef basic_commands[] = {

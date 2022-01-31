@@ -302,7 +302,7 @@ int unicode_to_glyphs(unsigned int *dst, unsigned int *char_to_glyph_pos,
                       int reverse);
 void load_ligatures(void);
 
-/*!
+/**
  * qe event handling 
  */
 enum QEEventType {
@@ -422,7 +422,7 @@ void qe_ungrab_keys(void);
 
 /* buffer.c */
 
-/*!
+/**
  * begin to mmap files from this size 
  */
 #define MIN_MMAP_SIZE (1024*1024)
@@ -462,7 +462,7 @@ enum LogOperation {
 
 struct EditBuffer;
 
-/*!
+/**
  * each buffer modification can be catched with this callback 
  */
 typedef void (*EditBufferCallback)(struct EditBuffer *,
@@ -532,7 +532,7 @@ typedef struct EditBuffer {
 
 struct ModeProbeData;
 
-/*!
+/**
  * high level buffer type handling
  */
 typedef struct EditBufferDataType {
@@ -543,7 +543,7 @@ typedef struct EditBufferDataType {
     struct EditBufferDataType *next;
 } EditBufferDataType;
 
-/*! 
+/** 
  * the log buffer is used for the undo operation 
  * header of log operation 
  */
@@ -910,7 +910,7 @@ extern QEmacsState qe_state;
 
 /* key bindings definitions */
 
-/*!
+/**
  * dynamic key binding storage 
  */
 typedef struct KeyDef {
@@ -923,7 +923,7 @@ typedef struct KeyDef {
 
 void unget_key(int key);
 
-/*!
+/**
  * command definitions 
  */
 typedef struct CmdDef {

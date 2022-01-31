@@ -46,7 +46,7 @@ extra:
 	make -C html all
 # just and example plugin
 	make -C example all
-	make -C php-mode all
+#	make -C php-mode all
 	make -C css-mode all
 # make -C quick-open all
 	make -C python-mode all

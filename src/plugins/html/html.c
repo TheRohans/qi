@@ -17,6 +17,9 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+/*
+   Requires c for javascript coloring, and css for css coloring
+ */
 #include "qe.h"
 #include "plugincore.h"
 
@@ -28,7 +31,7 @@ enum {
     HTML_TAG_STYLE,
     HTML_STYLE,
     HTML_SCRIPT = 0x10, //special mode for inside a script, colored with c mode 
-	HTML_PHP = 0x20,
+	// HTML_PHP = 0x20,
 };
 
 void html_colorize_line(unsigned int *buf, int len, 
@@ -44,8 +47,8 @@ void html_colorize_line(unsigned int *buf, int len,
     /* if already in a state, go directly in the code parsing it */
     if (state & HTML_SCRIPT)
         goto parse_script;
-	else if (state & HTML_PHP)
-		goto parse_php;
+	// else if (state & HTML_PHP) // TODO: use this for gotmpl?
+	//	goto parse_php;
 	
     switch (state) {
     case HTML_COMMENT:
@@ -87,9 +90,9 @@ void html_colorize_line(unsigned int *buf, int len,
                     state = HTML_TAG_SCRIPT;
                 } else if (ustristart(p, "STYLE", (const unsigned int **)&p)) {
                     state = HTML_TAG_STYLE;
-				} else if (ustristart(p, "?PHP", (const unsigned int **)&p) || 
+				/* } else if (ustristart(p, "?PHP", (const unsigned int **)&p) || 
 					       ustristart(p, "?=", (const unsigned int **)&p)) {
-					state = HTML_PHP;
+					state = HTML_PHP; */
 				} else {
                     state = HTML_TAG;
                 }
@@ -98,16 +101,17 @@ void html_colorize_line(unsigned int *buf, int len,
                 
                 while (*p != '\n') {
                     //if we hit the end of the tag (php ends at a space)
-                    if ( (state != HTML_PHP && *p == '>') || (state == HTML_PHP && *p != ' ') ) {
+                    // if ( (state != HTML_PHP && *p == '>') || (state == HTML_PHP && *p != ' ') ) {
+                    if (*p == '>') {
                         p++;
                         if (state == HTML_TAG_SCRIPT)
                             state = HTML_SCRIPT;
                         else if (state == HTML_TAG_STYLE)
                             state = HTML_STYLE;
-                        else if (state == HTML_PHP)
+                        // else if (state == HTML_PHP)
                             //we don't want to include the "<?php "
                             // ----------------------------------^
-                            p--;
+                            //p--;
                         else
                             state = 0;
                         break;
@@ -144,7 +148,7 @@ void html_colorize_line(unsigned int *buf, int len,
                             p++;
                         }
                     }
-				} else if(state == HTML_PHP) {
+				} /* else if(state == HTML_PHP) {
                     //php coloring
                     p_start = p;
 				parse_php:
@@ -170,8 +174,7 @@ void html_colorize_line(unsigned int *buf, int len,
 	                        p++;
 	                    }
 	                }
-					
-                } else if (state == HTML_STYLE) {
+                } */ else if (state == HTML_STYLE) {
                     //stylesheet coloring
                     p_start = p;
                 parse_style:
@@ -212,7 +215,7 @@ int html_mode_probe(ModeProbeData *p)
     //currently, only use the file extension
     r = extension(p->filename);
     if (*r) {
-        if (strfind("|html|xhtml|htm|php|ctp|tpl|gsp|", r + 1, 1))
+        if (strfind("|html|xhtml|htm|", r + 1, 1))
             return 100;
     }
     return 0;

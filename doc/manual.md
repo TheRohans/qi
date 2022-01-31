@@ -125,13 +125,10 @@ M-%                     : query-replace
 ### Command handling
 
 ```
+C-x u, C-_              : undo
+C-g                     : abort
 M-x                     : execute-extended-command
 C-u                     : universal-argument
-C-g                     : abort
-C-x u, C-_              : undo
-C-x (                   : start-kbd-macro
-C-x )                   : end-kbd-macro
-C-x e                   : call-last-kbd-macro
 ```
 
 ### Window handling

@@ -1,8 +1,7 @@
 /*
  * Markdown mode for Qi
- * Copyright (c) 2013 Rob Rohan <mhe@home.se>
+ * Copyright (c) 2013 Rob Rohan
  * Based on c-mode by Fabrice Bellard
- * Requires the shell mode
  */
 #include "qe.h"
 
@@ -10,8 +9,6 @@
 
 static ModeDef markdown_mode;
 
-// TODO: add state handling to allow colorization of elements longer
-// than one line (eg, multi-line functions and strings)
 static void markdown_colorize_line(unsigned int *buf, int len, 
                                 int *colorize_state_ptr, int state_only)
 {

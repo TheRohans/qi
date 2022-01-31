@@ -1,5 +1,7 @@
+<!doctype html>
 <html>
 <head>
+    <meta charset="utf-8">
 	<script type="text/javascript">
     $(document).ready(function(){
 		for(var x=0; x<10; x++) {
@@ -11,11 +13,15 @@
         let things = "3333";
     }
 	</script>
+
 	<style type="text/css">
-	.thing {
+    :root {
+        --white: #fff
+    }
+ 	.thing {
 		color: red;
-		background: url(blarg.gif) #c0c0c0;
-	}
+		background: url(blarg.gif) var(--white);
+    }
 	</style>
 </head>
 <body>

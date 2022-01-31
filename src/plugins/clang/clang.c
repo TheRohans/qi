@@ -266,7 +266,7 @@ static void insert_spaces(EditState *s, int *offset_ptr, int i)
             i -= s->tab_size;
         }
     }
-       
+      
     /* insert needed spaces */
     while (i > 0) {
         size = i;
@@ -278,6 +278,32 @@ static void insert_spaces(EditState *s, int *offset_ptr, int i)
         offset += size;
     }
     *offset_ptr = offset;
+}
+
+void do_c_comment(EditState *s)
+{
+    do_bol(s);
+    do_char(s, '/');
+    do_char(s, '/');
+}
+
+void do_c_comment_region(EditState *s)
+{
+    int col_num, p1, p2, tmp;
+    eb_get_pos(s->b, &p1, &col_num, s->offset);
+    eb_get_pos(s->b, &p2, &col_num, s->b->mark);
+
+    if (p1 > p2) {
+        tmp = p1;
+        p1 = p2;
+        p2 = tmp;
+    }
+
+    for (;p1 <= p2; p1++) {
+        s->offset = eb_goto_pos(s->b, p1, 0);
+        do_c_comment(s);
+    }
+    do_eol(s);
 }
 
 void do_c_indent(EditState *s)
@@ -526,7 +552,7 @@ static int c_mode_probe(ModeProbeData *p)
     //currently, only use the file extension
     r = extension(p->filename);
     if (*r) {
-        if (strfind("|c|e|h|js|cs|jav|java|cxx|cpp|groovy|", r + 1, 1))
+        if (strfind("|c|e|h|js|cs|jav|java|cxx|cpp|", r + 1, 1))
             return 100;
     }
     return 0;
@@ -546,6 +572,10 @@ int c_mode_init(EditState *s, ModeSavedData *saved_data)
 /* specific C commands */
 static CmdDef c_commands[] = {
     CMD_( KEY_CTRL('i'), KEY_NONE, "c-indent-command", do_c_indent, "*")
+    
+    CMD0( KEY_META(';'), KEY_NONE, "c-comment", do_c_comment)
+    CMD0( KEY_CTRLX(';'), KEY_NONE, "c-comment-region", do_c_comment_region)
+    
     CMD_( KEY_NONE, KEY_NONE, "c-indent-region", do_c_indent_region, "*")
     /* CG: should use 'k' intrinsic argument */
 	//CMDV( ';', KEY_NONE, "c-electric-semi&comma", do_c_electric, ';', "*v")
