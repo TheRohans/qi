@@ -66,8 +66,8 @@ CmdDef basic_commands[] = {
     CMD0( KEY_CTRLX(KEY_CTRL('x')), KEY_NONE, "exchange-point-and-mark", do_exchange_point_and_mark)
     CMDV( KEY_META('l'), KEY_NONE, "downcase-word", do_changecase_word, 0, "*v")
     CMDV( KEY_META('u'), KEY_NONE, "upcase-word", do_changecase_word, 1, "*v")
-    CMDV( KEY_CTRLX(KEY_CTRL('l')), KEY_NONE, "downcase-region", do_changecase_region, 0, "*v")
-    CMDV( KEY_CTRLX(KEY_CTRL('u')), KEY_NONE, "upcase-region", do_changecase_region, 1, "*v")
+    // CMDV( KEY_CTRLX(KEY_CTRL('l')), KEY_NONE, "downcase-region", do_changecase_region, 0, "*v")
+    // CMDV( KEY_CTRLX(KEY_CTRL('u')), KEY_NONE, "upcase-region", do_changecase_region, 1, "*v")
 
     // keyboard macros
     //CMD0( KEY_CTRLX('('), KEY_NONE, "start-kbd-macro", do_start_macro)

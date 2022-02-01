@@ -122,6 +122,7 @@ C-r                     : isearch-forward
 	C-c						: toggle case sensitivity
 	C-w                     : toggle word find
 M-%                     : query-replace
+M-r                     : replace-string
 ```
 
 ### Command handling
