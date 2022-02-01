@@ -119,6 +119,8 @@ C-x C-b                 : list-buffers
 ```
 C-s                     : isearch-backward
 C-r                     : isearch-forward
+	C-c						: toggle case sensitivity
+	C-w                     : toggle word find
 M-%                     : query-replace
 ```
 
