@@ -72,7 +72,7 @@ void dired_free(EditState *s)
     s->offset = 0;
 }
 
-/*!
+/**
  * sort alphabetically with directories first 
  */
 static int dired_sort_func(const void *p1, const void *p2)
@@ -114,7 +114,7 @@ static int dired_sort_func(const void *p1, const void *p2)
     return (mode & DIRED_SORT_DESCENDING) ? -res : res;
 }
 
-/*!
+/**
  * select current item 
  */
 static void do_dired_sort(EditState *s)
@@ -332,7 +332,7 @@ static char *get_dired_filename(EditState *s,
     return makepath(buf, buf_size, hs->path, dip->name);
 }
 
-/*!
+/**
  * select current item 
  */
 static void dired_select(EditState *s)
@@ -470,7 +470,7 @@ static void dired_mode_close(EditState *s)
     list_mode.mode_close(s);
 }
 
-/*!
+/**
  * can only apply dired mode on directories 
  */
 static int dired_mode_probe(ModeProbeData *p)
@@ -483,7 +483,7 @@ static int dired_mode_probe(ModeProbeData *p)
 
 ModeDef dired_mode;
 
-/*! 
+/**
  * open dired window on the left. The directory of the current file is
  * used 
  */
@@ -539,7 +539,7 @@ void do_dired(EditState *s)
     qs->active_window = e;
 }
 
-/*!
+/**
  * specific dired commands 
  */
 static CmdDef dired_commands[] = {

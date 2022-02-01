@@ -83,7 +83,7 @@ void set_write_handler(int fd, void (*cb)(void *opaque), void *opaque)
     }
 }
 
-/* register a callback which is called when process 'pid'
+/** register a callback which is called when process 'pid'
    terminates. When the callback is set to NULL, it is deleted */
 /* XXX: add consistency check ? */
 int set_pid_handler(int pid, 
@@ -111,7 +111,7 @@ int set_pid_handler(int pid,
     return 0;
 }
 
-/*
+/**
  * add an explicit call back to avoid recursions 
  */
 void register_bottom_half(void (*cb)(void *opaque), void *opaque)
@@ -125,7 +125,7 @@ void register_bottom_half(void (*cb)(void *opaque), void *opaque)
     list_add(bh, &bottom_halves);
 }
 
-/*
+/**
  * remove bottom half
  */
 void unregister_bottom_half(void (*cb)(void *opaque), void *opaque)
@@ -188,7 +188,7 @@ static inline void call_bottom_halves(void)
         __call_bottom_halves();
 }
 
-/*!
+/**
  * call timer callbacks and compute maximum next call time to
  * check_timers() 
  */
@@ -230,7 +230,7 @@ static void url_block_reset(void)
 
 #define MAX_DELAY 500
 
-/*! block until one event */
+/** block until one event */
 static void url_block(void)
 {
     URLHandler *uh;
@@ -292,7 +292,7 @@ void url_main_loop(void (*init)(void *opaque), void *opaque)
     }
 }
 
-/*! exit from url loop */
+/** exit from url loop */
 void url_exit(void)
 {
     url_exit_request = 1;
