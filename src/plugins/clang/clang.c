@@ -557,7 +557,7 @@ static int c_mode_probe(ModeProbeData *p)
     //currently, only use the file extension
     r = extension(p->filename);
     if (*r) {
-        if (strfind("|c|e|h|js|ts|cs|jav|java|cxx|cpp|go|", r + 1, 1))
+        if (strfind("|c|e|h|js|ts|json|cs|jav|java|cxx|cpp|go|tf|", r + 1, 1))
             return 100;
     }
     return 0;
@@ -608,4 +608,3 @@ int c_init(void)
     return 0;
 }
 
-//qe_module_init(c_init);

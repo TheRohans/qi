@@ -53,7 +53,7 @@ enum {
 void config_colorize_line(unsigned int *buf, int len, 
                                 int *colorize_state_ptr, int state_only)
 {
-    int c, state, l;
+    int c, state;
     unsigned int *p, *p_start, *p1;
     char kbuf[32];
     
@@ -146,7 +146,7 @@ void config_colorize_line(unsigned int *buf, int len,
                 (c >= 'A' && c <= 'Z') || 
                 (c == '_')) {
                 
-                l = get_config_keyword(kbuf, sizeof(kbuf), &p);
+                get_config_keyword(kbuf, sizeof(kbuf), &p);
                 p1 = p;
                 while (*p == ' ' || *p == '\t')
                     p++;
@@ -173,7 +173,7 @@ static int config_mode_probe(ModeProbeData *p)
     //currently, only use the file extension
     r = extension(p->filename);
     if (*r) {
-        if (strfind("|yaml|yml|", r + 1, 1))
+        if (strfind("|yaml|yml|mk|ini|make|config|conf|toml|", r + 1, 1))
             return 100;
     }
     return 0;
