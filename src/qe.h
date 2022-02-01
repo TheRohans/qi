@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -717,14 +718,14 @@ typedef struct EditState {
     int interactive; //!< true if interaction is done instead of editing (e.g. for shell mode or HTML)
     int force_highlight;  //!< if true, force showing of cursor even if window not focused (list mode only)
     int mouse_force_highlight; //!< if true, mouse can force highlight (list mode only)
-    /* low level colorization function */
+    /** low level colorization function */
     GetColorizedLineFunc get_colorized_line_func;
-    /* colorization function */
+    /** colorization function */
     ColorizeFunc colorize_func;
-    /* default text style */
+    /** default text style */
     int default_style;
 
-    /* after this limit, the fields are not saved into the buffer */
+    /** after this limit, the fields are not saved into the buffer */
     int end_of_saved_data;
 
     struct ModeDef *mode; //!< mode specific info
@@ -747,7 +748,7 @@ typedef struct EditState {
 	// display area info 
     int width, height;
     int ytop, xleft;
-    // full window size, including borders 
+    /** full window size, including borders */
     int x1, y1, x2, y2;
     int flags; //!< display flags
 #define WF_POPUP      0x0001 //!< popup window (with borders)
@@ -770,7 +771,7 @@ typedef struct EditState {
     struct EditState *next_window;
 } EditState;
 
-#define SAVED_DATA_SIZE ((int)&((EditState *)0)->end_of_saved_data)
+#define SAVED_DATA_SIZE ((int)(uintptr_t)&((EditState *)0)->end_of_saved_data)
 
 int to_hex(int key);
 
@@ -783,7 +784,7 @@ typedef struct ModeProbeData {
     int mode;     //!< unix mode
 } ModeProbeData;
 
-/*!
+/**
  * private data saved by a mode so that it can be restored 
  * when the mode is started again on a buffer 
  */
