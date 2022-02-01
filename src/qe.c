@@ -1,4 +1,7 @@
-/*
+/**
+ * Qi
+ *
+ * Forked from:
  * QEmacs, tiny but powerful multimode editor
  * Copyright (c) 2000, 2001, 2002 Fabrice Bellard.
  *
@@ -70,7 +73,7 @@ EditBuffer *trace_buffer;
 int no_init_file;
 const char *user_option;
 
-/*! mode handling */
+/** mode handling */
 void qe_register_mode(ModeDef *m)
 {
     ModeDef **p;
@@ -207,23 +210,6 @@ static void qe_register_binding2(int key,
     }
     qe_register_binding1(keys, nb_keys, d, m);
 }
-
-//void do_set_emulation(EditState *s, const char *name)
-//{
-//    QEmacsState *qs = s->qe_state;
-//
-//    if (!strcmp(name, "epsilon")) {
-//        qs->flag_split_window_change_focus = 1;
-//    } else
-//    if (!strcmp(name, "emacs") || !strcmp(name, "xemacs")) {
-//        qs->flag_split_window_change_focus = 0;
-//    } else
-//    if (!strcmp(name, "vi") || strcmp(name, "vim")) {
-//        put_status(s, "emulation '%s' not available yet", name);
-//    } else {
-//        put_status(s, "unknown emulation '%s'", name);
-//    }
-//}
 
 void do_cd(EditState *s, const char *name)
 {
@@ -622,7 +608,7 @@ void do_fill_paragraph(EditState *s)
 }
 ////////////////////////////////////////////////////////////////////////
 
-/*!
+/**
  * upper / lower case functions (XXX: use generic unicode
  * function). Return next offset 
  */
@@ -724,7 +710,7 @@ void do_backspace(EditState *s)
     }
 }
 
-/*! 
+/** 
  * return the cursor position relative to the screen. Note that xc is
  * given in pixel coordinates 
  */
@@ -780,7 +766,7 @@ typedef struct {
     int offsetd;
 } MoveContext;
 
-/*! 
+/** 
  * called each time the cursor could be displayed 
  */
 static int down_cursor_func(DisplayState *ds,
@@ -972,7 +958,7 @@ void text_scroll_up_down(EditState *s, int dir)
     perform_scroll_up_down(s, dir * h);
 }
 
-/*!
+/**
  * center the cursor in the window 
  * XXX: make it generic to all modes 
  */
@@ -992,7 +978,7 @@ void center_cursor(EditState *s)
     perform_scroll_up_down(s, -((s->height / 2) - cm.yc));
 }
 
-/*!
+/**
  * called each time the cursor could be displayed 
  */
 typedef struct {
@@ -1030,7 +1016,7 @@ static int left_right_cursor_func(DisplayState *ds,
     }
 }
 
-/*!
+/**
  * go to left or right in visual order 
  */
 void text_move_left_right_visual(EditState *s, int dir)
@@ -1090,95 +1076,12 @@ void text_move_left_right_visual(EditState *s, int dir)
     }
 }
 
-//TODO: remove this.  No mouse support, don't need the extra code
-/* mouse get cursor func */
-//#ifndef CONFIG_TINY
-#if 0
-
-/* called each time the cursor could be displayed */
-typedef struct {
-    int yd;
-    int xd;
-    int dy_min;
-    int dx_min;
-    int offset_found;
-    int hex_mode;
-} MouseGotoContext;
-
-/* distance from x to segment [x1,x2-1] */
-static int seg_dist(int x, int x1, int x2)
-{
-    if (x <= x1)
-        return x1 - x;
-    else if (x >= x2)
-        return x - x2 + 1;
-    else
-        return 0;
-}
-
-/* XXX: would need two pass in the general case (first search line,
-   then colunm */
-static int mouse_goto_func(DisplayState *ds,
-                           int offset1, int offset2, int line_num,
-                           int x, int y, int w, int h, int hex_mode)
-{
-    MouseGotoContext *m = ds->cursor_opaque;
-    int dy, dx;
-
-    dy = seg_dist(m->yd, y, y + h);
-    if (dy < m->dy_min) {
-        m->dy_min = dy;
-        m->dx_min = 0x3fffffff;
-    }
-    if (dy == m->dy_min) {
-        dx = seg_dist(m->xd, x, x + w);
-        if (dx < m->dx_min) {
-            m->dx_min = dx;
-            m->offset_found = offset1;
-            m->hex_mode = hex_mode;
-            /* fast exit test */
-            if (dy == 0 && dx == 0)
-                return -1;
-        }
-    }
-    return 0;
-}
-
 /* go to left or right in visual order. In hex mode, a side effect is
    to select the right column. */
-void text_mouse_goto(EditState *s, int x, int y)
-{
-    QEmacsState *qs = s->qe_state;
-    MouseGotoContext m1, *m = &m1;
-    DisplayState ds1, *ds = &ds1;
-
-    m->dx_min = 0x3fffffff;
-    m->dy_min = 0x3fffffff;
-    m->xd = x;
-    m->yd = y;
-    m->offset_found = s->offset; /* fail safe */
-    m->hex_mode = s->hex_mode;
-    
-    display_init(ds, s, DISP_CURSOR_SCREEN);
-    ds->hex_mode = -1; /* we select both hex chars and normal chars */
-    ds->cursor_opaque = m;
-    ds->cursor_func = mouse_goto_func;
-    display1(ds);
-
-    s->offset = m->offset_found;
-    s->hex_mode = m->hex_mode;
-
-    /* activate window (need more ideas for popups) */
-    if (!(s->flags & WF_POPUP))
-        qs->active_window = s;
-    if (s->mouse_force_highlight)
-        s->force_highlight = 1;
-}
-#else
 void text_mouse_goto(EditState *s, int x, int y){ }
-#endif
 
-/*!
+
+/**
  * Write a single char to the give editor state _by key_
  */
 void do_char(EditState *s, int key)
@@ -1261,7 +1164,7 @@ void text_write_char(EditState *s, int key)
     }
 }
 
-/*!
+/*
  * XXX: may be better to move it into qe_key_process() 
  */
 static void quote_key(void *opaque, int key)
@@ -1755,7 +1658,7 @@ void do_isearch(EditState *s, int dir);
 void do_refresh(EditState *s);
 void do_refresh_complete(EditState *s);
 
-/*! 
+/** 
  * compute string for the first part of the mode line (flags,
  * filename, modename) 
  */
@@ -2035,7 +1938,7 @@ void do_set_display_size(EditState *s, int w, int h)
     }
 }
 
-/*!
+/**
  * NOTE: toggle-full-screen also hide the modeline of the current
  * window and the status line 
  */
@@ -2362,7 +2265,7 @@ static void flush_line(DisplayState *s,
     s->line_num++;
 }
 
-/*! keep 'n' line chars at the start of the line */
+/** keep 'n' line chars at the start of the line */
 static void keep_line_chars(DisplayState *s, int n)
 {
     int index;
@@ -2374,7 +2277,7 @@ static void keep_line_chars(DisplayState *s, int n)
     s->line_index = n;
 }
 
-/*!
+/**
  * layout of a word fragment 
  */
 static void flush_fragment(DisplayState *s)
@@ -2648,7 +2551,7 @@ void display_printf(DisplayState *ds, int offset1, int offset2,
     }
 }
 
-/*!
+/**
  * end of line 
  */
 void display_eol(DisplayState *s, int offset1, int offset2)
@@ -2659,7 +2562,7 @@ void display_eol(DisplayState *s, int offset1, int offset2)
     flush_line(s, s->fragments, s->nb_fragments, offset1, offset2, 1);
 }
 
-/*!
+/**
  * temporary function for backward compatibility 
  */
 static void display1(DisplayState *s)
@@ -2751,13 +2654,14 @@ static int bidir_compute_attributes(TypeLink *list_tab, int max_size,
 }
 #endif
 
+
 #ifndef CONFIG_TINY
 //////////////////////////////////////////////////////////////////////
 // colorization handling
 
 #define COLORIZED_LINE_PREALLOC_SIZE 64
 
-/*! 
+/**
  * NOTE: only one colorization mode can be selected at a time for a
  * buffer
  * Gets the colorized line beginning at 'offset'. Its length
@@ -2820,7 +2724,7 @@ int get_colorized_line(EditState *s, unsigned int *buf, int buf_size,
     return len;
 }
 
-/*! invalidate the colorize data */
+/** invalidate the colorize data */
 static void colorize_callback(EditBuffer *b,
                               void *opaque,
                               enum LogOperation op,
@@ -2861,7 +2765,7 @@ void set_colorize_func(EditState *s, ColorizeFunc colorize_func) {;}
 #define RLE_EMBEDDINGS_SIZE    128
 #define COLORED_MAX_LINE_SIZE  1024
 
-/*!
+/**
  * The main kick off to display a line of text
  */
 int text_display(EditState *s, DisplayState *ds, int offset)
@@ -2971,7 +2875,7 @@ int text_display(EditState *s, DisplayState *ds, int offset)
     return offset;
 }
 
-/*!
+/**
  * Generic display algorithm with automatic fit 
  */
 void generic_text_display(EditState *s)
@@ -3121,7 +3025,7 @@ enum CmdArgType {
 
 #define MAX_CMD_ARGS 5
 
-/*!
+/**
  * XXX: potentially non portable on weird architectures
  * Minimum assumptions are:
  * - sizeof(int) == sizeof(void*) == sizeof(char*)
@@ -3197,7 +3101,7 @@ static void get_param(const char **pp, char *param, int param_size, int osep, in
     *pp = p;
 }
 
-/*!
+/**
  * return -1 if error, 0 if no more args, 1 if one arg parsed 
  */
 static int parse_arg(const char **pp, unsigned char *argtype, 
@@ -3251,7 +3155,7 @@ static void arg_edit_cb(void *opaque, char *str);
 static void parse_args(ExecCmdState *es);
 static void free_cmd(ExecCmdState *es);
 
-/*!
+/**
  * Execute the given command
  */
 void exec_command(EditState *s, CmdDef *d, int argval)
@@ -3286,7 +3190,7 @@ void exec_command(EditState *s, CmdDef *d, int argval)
     parse_args(es);
 }
 
-/*!
+/**
  * parse as much arguments as possible. ask value to user if possible 
  */
 static void parse_args(ExecCmdState *es)
@@ -3396,7 +3300,7 @@ static void parse_args(ExecCmdState *es)
     free_cmd(es);
 }
 
-/*!
+/**
  * Free the 
  */
 static void free_cmd(ExecCmdState *es)
@@ -3414,7 +3318,7 @@ static void free_cmd(ExecCmdState *es)
     free(es);
 }
 
-/*! 
+/** 
  * when the argument has been typed by the user, this callback is
  * called 
  */
@@ -3453,7 +3357,7 @@ static void arg_edit_cb(void *opaque, char *str)
     parse_args(es);
 }
 
-/*!
+/**
  * Execute the passed command
  */
 void do_execute_command(EditState *s, const char *cmd, int argval)
@@ -3485,7 +3389,7 @@ void window_display(EditState *s)
     display_window_borders(s);
 }
 
-/*! 
+/** 
  * Display all windows 
  * XXX: should use correct clipping to avoid popups display hacks 
  */
@@ -3551,133 +3455,6 @@ static const char *keys_to_str(char *buf, int buf_size,
     return buf;
 }
 
-////////////////////////////////////////////////////////////////////
-//// macros
-//void do_start_macro(EditState *s)
-//{
-//    QEmacsState *qs = s->qe_state;
-//
-//    if (qs->defining_macro) {
-//        qs->defining_macro = 0;
-//        put_status(s, "Already defining kbd macro");
-//        return;
-//    }
-//    qs->defining_macro = 1;
-//    free(qs->macro_keys);
-//    qs->macro_keys = NULL;
-//    qs->nb_macro_keys = 0;
-//    qs->macro_keys_size = 0;
-//    put_status(s, "Defining kbd macro...");
-//}
-//
-//void do_end_macro(EditState *s)
-//{
-//    QEmacsState *qs = s->qe_state;
-//
-//    // if called inside a macro, it is last recorded keys, so ignore
-//    // it
-//    if (qs->macro_key_index != -1)
-//        return;
-//
-//    if (!qs->defining_macro) {
-//        put_status(s, "Not defining kbd macro");
-//        return;
-//    }
-//    qs->defining_macro = 0;
-//    put_status(s, "Keyboard macro defined");
-//}
-//
-//static void do_call_macro_bh(void *opaque)
-//{
-//    QEmacsState *qs = &qe_state;
-//    int key;
-//
-//    // XXX: what to do if asynchronous commands ? Command completion
-//    //   should be wait
-//    for (qs->macro_key_index = 0; 
-//         qs->macro_key_index < qs->nb_macro_keys;
-//         qs->macro_key_index++) {
-//        key = qs->macro_keys[qs->macro_key_index];
-//        qe_key_process(key);
-//    }
-//    qs->macro_key_index = -1;
-//}
-//
-//void do_call_macro(EditState *s)
-//{
-//    QEmacsState *qs = s->qe_state;
-//
-//    if (qs->defining_macro) {
-//        qs->defining_macro = 0;
-//        put_status(s, "Can't execute macro while defining one");
-//        return;
-//    }
-//
-//    if (qs->nb_macro_keys > 0) {
-//        register_bottom_half(do_call_macro_bh, NULL);
-//    }
-//}
-//
-//void do_execute_macro_keys(EditState *s, const char *keys)
-//{
-//    int key;
-//    const char *p;
-//
-//    p = keys;
-//    for (;;) {
-//        skip_spaces(&p);
-//        if (*p == '\0')
-//            break;
-//        key = strtokey(&p);
-//        qe_key_process(key);
-//    }
-//}
-//
-//void do_define_kbd_macro(EditState *s, const char *name, const char *keys,
-//                         const char *key_bind)
-//{
-//    CmdDef *def;
-//    int size;
-//    char *macro_name, *p;
-//
-//    size = strlen(name) + 1;
-//    macro_name = malloc(size + 2);
-//    memcpy(macro_name, name, size);
-//    p = macro_name + size;
-//    *p++ = 'S';
-//    *p++ = '\0';
-//
-//    def = malloc(2 * sizeof(CmdDef));
-//    memset(def, 0, sizeof(CmdDef) * 2);
-//    def->key = def->alt_key = KEY_NONE;
-//    def->name = macro_name;
-//    def->action.func = do_execute_macro_keys;
-//    def->val = strdup(keys);
-//
-//    qe_register_cmd_table(def, NULL);
-//    do_global_set_key(s, key_bind, name);
-//}
-//
-//#define MACRO_KEY_INCR 64
-//
-//static void macro_add_key(int key)
-//{
-//    QEmacsState *qs = &qe_state;
-//    unsigned short *keys;
-//    int new_size;
-//
-//    if (qs->nb_macro_keys >= qs->macro_keys_size) {
-//        new_size = qs->macro_keys_size + MACRO_KEY_INCR;
-//        keys = realloc(qs->macro_keys, new_size * sizeof(unsigned short));
-//        if (!keys)
-//            return;
-//        qs->macro_keys = keys;
-//        qs->macro_keys_size = new_size;
-//    }
-//    qs->macro_keys[qs->nb_macro_keys++] = key;
-//}
-////////////////////////////////////////////////////////////////////
-
 typedef struct QEKeyContext {
     int argval;
     int noargval;
@@ -3694,7 +3471,7 @@ typedef struct QEKeyContext {
 
 QEKeyContext key_ctx;
 
-/*!
+/**
  * All typed keys are sent to the callback. Previous grab is aborted
  */
 void qe_grab_keys(void (*cb)(void *opaque, int key), void *opaque)
@@ -3704,7 +3481,7 @@ void qe_grab_keys(void (*cb)(void *opaque, int key), void *opaque)
     c->grab_key_opaque = opaque;
 }
 
-/*!
+/**
  * Abort key grabing
  */
 void qe_ungrab_keys(void)
@@ -3714,7 +3491,7 @@ void qe_ungrab_keys(void)
     c->grab_key_opaque = NULL;
 }
 
-/*! init qe key handling context */
+/** init qe key handling context */
 static void qe_key_init(void)
 {
     QEKeyContext *c = &key_ctx;
@@ -3742,10 +3519,6 @@ static void qe_key_process(int key)
     char buf1[128];
     int len;
 
-    //if (qs->defining_macro) {
-    //    macro_add_key(key);
-    //}
-    
 again:
     if (c->grab_key_cb) {
         c->grab_key_cb(c->grab_key_opaque, key);
@@ -3885,7 +3658,7 @@ again:
     }
 }
 
-/*! Print in latin 1 charset */
+/** Print in latin 1 charset */
 void print_at_byte(QEditScreen *screen,
                    int x, int y, int width, int height,
                    const char *str, int style_index)
@@ -3986,7 +3759,7 @@ void put_status(EditState *s, const char *fmt, ...)
     }
 }
 
-/*!
+/**
  * Switch to the given buffer
  */
 void switch_to_buffer(EditState *s, EditBuffer *b)
@@ -4043,7 +3816,7 @@ void switch_to_buffer(EditState *s, EditBuffer *b)
     }
 }
 
-/*! compute the client area from the window position */
+/** compute the client area from the window position */
 static void compute_client_area(EditState *s)
 {
     int x1, y1, x2, y2;
@@ -4070,7 +3843,7 @@ static void compute_client_area(EditState *s)
     s->height = y2 - y1;
 }
 
-/*! Create a new edit window, add it in the window list and sets it
+/** Create a new edit window, add it in the window list and sets it
  * active if none are active. The coordinates include the window
  * borders.
  */
@@ -4101,7 +3874,7 @@ EditState *edit_new(EditBuffer *b,
     return s;
 }
 
-/*! find a window with a given buffer if any. */
+/** find a window with a given buffer if any. */
 EditState *edit_find(EditBuffer *b)
 {
     QEmacsState *qs = &qe_state;
@@ -4114,7 +3887,7 @@ EditState *edit_find(EditBuffer *b)
     return e;
 }
 
-/*! detach the window from the window tree. */
+/** detach the window from the window tree. */
 void edit_detach(EditState *s)
 {
     QEmacsState *qs = s->qe_state;
@@ -4131,14 +3904,14 @@ void edit_detach(EditState *s)
         qs->active_window = qs->first_window;
 }
 
-/*! attach the window to the window list. */
+/** attach the window to the window list. */
 void edit_attach(EditState *s, EditState **ep)
 {
     s->next_window = *ep;
     *ep = s;
 }
 
-/*! Close the edit window. If it is active, find another active
+/** Close the edit window. If it is active, find another active
  * window. If the buffer is only referenced by this window, then save
  * in the buffer all the window state so that it can be recovered. 
  */
@@ -4166,11 +3939,11 @@ void edit_close(EditState *s)
     free(s);
 }
 
-//TODO: do we need this? they should be able to open these...
+// TODO: do we need this? they should be able to open these...
 const char *file_completion_ignore_extensions =
     "|bak|bin|dll|exe|o|obj|"; //!< complied file extensions
 
-/*!
+/**
  * Fills in the given _StringArray_ with likely file names that match
  * _input_.  StringArray is where the path is being "built into".
  */
@@ -4215,7 +3988,7 @@ void file_completion(StringArray *cs, const char *input)
     find_file_close(ffs);
 }
 
-/*!
+/**
  * Fills in _StringArray_ with likely named that match _input_. This is
  * similar to _file\_completion_, but instead of looking within the file
  * system it is looking within the currently available buffers
@@ -4233,7 +4006,7 @@ void buffer_completion(StringArray *cs, const char *input)
     }
 }
 
-/*!
+/**
  * register a new completion method 
  */
 void register_completion(const char *name, CompletionFunc completion_func)
@@ -4286,7 +4059,7 @@ ModeDef minibuffer_mode;
 
 extern CmdDef minibuffer_commands[];
 
-/* XXX: utf8 ? */
+/** XXX: utf8 ? */
 void do_completion(EditState *s)
 {
     QEmacsState *qs = s->qe_state;
@@ -4306,11 +4079,7 @@ void do_completion(EditState *s)
     completion_function(&cs, input);
     count = cs.nb_items;
     outputs = cs.items;
-#if 0
-    printf("count=%d\n", count);
-    for (i = 0; i < count; i++)
-        printf("out[%d]=%s\n", i, outputs[i]->str);
-#endif
+
     /* no completion ? */
     if (count == 0)
         goto the_end;
@@ -4368,7 +4137,7 @@ void do_completion(EditState *s)
     free_strings(&cs);
 }
 
-/* space does completion only if a completion method is defined */
+/** space does completion only if a completion method is defined */
 void do_completion_space(EditState *s)
 {
     if (!completion_function) {
@@ -4378,7 +4147,7 @@ void do_completion_space(EditState *s)
     }
 }
 
-/* scroll in completion popup */
+/** scroll in completion popup */
 void minibuf_complete_scroll_up_down(EditState *s, int dir)
 {
     if (completion_popup_window) {
@@ -4519,7 +4288,7 @@ void do_minibuffer_exit(EditState *s, int abort)
     }
 }
 
-/* Start minibuffer editing. When editing is finished, the callback is
+/** Start minibuffer editing. When editing is finished, the callback is
    called with an allocated string. If the string is null, it means
    editing was aborted. */
 void minibuffer_edit(const char *input, const char *prompt, 
@@ -4584,8 +4353,8 @@ void minibuffer_init(void)
     qe_register_cmd_table(minibuffer_commands, "minibuffer");
 }
 
-/* less mode */
-
+/////////////////////////////////////////////////////////////////////////////
+/** less mode */
 ModeDef less_mode;
 
 extern CmdDef less_commands[];
@@ -4593,7 +4362,7 @@ extern CmdDef less_commands[];
 /* XXX: incorrect to save it. Should use a safer method */
 static EditState *popup_saved_active;
 
-/* less like mode */
+/** less like mode */
 void do_less_quit(EditState *s)
 {
     QEmacsState *qs = s->qe_state;
@@ -4607,7 +4376,7 @@ void do_less_quit(EditState *s)
     do_refresh(qs->active_window);
 }
 
-/* show a popup on a readonly buffer */
+/** show a popup on a readonly buffer */
 void show_popup(EditBuffer *b)
 {
     EditState *s;
@@ -4640,7 +4409,7 @@ void less_mode_init(void)
 }
 
 #ifndef CONFIG_TINY
-/* insert a window to the left. Close all windows which are totally
+/** insert a window to the left. Close all windows which are totally
    under it (XXX: should try to move them first */
 EditState *insert_window_left(EditBuffer *b, int width, int flags)
 {
@@ -4664,7 +4433,7 @@ EditState *insert_window_left(EditBuffer *b, int width, int flags)
     return e_new;
 }
 
-/* return a window on the side of window 's' */
+/** return a window on the side of window 's' */
 EditState *find_window(EditState *s, int key)
 {
     QEmacsState *qs = s->qe_state;
@@ -4705,7 +4474,7 @@ void do_find_window(EditState *s, int key)
 }
 #endif
 
-/* give a good guess to the user for the next buffer */
+/** give a good guess to the user for the next buffer */
 static EditBuffer *predict_switch_to_buffer(EditState *s)
 {
     QEmacsState *qs = s->qe_state;
@@ -4813,7 +4582,7 @@ static void kill_buffer_noconfirm(EditBuffer *b)
     do_refresh(qs->first_window);
 }
 
-/* compute default path for find/save buffer */
+/** compute default path for find/save buffer */
 static void get_default_path(EditState *s, char *buf, int buf_size)
 {
     EditBuffer *b = s->b;
@@ -4968,33 +4737,32 @@ static void do_load1(EditState *s, const char *filename1,
 }
 
 #if 0
-
-static void load_progress_cb(void *opaque, int size)
-{
-    EditState *s = opaque;
-    EditBuffer *b = s->b;
-    if (size >= 1024 && !b->probed)
-        probe_mode(s, S_IFREG);
-}
-
-static void load_completion_cb(void *opaque, int err)
-{
-    EditState *s = opaque;
-    int mode;
-
-    mode = S_IFREG;
-    if (err == -ENOENT || err == -ENOTDIR) {
-        put_status(s, "(New file)");
-    } else if (err == -EISDIR) {
-        mode = S_IFDIR;
-    } else if (err < 0) {
-        put_status(s, "Could not read file");
-    }
-    if (!s->b->probed)
-        probe_mode(s, mode);
-    edit_display(s->qe_state);
-    dpy_flush(&global_screen);
-}
+//static void load_progress_cb(void *opaque, int size)
+//{
+//    EditState *s = opaque;
+//    EditBuffer *b = s->b;
+//    if (size >= 1024 && !b->probed)
+//        probe_mode(s, S_IFREG);
+//}
+//
+//static void load_completion_cb(void *opaque, int err)
+//{
+//    EditState *s = opaque;
+//    int mode;
+//
+//    mode = S_IFREG;
+//    if (err == -ENOENT || err == -ENOTDIR) {
+//        put_status(s, "(New file)");
+//    } else if (err == -EISDIR) {
+//        mode = S_IFDIR;
+//    } else if (err < 0) {
+//        put_status(s, "Could not read file");
+//    }
+//    if (!s->b->probed)
+//        probe_mode(s, mode);
+//    edit_display(s->qe_state);
+//    dpy_flush(&global_screen);
+//}
 #endif
 
 void do_load(EditState *s, const char *filename)
@@ -5113,7 +4881,7 @@ void do_quit(EditState *s)
     quit_examine_buffers(is);
 }
 
-/* analyse next buffer and ask question if needed */
+/** analyse next buffer and ask question if needed */
 static void quit_examine_buffers(QuitState *is)
 {
     EditBuffer *b;
@@ -5318,7 +5086,7 @@ void usprintf(char **pp, const char *fmt, ...)
 #define SEARCH_LENGTH 80
 #define FOUND_TAG 0x80000000
 
-/* store last searched string */
+/** store last searched string */
 static unsigned int last_search_string[SEARCH_LENGTH];
 static int last_search_string_len = 0;
 
@@ -5468,13 +5236,13 @@ static void isearch_key(void *opaque, int ch)
         }
         break;
 #if 0
-    case KEY_CTRL('q'):
-        ch = get_key(s->screen);
-        goto addch; 
-    case KEY_CTRL('w'):
-    case KEY_CTRL('y'):
-        /* emacs compatibility: get word / line */
-        break;
+//    case KEY_CTRL('q'):
+//        ch = get_key(s->screen);
+//        goto addch; 
+//    case KEY_CTRL('w'):
+//    case KEY_CTRL('y'):
+//        // emacs compatibility: get word / line
+//        break;
 #endif
         /* case / word */
     case KEY_CTRL('w'):
