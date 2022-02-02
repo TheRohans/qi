@@ -716,7 +716,9 @@ void do_backspace(EditState *s)
  */
 typedef struct {
     int linec;
+    /** Pixel corrdinates y */
     int yc;
+    /** Pixel corrdinates x */
     int xc;
     int offsetc;
     DirType basec; //!< direction of the line
@@ -2891,7 +2893,7 @@ void generic_text_display(EditState *s)
     }
 
     if (s->display_invalid) {
-        //invalidate the line shadow buffer
+        // invalidate the line shadow buffer
         free(s->line_shadow);
         s->line_shadow = NULL;
         s->shadow_nb_lines = 0;
@@ -2905,6 +2907,8 @@ void generic_text_display(EditState *s)
     ds->cursor_func = cursor_func;
     memset(m, 0, sizeof(*m));
     m->offsetc = s->offset;
+    // this happens when scrolling down, the cursor goes off
+    //the page
     m->xc = m->yc = NO_CURSOR;
     offset = s->offset_top;
     for (;;) {
@@ -2923,25 +2927,29 @@ void generic_text_display(EditState *s)
         display_init(ds, s, DISP_CURSOR_SCREEN);
         ds->cursor_opaque = m;
         ds->cursor_func = cursor_func;
-        ds->y = 0;
+        // ds->y = 0;
         offset = s->mode->text_backward_offset(s, s->offset);
         s->mode->text_display(s, ds, offset);
+
         if (m->xc == NO_CURSOR) {
             // XXX: should not happen 
-			// ROB: But does, often when swtiching to unihex with wacky chars
-            printf("ERROR: cursor not found\n");
-            ds->y = 0;
+			// ROB: But does, when going past the end of the file in
+            // hex-mode
+            // printf("ERROR: cursor not found\n");
+            m->xc = 0;
+            // ds->y = 1;
         } else {
             ds->y = m->yc + m->cursor_height;
+
+            while (ds->y < s->height && offset > 0) {
+                offset = s->mode->text_backward_offset(s, offset - 1);
+                s->mode->text_display(s, ds, offset);
+            }
+            s->offset_top = offset;
+            // adjust y_disp so that the cursor is at the bottom of the screen
+            s->y_disp = s->height - ds->y;
         }
 
-        while (ds->y < s->height && offset > 0) {
-            offset = s->mode->text_backward_offset(s, offset - 1);
-            s->mode->text_display(s, ds, offset);
-        }
-        s->offset_top = offset;
-        // adjust y_disp so that the cursor is at the bottom of the screen
-        s->y_disp = s->height - ds->y;
     } else {
         yc = m->yc;
         if (yc < 0) {
