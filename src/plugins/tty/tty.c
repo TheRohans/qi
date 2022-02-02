@@ -598,7 +598,7 @@ static void term_flush(QEditScreen *s)
                             buf[0] = '.';
                             buf[1] = '\0';
                         } else {
-                            unicode_to_charset((unsigned char *)buf, 
+                            unicode_to_charset((char *)buf, 
                                                cc, s->charset);
                         }
                         printf("%s", buf);

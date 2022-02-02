@@ -237,7 +237,7 @@ void eb_insert_buffer(EditBuffer *dest, int dest_offset,
                       int size)
 {
     Page *p, *p_start, *q;
-    int size_start, len, n, page_index;
+    int len, n, page_index;
 
     if (size == 0)
         return;
@@ -284,7 +284,6 @@ void eb_insert_buffer(EditBuffer *dest, int dest_offset,
     
     /* compute the number of complete pages to insert */
     p_start = p;
-    size_start = size;
     while (size > 0 && p->size <= size) {
         size -= p->size;
         p++;
@@ -613,7 +612,7 @@ static void eb_addlog(EditBuffer *b, enum LogOperation op,
     if (!b->save_log)
         return;
     if (!b->log_buffer) {
-        char buf[256];
+        char buf[264];
         snprintf(buf, sizeof(buf), "*log <%s>*", b->name);
         b->log_buffer = eb_new(buf, BF_SYSTEM);
         if (!b->log_buffer)

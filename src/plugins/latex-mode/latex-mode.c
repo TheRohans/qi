@@ -149,13 +149,13 @@ static int latex_mode_init(EditState *s, ModeSavedData *saved_data)
 
 static void do_tex_insert_quote(EditState *s)
 {
-    int offset_bol, len, offset1;
+    int offset_bol, offset1;
     unsigned int buf[MAX_BUF_SIZE];
     int p;
 
     offset_bol = eb_goto_bol(s->b, s->offset);
     offset1 = offset_bol;
-    len = eb_get_line(s->b, buf, MAX_BUF_SIZE - 1, &offset1);
+    eb_get_line(s->b, buf, MAX_BUF_SIZE - 1, &offset1);
     p = s->offset - offset_bol;
 
     if (p >= 1 && buf[p-1] == '\"') {
@@ -217,7 +217,7 @@ static void latex_cmd_run(void *opaque, char *cmd)
     char dir[MAX_FILENAME_SIZE];
     const char *argv[4];
     char *p;
-    int len;
+    // int len;
 
     if (cmd == 0) {
         put_status(func->es, "aborted");
@@ -236,7 +236,7 @@ static void latex_cmd_run(void *opaque, char *cmd)
     p = strrchr(func->es->b->filename, '/');
     if (p == func->es->b->filename)
         p++;
-    len = p - func->es->b->filename + 1;
+    // len = p - func->es->b->filename + 1;
     pstrcpy(dir, sizeof(dir), func->es->b->filename);
     chdir(dir);
 

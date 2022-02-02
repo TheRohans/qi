@@ -60,7 +60,7 @@ enum {
 void python_colorize_line(unsigned int *buf, int len, 
                      int *colorize_state_ptr, int state_only)
 {
-    int c, state, l, type_decl;
+    int c, state, type_decl;
     unsigned int *p, *p_start, *p1;
     char kbuf[32];
 
@@ -159,7 +159,7 @@ void python_colorize_line(unsigned int *buf, int len,
                 (c >= 'A' && c <= 'Z') || 
                 (c == '_')) {
                 
-                l = get_python_keyword(kbuf, sizeof(kbuf), &p);
+                get_python_keyword(kbuf, sizeof(kbuf), &p);
                 p1 = p;
                 while (*p == ' ' || *p == '\t')
                     p++;

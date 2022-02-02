@@ -304,9 +304,8 @@ void qe_register_binding(int key, const char *cmd_name, const char *mode_names)
  */
 void command_completion(StringArray *cs, const char *input)
 {
-    int count, len;
+    int len;
     CmdDef *d;
-    count = 0;
     
     len = strlen(input);
     d = first_cmd;
@@ -519,7 +518,7 @@ void do_forward_paragraph(EditState *s)
 void do_fill_paragraph(EditState *s)
 {
     int par_start, par_end, col;
-    int offset, offset1, n, c, line_count, indent_size;
+    int offset, offset1, n, c, indent_size;
     int chunk_start, word_start, word_size, word_count, space_size;
     unsigned char buf[1];
     
@@ -543,7 +542,6 @@ void do_fill_paragraph(EditState *s)
     col = 0;
     offset = par_start;
     word_count = 0;
-    line_count = 0;
     while (offset < par_end) {
         // skip spaces 
         chunk_start = offset;
@@ -4237,7 +4235,6 @@ void do_minibuffer_exit(EditState *s, int abort)
     static void (*cb)(void *opaque, char *buf);
     static void *opaque;
     char buf[4096], *retstr;
-    int len;
 
     /* if completion is activated, then select current file only if
        the selection is highlighted */
@@ -4260,7 +4257,7 @@ void do_minibuffer_exit(EditState *s, int abort)
         do_refresh(s);
     }
 
-    len = eb_get_str(s->b, buf, sizeof(buf));
+    eb_get_str(s->b, buf, sizeof(buf));
     if (hist && hist->nb_items > 0) {
         /* if null string, do not insert in history */
         hist->nb_items--;
@@ -5587,9 +5584,9 @@ void do_refresh(EditState *s1)
     // invalidate status line
     qs->status_shadow[0] = '\0';
 
-    // if (resized) {
+    if (resized) {
         put_status(NULL, "Screen is now %d by %d", width, height);
-    // }
+    }
 }
 
 void do_refresh_complete(EditState *s)
@@ -6009,7 +6006,6 @@ void window_resize(EditState *s, int target_w, int target_h)
 
 static int motion_type = MOTION_NONE;
 static EditState *motion_target;
-static int motion_x, motion_y;
 
 int check_motion_target(EditState *s)
 {
@@ -6348,7 +6344,7 @@ int parse_config_file(EditState *s, const char *filename)
     char line[1024], str[1024];
     char cmd[128], *q, *strp;
     const char *p, *r;
-    int err, line_num;
+    int line_num;
     CmdDef *d;
     int nb_args, c, sep, i, skip;
     void *args[MAX_CMD_ARGS];
@@ -6358,7 +6354,6 @@ int parse_config_file(EditState *s, const char *filename)
     if (!f)
         return -1;
     skip = 0;
-    err = 0;
     line_num = 0;
     for (;;) {
         if (fgets(line, sizeof(line), f) == NULL)
@@ -6419,7 +6414,6 @@ int parse_config_file(EditState *s, const char *filename)
         d = qe_find_cmd(cmd);
         if (!d) {
             /* CG: should handle variables */
-            err = -1;
             put_status(s, "Unknown command '%s'", cmd);
             continue;
         }

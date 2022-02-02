@@ -1,5 +1,5 @@
 
-extern inline int dired_get_index(EditState *s);
+// extern inline int dired_get_index(EditState *s);
 
 void dired_free(EditState *s);
 

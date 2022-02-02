@@ -790,7 +790,10 @@ typedef struct ModeProbeData {
  */
 typedef struct ModeSavedData {
     struct ModeDef *mode; //!< the mode is saved there 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
     char generic_data[SAVED_DATA_SIZE]; //!< generic text data
+#pragma GCC diagnostic pop
     int data_size; //!< mode specific saved data
     char data[1];
 } ModeSavedData;

@@ -68,7 +68,7 @@ enum {
 void c_colorize_line(unsigned int *buf, int len, 
                      int *colorize_state_ptr, int state_only)
 {
-    int c, state, l, type_decl;
+    int c, state, type_decl;
     unsigned int *p, *p_start, *p1;
     char kbuf[32];
 
@@ -167,7 +167,7 @@ void c_colorize_line(unsigned int *buf, int len,
                 (c >= 'A' && c <= 'Z') || 
                 (c == '_')) {
                 
-                l = get_c_keyword(kbuf, sizeof(kbuf), &p);
+                get_c_keyword(kbuf, sizeof(kbuf), &p);
                 p1 = p;
                 while (*p == ' ' || *p == '\t')
                     p++;
@@ -316,7 +316,12 @@ void do_c_indent(EditState *s)
     int offset, offset1, offset2, offsetl, c, pos, size, line_num, col_num;
     int i, eoi_found, len, pos1, lpos, style, line_num1, state;
     unsigned int buf[MAX_BUF_SIZE], *p;
+    // TODO: This stack seems to be used, but I need to walk
+    // through it more to be sure
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
     unsigned char stack[MAX_STACK_SIZE];
+#pragma GCC diagnostic pop
     char buf1[64], *q;
     int stack_ptr;
 
