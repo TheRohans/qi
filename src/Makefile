@@ -18,6 +18,7 @@ CONFIG_ALL_KMAPS=y
 
 CFLAGS:=-Wall
 # CFLAGS:=-std=c99 -Wall -Wpedantic -Werror -pedantic -pedantic-errors
+# https://stackoverflow.com/questions/6491019/struct-sigaction-incomplete-error
 # CFLAGS:=-std=c99 -Wall -Wpedantic -pedantic -D_XOPEN_SOURCE=700
 
 ifdef CONFIG_DEBUG
