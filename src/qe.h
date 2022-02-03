@@ -1160,7 +1160,7 @@ int get_colorized_line(EditState *s, unsigned int *buf, int buf_size,
 void set_color(unsigned int *buf, int len, int style);
 
 void do_char(EditState *s, int key);
-void do_switch_to_buffer(EditState *s, const char *bufname);;
+void do_switch_to_buffer(EditState *s, const char *bufname);
 void do_set_mode(EditState *s, ModeDef *m, ModeSavedData *saved_data);
 void text_move_left_right_visual(EditState *s, int dir);
 void text_move_word_left_right(EditState *s, int dir);
