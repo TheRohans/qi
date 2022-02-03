@@ -1126,7 +1126,7 @@ static inline int is_user_input_pending(void)
 
 /* config file support */
 void parse_config(EditState *e, const char *file);
-void do_load_qerc(EditState *e, const char *file);
+void do_load_qirc(EditState *e, const char *file);
 
 /* popup / low level window handling */
 void show_popup(EditBuffer *b);

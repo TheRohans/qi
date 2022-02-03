@@ -4728,7 +4728,7 @@ static void do_load1(EditState *s, const char *filename1,
 
     /* now we can set the mode */
     do_set_mode_file(s, selected_mode, NULL, f);
-    do_load_qerc(s, s->b->filename);
+    do_load_qirc(s, s->b->filename);
 
     if (f) {
         fclose(f);
@@ -6573,7 +6573,7 @@ void parse_config(EditState *e, const char *file)
 
 /* Load .qirc files in all parent directories of filename */
 /* CG: should keep a cache of failed attempts */
-void do_load_qerc(EditState *e, const char *filename)
+void do_load_qirc(EditState *e, const char *filename)
 {
     char buf[MAX_FILENAME_SIZE];
     char *p = buf;

@@ -35,7 +35,7 @@ CmdDef basic_commands[] = {
     CMD_( KEY_META('y'), KEY_NONE, "yank-pop", do_yank_pop, "*")
     // do_tab will not change read only buffer
     CMD0( KEY_CTRL('i'), KEY_NONE, "tabulate", do_tab)
-    CMD_( KEY_CTRL('q'), KEY_NONE, "quoted-insert", do_quote, "*")
+    // CMD_( KEY_CTRL('q'), KEY_NONE, "quoted-insert", do_quote, "*")
     CMD1( KEY_CTRLX(KEY_CTRL('s')), KEY_NONE, "save-buffer", do_save, 0 )
     CMD1( KEY_CTRLX(KEY_CTRL('w')), KEY_NONE, "write-file", do_save, 1 )
     CMD0( KEY_CTRLX(KEY_CTRL('c')), KEY_NONE, "suspend-emacs", do_quit )
@@ -45,12 +45,12 @@ CmdDef basic_commands[] = {
     CMD_( KEY_CTRLX('k'), KEY_NONE, "kill-buffer", do_kill_buffer, "s{Kill buffer: }[buffer]|buffer|")
     CMD_( KEY_CTRLX('i'), KEY_NONE, "insert-file", do_insert_file, "*s{Insert file: }[file]|file|")
     CMD0( KEY_CTRL('g'), KEY_CTRLX(KEY_CTRL('g')), "abort", do_break)
-    CMD0( KEY_NONE, KEY_NONE, "doctor", do_doctor)
+    // CMD0( KEY_NONE, KEY_NONE, "doctor", do_doctor)
     CMDV( KEY_NONE, KEY_NONE, "search-forward", do_search_string, 1, "s{Search forward: }|search|v")
     CMDV( KEY_NONE, KEY_NONE, "search-backward", do_search_string, -1, "s{Search backward: }|search|v")
     CMD1( KEY_CTRL('s'), KEY_NONE, "isearch-forward", do_isearch, 1 )
     CMD1( KEY_CTRL('r'), KEY_NONE, "isearch-backward", do_isearch, -1 )
-    CMD_( KEY_META('%'), KEY_NONE, "query-replace", do_query_replace, "*s{Query replace: }|search|s{With: }|replace|")
+	CMD_( KEY_META('%'), KEY_NONE, "query-replace", do_query_replace, "*s{Query replace: }|search|s{With: }|replace|")
     CMD_( KEY_META('r'), KEY_NONE, "replace-string", do_replace_string, "*s{Replace String: }|search|s{With: }|replace|")
     CMD0( KEY_CTRLX('u'), KEY_CTRL('_'), "undo", do_undo)
     CMD_( KEY_RET, KEY_NONE, "newline", do_return, "*")
@@ -104,7 +104,7 @@ CmdDef basic_commands[] = {
     // international
     CMD_( KEY_CTRLXRET('f'), KEY_NONE, "set-buffer-file-coding-system", do_set_buffer_file_coding_system, "s{Charset: }[charset]")
     CMD_( KEY_NONE, KEY_NONE, "convert-buffer-file-coding-system", do_convert_buffer_file_coding_system, "*s{Charset: }[charset]")
-    CMD0( KEY_CTRLXRET('b'), KEY_NONE, "toggle-bidir", do_toggle_bidir)
+    // CMD0( KEY_CTRLXRET('b'), KEY_NONE, "toggle-bidir", do_toggle_bidir)
     CMD_( KEY_CTRLXRET(KEY_CTRL('\\')), KEY_NONE, "set-input-method", do_set_input_method, "s{Input method: }[input]")
     CMD0( KEY_CTRLX(KEY_CTRL('\\')), KEY_NONE, "switch-input-method", do_switch_input_method)
 
@@ -119,7 +119,7 @@ CmdDef basic_commands[] = {
     // other stuff
     CMD_( KEY_NONE, KEY_NONE, "load-file-from-path", do_load_file_from_path, "s{Load file from path: }|file|")
     CMD_( KEY_NONE, KEY_NONE, "parse-config-file", parse_config, "s{Configuration file: }[file]|file|")
-    CMD_( KEY_NONE, KEY_NONE, "load-qerc", do_load_qerc, "s{path: }[file]|file|")
+    CMD_( KEY_NONE, KEY_NONE, "load-qirc", do_load_qirc, "s{path: }[file]|file|")
     CMD_( KEY_NONE, KEY_NONE, "set-visited-file-name", do_set_visited_file_name, "s{Set visited file name: }[file]|file|s{Rename file? }")
     
     // non standard mappings
