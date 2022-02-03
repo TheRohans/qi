@@ -4,6 +4,7 @@
 #define NB_COLORS 8
 
 int tty_init(void);
+void tty_resize(int sig);
 
 #endif
 

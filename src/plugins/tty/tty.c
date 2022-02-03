@@ -60,7 +60,6 @@ typedef struct TTYState {
     unsigned char buf[10];
 } TTYState;
 
-static void tty_resize(int sig);
 static void term_exit(void);
 static void tty_read_handler(void *opaque);
 
@@ -223,7 +222,7 @@ static void term_exit(void)
     tcsetattr (0, TCSANOW, &ts->oldtty);
 }
 
-static void tty_resize(int sig)
+void tty_resize(int sig)
 {
     QEditScreen *s = tty_screen;
     TTYState *ts = s->private;

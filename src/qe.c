@@ -5587,6 +5587,8 @@ void do_refresh(EditState *s1)
     if (resized) {
         put_status(NULL, "Screen is now %d by %d", width, height);
     }
+    
+    tty_resize(-1);
 }
 
 void do_refresh_complete(EditState *s)
