@@ -2,7 +2,9 @@
 
 ![docs](doc/qi.svg)
 
-Qi's goal is to be my perfect editor. It attempts to combine the things I like about _emacs_ with the speed and system integration of _vi_. Qi focuses on the following goals:
+Qi's goal is to be my perfect editor. It attempts to combine the things I
+like about _emacs_ with the speed and system integration of _vi_. Qi focuses
+on the following goals:
 
 - Speed and large file editing
 - Only terminal editor (no x11, etc)
@@ -21,6 +23,10 @@ Qi's goal is to be my perfect editor. It attempts to combine the things I like a
 - Hex editing
 
 Qi was forked from QEmacs 3.2 with a lot of features stripped out.
+
+## Documentation / Manual
+
+[Read the Manual](doc/manual.md)
 
 ## Building
 
@@ -44,13 +50,10 @@ make dist
 
 If everything worked, you should have a `qi` binary in the `dist` project directory.
 
-## Documentation / Manual
-
-[Read the Manual](doc/manual.md)
-
 ## Licensing
 
-QEmacs was released under the GNU Lesser General Public License v2 (read the accompanying LICENSE file) so Qi is as well.
+QEmacs was released under the GNU Lesser General Public License v2 (read the
+accompanying LICENSE file) so Qi is as well.
 
 - Qi is copyright 2013 [The Rohans][rohans]
 - QEmacs is copyright 2002 Fabrice Bellard.
