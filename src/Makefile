@@ -16,7 +16,9 @@ CONFIG_UNICODE_JOIN=y
 # Define CONFIG_ALL_KMAPS it to include generic key map handling
 CONFIG_ALL_KMAPS=y
 
-CFLAGS:=-Wall 
+CFLAGS:=-Wall
+# CFLAGS:=-std=c99 -Wall -Wpedantic -Werror -pedantic -pedantic-errors
+# CFLAGS:=-std=c99 -Wall -Wpedantic -pedantic -D_XOPEN_SOURCE=700
 
 ifdef CONFIG_DEBUG
 CFLAGS+= -Og -g 
