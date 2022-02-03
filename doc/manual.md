@@ -71,7 +71,6 @@ repeated _N_ times.
 For example, if you type `C-u 5 M-x next-line RET` the cursor will move down
 5 lines. Don't worry, this is not the only way to move around.
 
-
 ### Help
 
 You can press _C-h b_ to have the list of all the currently active bindings,
@@ -180,6 +179,17 @@ C-x RET l               : toggle-line-numbers
 C-x RET t               : truncate-lines
 C-x RET w               : word-wrap
 C-x C-d                 : dired
+```
+
+## Startup Config
+
+You can add a file named `.qirc` to your home directory where you can do
+some basic editor startup configuration. For example:
+
+```
+/* comment */
+toggle-line-numbers()
+set-indent-width(2)
 ```
 
 ## Editing Modes
