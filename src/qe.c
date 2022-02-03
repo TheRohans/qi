@@ -6355,6 +6355,7 @@ int parse_config_file(EditState *s, const char *filename)
         return -1;
     skip = 0;
     line_num = 0;
+
     for (;;) {
         if (fgets(line, sizeof(line), f) == NULL)
             break;

@@ -1,5 +1,6 @@
 #!/bin/bash
 #
+# qi configure script, forked from...
 # qemacs configure script (c) 2002 Fabrice Bellard
 #
 # set temporary file name
@@ -89,11 +90,6 @@ if test -z "$source_path" -o "$source_path" = "." ; then
     source_path_used="no"
 fi
 
-#if test -d ./ffmpeg ; then
-#    ffmpeg="yes"
-#    ffmpeg_srcdir="./ffmpeg"
-#fi
-
 if test ! -f /usr/include/png.h ; then
     png="no"
 fi
@@ -122,18 +118,18 @@ for opt do
   ;;
   --disable-network) network="no"
   ;;
-  --enable-win32) win32="yes"
-  ;;
-  #--enable-cygwin) cygwin="yes" ;
-  #;;
+ # --enable-win32) win32="yes"
+ # ;;
+ # --enable-cygwin) cygwin="yes" ;
+ # ;;
   --enable-debug) debug="yes"
   ;;
   --enable-tiny) tiny="yes"
   ;;
-  --enable-arabic) arabic="yes"
-  ;;
-  --enable-devanagari) devanagari="yes"
-  ;;
+#   --enable-arabic) arabic="yes"
+#   ;;
+#   --enable-devanagari) devanagari="yes"
+#   ;;
   esac
 done
 
@@ -142,15 +138,15 @@ if test -z "$CFLAGS"; then
     CFLAGS="-O2"
 fi
 
-if test "$win32" = "yes" ; then
-    cross_prefix="i386-mingw32msvc-"
-    network="no"
-    exe=".exe"
-fi
+#if test "$win32" = "yes" ; then
+#    cross_prefix="i386-mingw32msvc-"
+#    network="no"
+#    exe=".exe"
+#fi
 
-if test "$cygwin" = "yes" ; then
-    exe=".exe"
-fi
+#if test "$cygwin" = "yes" ; then
+#    exe=".exe"
+#fi
 
 # endianness : guess with cpu type. Should also use prefix
 if test "$cpu" = "powerpc"; then
@@ -217,32 +213,32 @@ EOF
 echo "Standard options:"
 echo "  --help                   print this message"
 echo "  --prefix=PREFIX          install in PREFIX [$prefix]"
-echo "  --enable-win32           enable win32 cross compile"
+#echo "  --enable-win32           enable win32 cross compile"
 #echo "  --enable-cygwin          compile for cygwin systems"
 echo "  --enable-debug           build with debug stuff for gdb"
 echo "  --enable-tiny            build a very small version, no color, no extra modes or features, etc"
-echo "  --enable-arabic          enable the arabic charset"
-echo "  --enable-devanagari      enable the devanagari charset"
+# echo "  --enable-arabic          enable the arabic charset"
+# echo "  --enable-devanagari      enable the devanagari charset"
 echo ""
 echo "Advanced options (experts only):"
 echo "  --source-path=PATH       path of source code [$source_path]"
 echo "  --cross-prefix=PREFIX    use PREFIX for compile tools [$cross_prefix]"
 echo "  --cc=CC                  use C compiler CC [$cc]"
 echo "  --make=MAKE              use specified make [$make]"
-#echo "  --with-ffmpeglibdir=DIR  set ffmpeg object files directory"
 echo ""
 #echo "NOTE: The object files are build at the place where configure is launched"
 exit 1
 fi
 
+echo "--------------------"
 echo "Install prefix   $prefix"
 echo "Source path      $source_path"
 echo "C compiler       $cc"
 echo "Debug            $debug"
 echo "Tiny build       $tiny"
-echo "Arabic           $arabic"
-echo "Devanagari       $devanagari"
-
+# echo "Arabic           $arabic"
+# echo "Devanagari       $devanagari"
+echo "--------------------"
 echo "Creating config.mak and config.h"
 
 MAK_FILE=src/config.mak
@@ -302,10 +298,10 @@ if test "$network" = "yes" ; then
   echo "CONFIG_NETWORK=yes" >> ${MAK_FILE}
 fi
 
-if test "$win32" = "yes" ; then
-  echo "#define CONFIG_WIN32 1" >> $TMPH
-  echo "CONFIG_WIN32=yes" >> ${MAK_FILE}
-fi
+#if test "$win32" = "yes" ; then
+#  echo "#define CONFIG_WIN32 1" >> $TMPH
+#  echo "CONFIG_WIN32=yes" >> ${MAK_FILE}
+#fi
 
 if test "$debug" = "yes" ; then
   echo "#define CONFIG_DEBUG 1" >> $TMPH
@@ -317,16 +313,15 @@ if test "$tiny" = "yes" ; then
   echo "CONFIG_TINY=yes" >> ${MAK_FILE}
 fi
 
-if test "$arabic" = "yes" ; then
-  echo "#define CONFIG_ARABIC 1" >> $TMPH
-  echo "CONFIG_ARABIC=yes" >> ${MAK_FILE}
-fi
+# if test "$arabic" = "yes" ; then
+#   echo "#define CONFIG_ARABIC 1" >> $TMPH
+#   echo "CONFIG_ARABIC=yes" >> ${MAK_FILE}
+# fi
 
-if test "$devanagari" = "yes" ; then
-  echo "#define CONFIG_DEVANAGARI 1" >> $TMPH
-  echo "CONFIG_DEVANAGARI=yes" >> ${MAK_FILE}
-fi
-
+# if test "$devanagari" = "yes" ; then
+#   echo "#define CONFIG_DEVANAGARI 1" >> $TMPH
+#   echo "CONFIG_DEVANAGARI=yes" >> ${MAK_FILE}
+# fi
 
 # build tree in object directory if source path is different from current one
 if test "$source_path_used" = "yes" ; then
@@ -349,3 +344,4 @@ else
 fi
 
 rm -f $TMPC $TMPO $TMPS $TMPH $TMPE
+

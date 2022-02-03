@@ -1,6 +1,6 @@
 include config.mak
 
-# from configure
+# from configure / config.mak
 #CONFIG_NETWORK=yes
 #CONFIG_WIN32=yes
 #CONFIG_TINY=yes
@@ -17,37 +17,35 @@ CONFIG_UNICODE_JOIN=y
 CONFIG_ALL_KMAPS=y
 
 CFLAGS:=-Wall 
+
 ifdef CONFIG_DEBUG
-CFLAGS+= -g 
+CFLAGS+= -Og -g 
+else 
+CFLAGS+= -Os
 endif 
+
 CFLAGS+= $(CFLAGS) -funsigned-char -I$(LOAD_PATH):./
 
 ifdef TARGET_GPROF
 CFLAGS+= -p
 LDFLAGS+= -p
 endif
+
 ifdef TARGET_ARCH_X86
-#CFLAGS+=-fomit-frame-pointer
-#ifeq ($(GCC_MAJOR),2)
-#CFLAGS+=-m386 -malign-functions=0
-#else
 CFLAGS+=-march=i386 -falign-functions=0
-#endif
 endif
+
 DEFINES=-DHAVE_QE_CONFIG_H
 
 ifdef CONFIG_DLL
 LIBS+=-ldl
-# export some qemacs symbols
-# -E parameter doesn't work on OS X
-#LDFLAGS+=-Wl,-E
 LDFLAGS+=-Wl
 endif
 
-ifdef CONFIG_WIN32
-_OBJS+= win32.o
-LIBS+= -lgdi32
-endif
+#ifdef CONFIG_WIN32
+#_OBJS+= win32.o
+#LIBS+= -lgdi32
+#endif
 
 #ifdef CONFIG_UNICODE_JOIN
 #_OBJS+= arabic.o indic.o qfribidi.o plugin_unihex.o
