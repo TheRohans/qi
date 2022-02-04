@@ -45,7 +45,6 @@ CmdDef basic_commands[] = {
     CMD_( KEY_CTRLX('k'), KEY_NONE, "kill-buffer", do_kill_buffer, "s{Kill buffer: }[buffer]|buffer|")
     CMD_( KEY_CTRLX('i'), KEY_NONE, "insert-file", do_insert_file, "*s{Insert file: }[file]|file|")
     CMD0( KEY_CTRL('g'), KEY_CTRLX(KEY_CTRL('g')), "abort", do_break)
-    // CMD0( KEY_NONE, KEY_NONE, "doctor", do_doctor)
     CMDV( KEY_NONE, KEY_NONE, "search-forward", do_search_string, 1, "s{Search forward: }|search|v")
     CMDV( KEY_NONE, KEY_NONE, "search-backward", do_search_string, -1, "s{Search backward: }|search|v")
     CMD1( KEY_CTRL('s'), KEY_NONE, "isearch-forward", do_isearch, 1 )

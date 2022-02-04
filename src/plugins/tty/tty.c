@@ -141,6 +141,11 @@ static void tty_get_screen_size(int *pw, int *ph)
     *ph = h;
 }
 
+void handle_sigwinch(int sig)
+{
+    eb_refresh();
+}
+
 static int term_init(QEditScreen *s, int w, int h)
 {
     TTYState *ts;
@@ -168,31 +173,32 @@ static int term_init(QEditScreen *s, int w, int h)
     
     tcsetattr (0, TCSANOW, &tty);
 
-#if 0
-    /* test UTF8 support by looking at the cursor position (idea from
-       Ricardas Cepas <rch@pub.osf.lt>). Since uClibc actually tests
-       to ensure that the format string is a valid multibyte sequence
-       in the current locale (ANSI/ISO C99), use a format specifer of
-       %s to avoid printf() failing with EILSEQ. */
-    printf ("%s", "\030\032" "\r\xEF\x81\x81" "\033[6n\033D");
-    scanf ("\033[%u;%u", &y, &x);/* get cursor position */
-    printf("\033[1F" "\033[%uX", (x-1)); /* go back; erase 1 or 3 char */
-    s->charset = &charset_8859_1;
-    if (x == 2) {
-        s->charset = &charset_utf8;
-    }
-#else
+//#if 0
+//    /* test UTF8 support by looking at the cursor position (idea from
+//       Ricardas Cepas <rch@pub.osf.lt>). Since uClibc actually tests
+//       to ensure that the format string is a valid multibyte sequence
+//       in the current locale (ANSI/ISO C99), use a format specifer of
+//       %s to avoid printf() failing with EILSEQ. */
+//    printf ("%s", "\030\032" "\r\xEF\x81\x81" "\033[6n\033D");
+//    scanf ("\033[%u;%u", &y, &x);/* get cursor position */
+//    printf("\033[1F" "\033[%uX", (x-1)); /* go back; erase 1 or 3 char */
+//    s->charset = &charset_8859_1;
+//    if (x == 2) {
+//        s->charset = &charset_utf8;
+//    }
+//#else
     // s->charset = &charset_8859_1;
     // Assume UTF-8
     s->charset = &charset_utf8;
-#endif
+//#endif
 
     atexit(term_exit);
 
-    sig.sa_handler = tty_resize;
+    sig.sa_handler = &handle_sigwinch;
     sigemptyset(&sig.sa_mask);
-    sig.sa_flags = 0;
+    sig.sa_flags = 0; // SA_RESTART;
     sigaction(SIGWINCH, &sig, NULL);
+
     fcntl(0, F_SETFL, O_NONBLOCK);
     /* If stdout is to a pty, make sure we aren't in nonblocking mode.
      * Otherwise, the printf()s in term_flush() can fail with EAGAIN,
@@ -613,7 +619,6 @@ static void term_flush(QEditScreen *s)
     fflush(stdout);
 }
 
-
 static QEDisplay tty_dpy = {
     "vt100",
     term_probe,
@@ -636,5 +641,3 @@ int tty_init(void)
 {
     return qe_register_display(&tty_dpy);
 }
-
-// qe_module_init(tty_init);

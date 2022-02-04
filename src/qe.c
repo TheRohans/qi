@@ -5475,12 +5475,6 @@ static void do_search_string(EditState *s, const char *search_str, int dir)
     }
 }
 
-void do_doctor(EditState *s)
-{
-    /* Should show keys? */
-    put_status(s, "Hello, how are you ?");
-}
-
 static int get_line_height(QEditScreen *screen, int style_index)
 {
     QEFont *font;
@@ -5501,9 +5495,12 @@ void edit_invalidate(EditState *s)
     s->display_invalid = 1;
 }
 
-void do_refresh(EditState *s1)
+/**
+ * Try to redraw the display. Used when the window size
+ * has changed, or if they do C-l to force redraw the screen
+ */
+void eb_refresh()
 {
-    // CG: s1 may be NULL
     QEmacsState *qs = &qe_state;
     EditState *e;
     int new_status_height, new_mode_line_height, content_height;
@@ -5589,6 +5586,12 @@ void do_refresh(EditState *s1)
     }
     
     tty_resize(-1);
+}
+
+void do_refresh(EditState *s1)
+{
+    // CG: s1 may be NULL
+	eb_refresh();
 }
 
 void do_refresh_complete(EditState *s)
@@ -6953,7 +6956,7 @@ typedef struct QEArgs {
     char **argv;
 } QEArgs;
 
-/*!
+/**
  * init function 
  */
 void qe_init(void *opaque)
