@@ -43,36 +43,6 @@ typedef struct QECharMetrics {
     int width;          /* sum of glyph widths */
 } QECharMetrics;
 
-typedef enum QEBitmapFormat {
-    QEBITMAP_FORMAT_RGB565 = 0,
-    QEBITMAP_FORMAT_RGB555,
-    QEBITMAP_FORMAT_RGB24,
-    QEBITMAP_FORMAT_RGBA32,
-    QEBITMAP_FORMAT_YUV420P,
-} QEBitmapFormat;
-
-#define QEBITMAP_FLAG_VIDEO 0x0001 /* bitmap used to display video */
-
-/* opaque bitmap structure */
-typedef struct QEBitmap {
-    int width;
-    int height;
-    QEBitmapFormat format;
-    int flags;
-    void *priv_data; /* driver data */
-} QEBitmap;
-
-/* draw options */
-#define QEBITMAP_DRAW_HWZOOM 0x0001
-
-/* user visible picture data (to modify content) */
-typedef struct QEPicture {
-    int width;
-    int height;
-    QEBitmapFormat format;
-    unsigned char *data[4];
-    int linesize[4];
-} QEPicture;
 
 struct QEditScreen;
 typedef struct QEditScreen QEditScreen;
@@ -100,15 +70,6 @@ typedef struct QEDisplay {
     void (*dpy_selection_activate)(QEditScreen *s);
     void (*dpy_selection_request)(QEditScreen *s);
     void (*dpy_invalidate)(void);
-    /* bitmap support */
-    int (*dpy_bmp_alloc)(QEditScreen *s, QEBitmap *b);
-    void (*dpy_bmp_free)(QEditScreen *s, QEBitmap *b);
-    void (*dpy_bmp_draw)(QEditScreen *s, QEBitmap *b, 
-                         int dst_x, int dst_y, int dst_w, int dst_h, 
-                         int offset_x, int offset_y, int flags);
-    void (*dpy_bmp_lock)(QEditScreen *s, QEBitmap *bitmap, QEPicture *pict,
-                         int x1, int y1, int w1, int h1);
-    void (*dpy_bmp_unlock)(QEditScreen *s, QEBitmap *b);
     /* full screen support */
     void (*dpy_full_screen)(QEditScreen *s, int full_screen);
     struct QEDisplay *next;
@@ -195,14 +156,5 @@ static inline void release_font(QEditScreen *s, QEFont *font) {
 
 void selection_activate(QEditScreen *s);
 void selection_request(QEditScreen *s);
-
-QEBitmap *bmp_alloc(QEditScreen *s, int width, int height, int flags);
-void bmp_free(QEditScreen *s, QEBitmap *b);
-void bmp_draw(QEditScreen *s, QEBitmap *b, 
-              int dst_x, int dst_y, int dst_w, int dst_h, 
-              int offset_x, int offset_y, int flags);
-void bmp_lock(QEditScreen *s, QEBitmap *bitmap, QEPicture *pict,
-              int x1, int y1, int w1, int h1);
-void bmp_unlock(QEditScreen *s, QEBitmap *bitmap);
 
 #endif
