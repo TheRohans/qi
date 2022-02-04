@@ -28,7 +28,10 @@ distclean: clean
 	rm -rf dist
 
 doc:
+ifneq (, $(shell which doxygen))
 	doxygen doc/doxygen/Doxyfile
+endif
+
 
 banner_help:
 	@echo '=================================================================='
