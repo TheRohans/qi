@@ -21,7 +21,7 @@ jobs:
 
     - uses: actions/checkout@v2
     - name: cppcheck
-      uses: deep5050/cppcheck-action@master
+      uses: deep5050/cppcheck-action@main
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         enable: warning,style,performance,portability,information,unusedFunction
