@@ -26,8 +26,7 @@ Qi was forked from QEmacs 3.2 with a lot of features stripped out.
 
 ## Demo
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/Gap4lMlfPBM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
+[![Qi Demo Video](https://img.youtube.com/vi/Gap4lMlfPBM/0.jpg)](https://www.youtube.com/watch?v=Gap4lMlfPBM)
 
 ## Documentation / Manual
 
