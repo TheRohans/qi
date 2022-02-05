@@ -13,7 +13,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: configure
-      run ./configure --cc=gcc
+      run: ./configure --cc=gcc
     - name: test
       run: make test
     - name: build
