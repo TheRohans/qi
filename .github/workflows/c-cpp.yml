@@ -1,26 +1,26 @@
 name: C/C++ Basic Build
 
 on:
-	push:
-		branches: [ main ]
-	pull_request:
-		branches: [ main ]
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-	build:
-	runs-on: ubuntu-latest
+  build:
+  runs-on: ubuntu-latest
 
-	steps:
-	- uses: actions/checkout@v2
-	- name: test
-		run: make test
-	- name: build
-		run: make qi
+  steps:
+  - uses: actions/checkout@v2
+  - name: test
+    run: make test
+  - name: build
+    run: make qi
 
-	- uses: actions/checkout@v2
-	- name: cppcheck
-		uses: deep5050/cppcheck-action@master
-		with:
-			github_token: ${{ secrets.GITHUB_TOKEN }}
-			enable: warning,style,performance,portability,information,unusedFunction
-			force_language: c
+  - uses: actions/checkout@v2
+  - name: cppcheck
+    uses: deep5050/cppcheck-action@master
+    with:
+      github_token: ${{ secrets.GITHUB_TOKEN }}
+      enable: warning,style,performance,portability,information,unusedFunction
+      force_language: c
