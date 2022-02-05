@@ -1,5 +1,7 @@
 # Qi
 
+[![.github/workflows/c-cpp.yml](https://github.com/TheRohans/qi/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/TheRohans/qi/actions/workflows/c-cpp.yml)
+
 ![docs](doc/qi.svg)
 
 Qi's goal is to be my perfect editor. It attempts to combine the things I
@@ -23,7 +25,6 @@ on the following goals:
 - Hex editing
 
 Qi was forked from QEmacs 3.2 with a lot of features stripped out.
-
 
 ## Demo
 
