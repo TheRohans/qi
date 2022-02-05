@@ -1,4 +1,4 @@
-name: C/C++ Basic Build
+name: C/C++ CI
 
 on:
   push:
@@ -12,10 +12,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: configure
+      run ./configure --cc=gcc
     - name: test
       run: make test
     - name: build
-      run: make qi
+      run: make clean qi
 
     - uses: actions/checkout@v2
     - name: cppcheck
