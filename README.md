@@ -24,6 +24,11 @@ on the following goals:
 
 Qi was forked from QEmacs 3.2 with a lot of features stripped out.
 
+## Demo
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/Gap4lMlfPBM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+
 ## Documentation / Manual
 
 [Read the Manual](doc/manual.md)
