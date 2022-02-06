@@ -13,11 +13,7 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@v2
     - name: configure
-      run: ./configure --cc=gcc
-    - name: test
-      run: make test
-    - name: build
-      run: make clean qi
+      run: ./configure --cc=gcc; make clean qi
 
   macos:
     runs-on: macos-latest
@@ -25,11 +21,7 @@ jobs:
     - name: Checkout repo
     - uses: actions/checkout@v2
     - name: configure
-      run: ./configure --cc=gcc
-    - name: test
-      run: make test
-    - name: build
-      run: make clean qi
+      run: ./configure --cc=clang; make clean qi
 
 #    - name: cppcheck
 #      uses: deep5050/cppcheck-action@main
