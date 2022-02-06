@@ -6622,7 +6622,7 @@ static void show_version(void)
            "Copyright (c) 2000-2003 Fabrice Bellard\n"
            "Qi comes with ABSOLUTELY NO WARRANTY.\n"
            "You may redistribute copies of Qi\n"
-           "under the terms of the GNU Lesser General Public License.\n");
+           "under the terms of the GNU Lesser General Public License v2.\n");
     exit(1);
 }
 
@@ -6653,8 +6653,7 @@ static void show_usage(void)
         p = p->u.next;
     }
     printf("\n"
-           "Report bugs to support@therohans.com.  First, please see the Bugs\n"
-           "section of the manual or the file BUGS.\n");
+           "Report bugs to support@therohans.com.\n");
     exit(1);
 }
 
@@ -6853,28 +6852,6 @@ QEDisplay dummy_dpy = {
 };
 
 
-//#if (defined(__GNUC__) || defined(__TINYC__)) && defined(CONFIG_INIT_CALLS)
-//static inline void init_all_modules(void)
-//{
-//    int (*initcall)(void);
-//    void **ptr;
-//    
-//    ptr = (void **)(void *)&__initcall_first;
-//    for (;;) {
-//        /* NOTE: if bound checking is on, a '\0' is inserted between
-//           each initialized 'void *' */
-//#if defined(__BOUNDS_CHECKING_ON)
-//        ptr = (void **)((long)ptr + (2 * sizeof(void *)));
-//#else
-//        ptr++;
-//#endif
-//        initcall = *ptr;
-//        if (initcall == NULL)
-//            break;
-//        initcall();
-//    }
-//}
-//#else
 static inline void init_all_modules(void)
 {
 	//Plugins that are needed, can not run without
@@ -6882,11 +6859,6 @@ static inline void init_all_modules(void)
 	hex_init();
 	list_init();
 	tty_init();
-#ifndef CONFIG_WIN32
-	//I think this is only needed on non-w32 system, need to test
-	//but I don't care really since I only use mac, linux and freebsd
-	// shell_init();
-#endif
 	
 #ifndef CONFIG_TINY
 	//If they are not building the tiny version, init some the

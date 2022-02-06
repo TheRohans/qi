@@ -1,5 +1,5 @@
-#ifndef QE_PLUG_TTY_H
-#define QE_PLUG_TTY_H
+#ifndef QI_PLUG_TTY_H
+#define QI_PLUG_TTY_H
 
 #define NB_COLORS 8
 
