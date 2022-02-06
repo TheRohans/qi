@@ -12,15 +12,13 @@ jobs:
     steps:
     - name: Checkout repo
       uses: actions/checkout@v2
-    - name: configure
       run: ./configure --cc=gcc; make clean qi
 
   macos:
     runs-on: macos-latest
     steps:
     - name: Checkout repo
-    - uses: actions/checkout@v2
-    - name: configure
+      uses: actions/checkout@v2
       run: ./configure --cc=clang; make clean qi
 
 #    - name: cppcheck
