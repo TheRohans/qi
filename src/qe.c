@@ -6868,15 +6868,12 @@ static inline void init_all_modules(void)
 	dired_init();
 	c_init();
 	xml_init();
-	charset_more_init();
 	latex_init();
 	markdown_init();
 	html_init();
-	// php_init();
     css_init();
     python_init();
     config_init();
-	//quick_open_init();
 	//example_init();
 #endif
 	
