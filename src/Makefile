@@ -1,10 +1,7 @@
 include config.mak
 
 # from configure / config.mak
-#CONFIG_NETWORK=yes
-#CONFIG_WIN32=yes
 #CONFIG_TINY=yes
-#CONFIG_DLL=yes
 
 # currently fixes
 # Define CONFIG_ALL_MODES to include all edit modes
@@ -45,15 +42,6 @@ LIBS+=-ldl
 LDFLAGS+=-Wl
 endif
 
-#ifdef CONFIG_WIN32
-#_OBJS+= win32.o
-#LIBS+= -lgdi32
-#endif
-
-#ifdef CONFIG_UNICODE_JOIN
-#_OBJS+= arabic.o indic.o qfribidi.o plugin_unihex.o
-#endif
-
 LIBS+=-lm
 
 LOAD_PATH=../build
@@ -65,13 +53,8 @@ LOAD_PATH=../build
 TARGETLIBS:=
 TARGETS+=qi$(EXE)
 
-_OBJS=qe.o charset.o buffer.o input.o unicode_join.o display.o util.o cutils.o qstack.o
-
-ifndef CONFIG_WIN32
-_OBJS+= unix.o
-endif
-
-_OBJS+= qfribidi.o
+# qfribidi.o == CONFIG_UNICODE_JOIN
+_OBJS=qe.o charset.o buffer.o input.o unicode_join.o display.o util.o cutils.o qstack.o qfribidi.o unix.o
 
 OBJS = $(patsubst %,$(LOAD_PATH)/%,$(_OBJS))
 

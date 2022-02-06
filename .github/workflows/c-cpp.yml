@@ -7,26 +7,25 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
-    name: Compile Ubuntu
+  linux:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout repo
       uses: actions/checkout@v2
+    - name: Build
+      run: ./configure --cc=gcc; make clean qi
 
-    - name: configure
-      run: ./configure --cc=gcc
+  macos:
+    runs-on: macos-latest
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v2
+    - name: Buid
+      run: ./configure --cc=clang; make clean qi
 
-    - name: test
-      run: make test
-
-    - name: build
-      run: make clean qi
-
-    - name: cppcheck
-      uses: deep5050/cppcheck-action@main
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        enable: warning,style,performance,portability,information,unusedFunction
-        force_language: c
+#    - name: cppcheck
+#      uses: deep5050/cppcheck-action@main
+#      with:
+#        github_token: ${{ secrets.GITHUB_TOKEN }}
+#        enable: warning,style,performance,portability,information,unusedFunction
+#        force_language: c

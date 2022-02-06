@@ -1,3 +1,5 @@
+#ifndef QI_PLUG_BUFED_H
+#define QI_PLUG_BUFED_H
 
 /* iterate 'func_item' to selected items. If no selected items, then
    use current item */
@@ -8,3 +10,4 @@ void string_selection_iterate(StringArray *cs,
 
 int bufed_init(void);
 
+#endif
