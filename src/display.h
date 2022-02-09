@@ -69,6 +69,7 @@ typedef struct QEDisplay {
                          int x, int y, int w, int h);
     void (*dpy_selection_activate)(QEditScreen *s);
     void (*dpy_selection_request)(QEditScreen *s);
+    
     void (*dpy_invalidate)(void);
     /* full screen support */
     void (*dpy_full_screen)(QEditScreen *s, int full_screen);
@@ -80,10 +81,10 @@ struct QEditScreen {
     int width, height;
     QECharset *charset; /* the charset of the TTY, XXX: suppress that,
                           use a system in fonts instead */
-    int media; /* media type (see CSS_MEDIA_xxx) */
-    int bitmap_format; /* supported bitmap format */
-    int video_format; /* supported video format */
-    /* clip region handling */
+    int media;          /* media type (see CSS_MEDIA_xxx) */
+    int bitmap_format;  /* supported bitmap format */
+    int video_format;   /* supported video format */
+                        /* clip region handling */
     int clip_x1, clip_y1;
     int clip_x2, clip_y2;
     void *private;

@@ -17,15 +17,8 @@
 
 #include "config.h"
 
-// OS specific defines
-#ifdef WIN32
-#define snprintf _snprintf
-#define vsnprintf _vsnprintf
-#endif
-
-/////////////////////////////
 #include "cutils.h"
-/////////////////////////////
+#include "log.h"
 
 /////////////////////////////////////////
 // low level I/O events 
@@ -52,15 +45,11 @@ struct EditState;
 #define MAX_FILENAME_SIZE 1024
 #define NO_ARG MAXINT
 
+/* ///////////////////////////////////////////////////////////////////////// */
 /* util.c */
 
 /* media definitions */
 #define CSS_MEDIA_TTY     0x0001
-#define CSS_MEDIA_SCREEN  0x0002
-#define CSS_MEDIA_PRINT   0x0004
-#define CSS_MEDIA_TV      0x0008
-#define CSS_MEDIA_SPEECH  0x0010
-
 #define CSS_MEDIA_ALL     0xffff
 
 #define INT2VOIDP(i) (void*)(uintptr_t)(i)
@@ -150,7 +139,7 @@ static inline int min(int a, int b)
 /* string arrays */
 
 typedef struct StringItem {
-    void *opaque; //!< opaque data that the user can use
+    void *opaque;  //!< opaque data that the user can use
     char selected; //!< true if selected 
     char str[1];
 } StringItem;
@@ -188,9 +177,10 @@ typedef struct CmdOptionDef {
 
 void qe_register_cmd_line_options(CmdOptionDef *table);
 
+/* ///////////////////////////////////////////////////////////////////////// */
 /* charset.c */
 
-/*!
+/**
  * maximum number of bytes for a character in all the supported charsets 
  */
 #define MAX_CHAR_BYTES 6
@@ -215,7 +205,7 @@ typedef struct QECharset {
 
 extern QECharset *first_charset;
 extern QECharset charset_utf8, charset_8859_1; //!< predefined charsets 
-extern QECharset charset_vt100; //!< used for the tty output 
+extern QECharset charset_vt100;                //!< used for the tty output 
 extern QECharset charset_8859_2;
 extern QECharset charset_cp1125;
 extern QECharset charset_cp737;
@@ -390,7 +380,7 @@ typedef struct QEExposeEvent {
 #define QE_WHEEL_UP      0x0008
 #define QE_WHEEL_DOWN    0x0010
 
-/*!
+/**
  * should probably go somewhere else, or in the config file
  * how many text lines to scroll when mouse wheel is used 
  */
@@ -421,6 +411,7 @@ void qe_handle_event(QEEvent *ev);
 void qe_grab_keys(void (*cb)(void *opaque, int key), void *opaque);
 void qe_ungrab_keys(void);
 
+/* ///////////////////////////////////////////////////////////////////////// */
 /* buffer.c */
 
 /**
@@ -461,6 +452,7 @@ enum LogOperation {
     LOGOP_DELETE
 };
 
+// defined for real later... 
 struct EditBuffer;
 
 /**
@@ -479,13 +471,16 @@ typedef struct EditBufferCallbackList {
 } EditBufferCallbackList;
 
 // buffer flags 
-#define BF_SAVELOG   0x0001  //!< activate buffer logging 
+#define BF_SAVELOG   0x0001  //!< activate buffer logging (for undo)
 #define BF_SYSTEM    0x0002  //!< buffer system, cannot be seen by the user
 #define BF_READONLY  0x0004  //!< read only buffer
 #define BF_PREVIEW   0x0008  //!< used in dired mode to mark previewed files 
 #define BF_LOADING   0x0010  //!< buffer is being loaded 
 #define BF_SAVING    0x0020  //!< buffer is being saved 
 #define BF_DIRED     0x0100  //!< buffer is interactive dired 
+
+#define BUF_SCRATCH "*scratch*" //!< scratch buffer system always creates
+#define BUF_DEBUG   "*debug*"   //!< debug buffer, runtime logs
 
 typedef struct EditBuffer {
     Page *page_table;
@@ -507,7 +502,7 @@ typedef struct EditBuffer {
     QECharset *charset;
 
     // undo system 
-    int save_log;    //!< if true, each buffer operation is loged 
+    int save_log;    //!< if true, each buffer operation is logged 
     int log_new_index, log_current;
     struct EditBuffer *log_buffer;
     int nb_logs;
@@ -663,10 +658,12 @@ extern EditBufferDataType raw_data_type;
 
 #endif /* QE_MODULE */
 
+/* ///////////////////////////////////////////////////////////////////////// */
 /* display.c */
 
 #include "display.h"
 
+/* ///////////////////////////////////////////////////////////////////////// */
 /* qe.c */
 
 /* colorize & transform a line, lower level then ColorizeFunc */
@@ -762,7 +759,7 @@ typedef struct EditState {
     struct QEditScreen *screen; //!< copy of qe_state->screen
     // display shadow to optimize redraw
     char modeline_shadow[MAX_SCREEN_WIDTH];
-    QELineShadow *line_shadow; //!< per window shadow 
+    QELineShadow *line_shadow;  //!< per window shadow 
     int shadow_nb_lines;
     // compose state for input method
     struct InputMethod *input_method; //!< current input method
@@ -783,7 +780,7 @@ typedef struct ModeProbeData {
     char *filename;
     unsigned char *buf;
     int buf_size;
-    int mode;     //!< unix mode
+    int mode;                 //!< unix mode
 } ModeProbeData;
 
 /**
@@ -791,12 +788,12 @@ typedef struct ModeProbeData {
  * when the mode is started again on a buffer 
  */
 typedef struct ModeSavedData {
-    struct ModeDef *mode; //!< the mode is saved there 
+    struct ModeDef *mode;     //!< the mode is saved there 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
     char generic_data[SAVED_DATA_SIZE]; //!< generic text data
 #pragma GCC diagnostic pop
-    int data_size; //!< mode specific saved data
+    int data_size;            //!< mode specific saved data
     char data[1];
 } ModeSavedData;
 
@@ -881,27 +878,27 @@ typedef struct QEmacsState {
     struct EditState *first_window;
     struct EditState *active_window; //!< window in which we edit
     struct EditBuffer *first_buffer;
-    // global layout info : DO NOT modify these directly. do_refresh
-    //   does it
+    // global layout info : DO NOT modify these directly. 
+	// call `do_refresh` it does it
     int status_height;
     int mode_line_height;
-    int content_height; //!< height excluding status line
+    int content_height;       //!< height excluding status line
     int width, height;
     int border_width;
     int separator_width;
     // full screen state
-    int hide_status; //!< true if status should be hidden
+    int hide_status;          //!< true if status should be hidden
     int complete_refresh;
     int is_full_screen;
     // commands 
     int flag_split_window_change_focus;
-    void *last_cmd_func; //!< last executed command function call 
+    void *last_cmd_func;      //!< last executed command function call 
     // keyboard macros
     int defining_macro;
     unsigned short *macro_keys;
     int nb_macro_keys;
     int macro_keys_size;
-    int macro_key_index; //!< -1 means no macro is being executed 
+    int macro_key_index;      //!< -1 means no macro is being executed 
     int ungot_key;
     // yank buffers
     EditBuffer *yank_buffers[NB_YANK_BUFFERS];
@@ -922,7 +919,7 @@ extern QEmacsState qe_state;
 typedef struct KeyDef {
     int nb_keys;
     struct CmdDef *cmd;
-    ModeDef *mode; //!< if non NULL, key is only active in this mode
+    ModeDef *mode;           //!< if non NULL, key is only active in this mode
     struct KeyDef *next;
     unsigned int keys[1];
 } KeyDef;
@@ -957,18 +954,18 @@ void qe_register_cmd_table(CmdDef *cmds, const char *mode);
 void qe_register_binding(int key, const char *cmd_name, 
                          const char *mode_names);
 
-/*!
+/**
  * text display system
  */
 typedef struct TextFragment {
     unsigned short embedding_level;
-    short width; //!< fragment width 
+    short width;              //!< fragment width 
     short ascent; 
     short descent;
-    short style;      //!< style index
-    short line_index; //!< index in line_buf 
-    short len;   //!< number of glyphs 
-    short dummy;  //!< align, must be assigned for CRC 
+    short style;              //!< style index
+    short line_index;         //!< index in line_buf 
+    short len;                //!< number of glyphs 
+    short dummy;              //!< align, must be assigned for CRC 
 } TextFragment;
 
 #define MAX_WORD_SIZE 128
@@ -980,23 +977,23 @@ typedef struct TextFragment {
 #define CHAR_MASK        ((1 << STYLE_SHIFT) - 1)
 
 typedef struct DisplayState {
-    int do_disp; //!< true if real display 
-    int width;   //!< display window width
-    int height;  //!< display window height
-    int eol_width; //!< width of eol char 
-    int default_line_height;  //!< line height if no chars 
-    int tab_width;            //!< width of tabulation 
-    int x_disp;  //!< starting x display
-    int x; //!< current x position
-    int y; //!< current y position
-    int line_num; //!< current text line number
-    int cur_hex_mode; //!< true if current char is in hex mode 
-    int hex_mode; //!< hex mode from edit_state, -1 if all chars wanted
+    int do_disp;               //!< true if real display 
+    int width;                 //!< display window width
+    int height;                //!< display window height
+    int eol_width;             //!< width of eol char 
+    int default_line_height;   //!< line height if no chars 
+    int tab_width;             //!< width of tabulation 
+    int x_disp;                //!< starting x display
+    int x;                     //!< current x position
+    int y;                     //!< current y position
+    int line_num;              //!< current text line number
+    int cur_hex_mode;          //!< true if current char is in hex mode 
+    int hex_mode;              //!< hex mode from edit_state, -1 if all chars wanted
     void *cursor_opaque;
     int (*cursor_func)(struct DisplayState *, 
                        int offset1, int offset2, int line_num,
                        int x, int y, int w, int h, int hex_mode);
-    int eod; //!< end of display requested 
+    int eod;                   //!< end of display requested 
     // if base == RTL, then all x are equivalent to width - x 
     DirType base; 
     int embedding_level_max;
@@ -1007,8 +1004,8 @@ typedef struct DisplayState {
     /* fragment buffers */
     TextFragment fragments[MAX_SCREEN_WIDTH];
     int nb_fragments;
-    int last_word_space; //!< true if last word was a space 
-    int word_index;      //!< fragment index of the start of the current word 
+    int last_word_space;       //!< true if last word was a space 
+    int word_index;            //!< fragment index of the start of the current word 
     unsigned int line_chars[MAX_SCREEN_WIDTH]; //!< line char (in fact glyph) buffer
     short line_char_widths[MAX_SCREEN_WIDTH];
     int line_offsets[MAX_SCREEN_WIDTH][2]; 
@@ -1048,6 +1045,7 @@ static inline int display_char(DisplayState *s, int offset1, int offset2,
     return display_char_bidir(s, offset1, offset2, 0, ch);
 }
 
+/* ///////////////////////////////////////////////////////////////////////// */
 /* input.c */
 
 #define INPUTMETHOD_NOMATCH   (-1)
@@ -1106,12 +1104,6 @@ void file_completion(StringArray *cs, const char *input);
 void buffer_completion(StringArray *cs, const char *input);
 void color_completion(StringArray *cs, const char *input);
 
-#ifdef WIN32
-static inline int is_user_input_pending(void)
-{
-    return 0;
-}
-#else
 extern int __fast_test_event_poll_flag;
 int __is_user_input_pending(void);
 
@@ -1124,7 +1116,6 @@ static inline int is_user_input_pending(void)
         return 0;
     }
 }
-#endif
 
 /* config file support */
 void parse_config(EditState *e, const char *file);
@@ -1183,7 +1174,7 @@ void do_goto_line(EditState *s, int line);
 void switch_to_buffer(EditState *s, EditBuffer *b);
 void do_up_down(EditState *s, int dir);
 void display_mode_line(EditState *s);
-void text_mouse_goto(EditState *s, int x, int y);
+// void text_mouse_goto(EditState *s, int x, int y);
 EditBuffer *new_yank_buffer(void);
 void basic_mode_line(EditState *s, char *buf, int buf_size, int c1);
 void text_mode_line(EditState *s, char *buf, int buf_size);
@@ -1195,11 +1186,12 @@ void do_bol(EditState *s);
 void do_eol(EditState *s);
 void do_word_right(EditState *s, int dir);
 
+/* ///////////////////////////////////////////////////////////////////////// */
 /* hex.c */
 void hex_write_char(EditState *s, int key);
 
+/* ///////////////////////////////////////////////////////////////////////// */
 /* list.c */
-
 extern ModeDef list_mode;
 
 void list_toggle_selection(EditState *s);

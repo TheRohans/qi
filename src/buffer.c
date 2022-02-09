@@ -74,7 +74,9 @@ static void update_page(Page *p)
     p->flags &= ~(PG_VALID_POS | PG_VALID_CHAR | PG_VALID_COLORS);
 }
 
-/* Read or write in the buffer. We must have 0 <= offset < b->total_size */
+/**
+ * Read or write in the buffer. We must have 0 <= offset < b->total_size 
+ */
 static int eb_rw(EditBuffer *b, int offset, u8 *buf, int size1, int do_write)
 {
     Page *p;
@@ -118,7 +120,9 @@ int eb_read(EditBuffer *b, int offset, void *buf, int size)
     return eb_rw(b, offset, buf, size, 0);
 }
 
-/* Note: eb_write can be used to insert after the end of the buffer */
+/**
+ * Note: eb_write can be used to insert after the end of the buffer 
+ */
 void eb_write(EditBuffer *b, int offset, void *buf_arg, int size)
 {
     int len, left;
@@ -133,8 +137,10 @@ void eb_write(EditBuffer *b, int offset, void *buf_arg, int size)
     }
 }
 
-/* internal function for insertion : 'buf' of size 'size' at the
-   beginning of the page at page_index */
+/**
+ * internal function for insertion : 'buf' of size 'size' 
+ * at the beginning of the page at page_index 
+ */
 static void eb_insert1(EditBuffer *b, int page_index, const u8 *buf, int size)
 {
     int len, n;
@@ -328,8 +334,10 @@ void eb_insert_buffer(EditBuffer *dest, int dest_offset,
     dest->cur_page = NULL;
 }
 
-/* Insert 'size' bytes from 'buf' into 'b' at offset 'offset'. We must
-   have : 0 <= offset <= b->total_size */
+/**
+ * Insert 'size' bytes from 'buf' into 'b' at offset 'offset'. 
+ * We must have : 0 <= offset <= b->total_size 
+ */
 void eb_insert(EditBuffer *b, int offset, const void *buf, int size)
 {
     eb_addlog(b, LOGOP_INSERT, offset, size);
@@ -590,11 +598,9 @@ void eb_offset_callback(EditBuffer *b,
     }
 }
 
-
-
-/************************************************************/
-/* undo buffer */
-
+/**
+ * Add an operation to the buffer's undo buffer 
+ */
 static void eb_addlog(EditBuffer *b, enum LogOperation op, 
                       int offset, int size)
 {

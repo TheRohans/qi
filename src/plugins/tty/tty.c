@@ -80,7 +80,8 @@ static QEDisplay tty_dpy;
 static void get_cursor_pos(int *pw, int *ph)
 {
     int w, h, c, state;
-    printf("\033[6n");
+    // printf("\033[6n");
+    printf(ESC_QUERY_CURSOR_POSITION);
     fflush(stdout);
     w = 0;
     h = 0;
@@ -127,11 +128,14 @@ static void get_cursor_pos(int *pw, int *ph)
     *ph = 0;
 }
 
-/* get the screen size using VT100 commands */
+/**
+ * get the screen size using VT100 commands 
+ */
 static void tty_get_screen_size(int *pw, int *ph)
 {
     int w, h;
-    printf("\033[%d;%dH", MAX_WH, MAX_WH);
+    // printf("\033[%d;%dH", MAX_WH, MAX_WH);
+	printf(ESC_CURSOR_POS, MAX_WH, MAX_WH);
     get_cursor_pos(&w, &h);
     if (h < 1 || w < 1 || h > MAX_WH || w > MAX_WH) {
         w = 80;
@@ -141,16 +145,16 @@ static void tty_get_screen_size(int *pw, int *ph)
     *ph = h;
 }
 
-void handle_sigwinch(int sig)
-{
-    eb_refresh();
-}
+//void handle_sigwinch(int sig)
+//{
+//    eb_refresh();
+//}
 
 static int term_init(QEditScreen *s, int w, int h)
 {
     TTYState *ts;
     struct termios tty;
-    struct sigaction sig;
+    // struct sigaction sig;
 
     memcpy(&s->dpy, &tty_dpy, sizeof(QEDisplay));
 
@@ -194,10 +198,10 @@ static int term_init(QEditScreen *s, int w, int h)
 
     atexit(term_exit);
 
-    sig.sa_handler = &handle_sigwinch;
-    sigemptyset(&sig.sa_mask);
-    sig.sa_flags = 0; // SA_RESTART;
-    sigaction(SIGWINCH, &sig, NULL);
+//    sig.sa_handler = &handle_sigwinch;
+//    sigemptyset(&sig.sa_mask);
+//    sig.sa_flags = 0; // SA_RESTART;
+//    sigaction(SIGWINCH, &sig, NULL);
 
     fcntl(0, F_SETFL, O_NONBLOCK);
     /* If stdout is to a pty, make sure we aren't in nonblocking mode.
@@ -216,7 +220,8 @@ static void term_close(QEditScreen *s)
 {
     fcntl(0, F_SETFL, 0);
     /* go to the last line */
-    printf("\033[%d;%dH\033[m\033[K", s->height, 1);
+    // printf("\033[%d;%dH\033[m\033[K", s->height, 1);
+	printf(ESC_CURSOR_POS ESC_SET_ATTRIBUTE_MODE_1 ESC_ERASE_END_OF_LINE, s->height, 1, 0);
     fflush(stdout);
 }
 
@@ -310,7 +315,8 @@ static void tty_read_handler(void *opaque)
         
     switch(ts->input_state) {
     case IS_NORM:
-        if (ch == '\033')
+        // if (ch == '\033')
+        if (ch == ESC_START)
             ts->input_state = IS_ESC;
         else
             goto the_end;
@@ -466,7 +472,6 @@ static void term_close_font(QEditScreen *s, QEFont *font)
  * handle non spacing and enclosing combining characters and control
  * chars.  
  */
-
 static int term_glyph_width(QEditScreen *s, unsigned int ucs)
 {
   /* fast test for majority of non-wide scripts */
@@ -586,7 +591,9 @@ static void term_flush(QEditScreen *s)
 
             if (memcmp(ptr, optr, sizeof(TTYChar) * s->width) != 0) {
                 /* XXX: currently, we update the whole line */
-                printf("\033[%d;%dH", y + 1, 1);
+                // printf("\033[%d;%dH", y + 1, 1);
+				printf(ESC_CURSOR_POS, y + 1, 1);
+				
                 for(x=0;x<s->width;x++) {
                     cc = ptr->ch;
                     if (cc != 0xffff) {
@@ -595,8 +602,9 @@ static void term_flush(QEditScreen *s)
                              (bgcolor != ptr->bgcolor))) {
                             fgcolor = ptr->fgcolor;
                             bgcolor = ptr->bgcolor;
-                            printf("\033[;%d;%dm", 
-                                   30 + fgcolor, 40 + bgcolor);
+                            // printf("\033[;%d;%dm", 
+						    printf(ESC_SET_ATTRIBUTE_MODE_2, 
+								   30 + fgcolor, 40 + bgcolor);
                         }
                         /* do not display escape codes or invalid codes */
                         if (cc < 32 || (cc >= 128 && cc < 128 + 32)) {
@@ -615,7 +623,8 @@ static void term_flush(QEditScreen *s)
         }
     }
 
-    printf("\033[%d;%dH", ts->cursor_y + 1, ts->cursor_x + 1);
+    // printf("\033[%d;%dH", ts->cursor_y + 1, ts->cursor_x + 1);
+	printf(ESC_CURSOR_POS, ts->cursor_y + 1, ts->cursor_x + 1);
     fflush(stdout);
 }
 

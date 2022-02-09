@@ -1095,11 +1095,15 @@ void do_char(EditState *s, int key)
 void text_write_char(EditState *s, int key)
 {
     int cur_ch, len, cur_len, offset1, ret, insert;
+	// 
+
     char buf[MAX_CHAR_BYTES];
 
     cur_ch = eb_nextc(s->b, s->offset, &offset1);
     cur_len = offset1 - s->offset;
+    
     len = unicode_to_charset(buf, key, s->b->charset);
+    
     insert = (s->insert || cur_ch == '\n');
         
     if (insert) {
@@ -3497,7 +3501,9 @@ void qe_ungrab_keys(void)
     c->grab_key_opaque = NULL;
 }
 
-/** init qe key handling context */
+/** 
+ * init qi key handling context 
+ */
 static void qe_key_init(void)
 {
     QEKeyContext *c = &key_ctx;
@@ -5850,14 +5856,6 @@ void do_help_for_help(EditState *s)
     }
 }
 
-#ifdef WIN32
-
-void qe_event_init(void)
-{
-}
-
-#else
-
 /* we install a signal handler to set poll_flag to one so that we can
    avoid polling too often in some cases */
 
@@ -5868,8 +5866,8 @@ static void poll_action(int sig)
     __fast_test_event_poll_flag = 1;
 }
 
-/*!
- * Callback for GUI window resize 
+/**
+ * Callback for window resize 
  */
 static void sigwinch_handler(int sig)
 {
@@ -5879,11 +5877,13 @@ static void sigwinch_handler(int sig)
 	QEEvent *ev = malloc(sizeof(QEEvent));
 	ev->type = QE_EXPOSE_EVENT;
 	qe_handle_event(ev);
+
 	//do_refresh(NULL);
+	eb_refresh();
 	free(ev);
 }
 
-/*!
+/**
  * init event system 
  */
 void qe_event_init(void)
@@ -5902,9 +5902,8 @@ void qe_event_init(void)
 	//// Window resizing ////
 	sigemptyset(&sigwinsize.sa_mask);
 	sigwinsize.sa_flags = 0;
-	sigwinsize.sa_handler = sigwinch_handler;
+	sigwinsize.sa_handler = &sigwinch_handler;
 	sigaction(SIGWINCH, &sigwinsize, NULL);
-	//// Window resizing ////
 
     itimer.it_interval.tv_sec = 0;
     itimer.it_interval.tv_usec = 20 * 1000; /* 50 times per second */
@@ -5912,14 +5911,14 @@ void qe_event_init(void)
     setitimer(ITIMER_VIRTUAL, &itimer, NULL);
 }
 
-/* see also qe_fast_test_event() */
+/**
+ * @see also qe_fast_test_event() 
+ */
 int __is_user_input_pending(void)
 {
     QEditScreen *s = &global_screen;
     return s->dpy.dpy_is_user_input_pending(s);
 }
-
-#endif
 
 #ifndef CONFIG_TINY
 
@@ -6940,8 +6939,8 @@ void qe_init(void *opaque)
     int i, optind, is_player;
 
     qs->ec.function = "qe-init";
-    qs->macro_key_index = -1; // no macro executing
-    qs->ungot_key = -1; // no unget key
+    qs->macro_key_index = -1;    // no macro executing
+    qs->ungot_key = -1;          // no unget key
     
     // setup resource path
     set_user_option(NULL);
@@ -6969,11 +6968,6 @@ void qe_init(void *opaque)
     // init all external modules in link order
     init_all_modules();
 
-#ifdef CONFIG_DLL
-    // load all dynamic modules
-    load_all_modules(qs);
-#endif
-
     // Start in dired mode when invoked with no arguments 
     is_player = 1;
 
@@ -6981,11 +6975,20 @@ void qe_init(void *opaque)
     qs->screen = &global_screen;
 
     // create first buffer 
-    b = eb_new("*scratch*", BF_SAVELOG);
-
+    b = eb_new(BUF_SCRATCH, BF_SAVELOG);
     // will be positionned by do_refresh()
     s = edit_new(b, 0, 0, 0, 0, WF_MODELINE);
-    
+
+#ifdef CONFIG_DEBUG
+	// create a debug buffer
+	eb_new(BUF_DEBUG, BF_SAVELOG);
+	// EditBuffer *dbuf = eb_new(BUF_DEBUG, BF_SAVELOG);
+	// EditState *dstate = edit_new(dbuf, 0, 0, 0, 0, WF_MODELINE);
+	// eb_insert(dbuf, 0, "Hello World", 11);	
+#endif
+	
+	LOG("** Debug window for 气 **");
+	
     // at this stage, no screen is defined. Initialize a
     // dummy display driver to have a consistent state
     // else many commands such as put_status would crash.
