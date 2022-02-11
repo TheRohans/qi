@@ -2269,7 +2269,9 @@ static void flush_line(DisplayState *s,
     s->line_num++;
 }
 
-/** keep 'n' line chars at the start of the line */
+/** 
+ * keep 'n' line chars at the start of the line 
+ */
 static void keep_line_chars(DisplayState *s, int n)
 {
     int index;
@@ -2399,6 +2401,8 @@ static void flush_fragment(DisplayState *s)
             w1 = s->x;
             while (s->x > s->width) {
                 len--;
+				// TODO: Next line Segfaults if you resize the 
+				// window very quickly
                 ww = s->line_char_widths[frag->line_index + len];
                 s->x -= ww;
                 if (len == 0 && s->x == 0) {
@@ -6985,6 +6989,7 @@ void qe_init(void *opaque)
 	// EditBuffer *dbuf = eb_new(BUF_DEBUG, BF_SAVELOG);
 	// EditState *dstate = edit_new(dbuf, 0, 0, 0, 0, WF_MODELINE);
 	// eb_insert(dbuf, 0, "Hello World", 11);	
+	// fill_rectangle(&global_screen, 1, 1, 10, 10, 4);
 #endif
 	
 	LOG("** Debug window for 气 **");

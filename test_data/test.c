@@ -9,3 +9,4 @@ void main(void) {
     
     printf("%s", *thing);
 }
+

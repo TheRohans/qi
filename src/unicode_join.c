@@ -273,24 +273,7 @@ int unicode_to_glyphs(unsigned int *dst, unsigned int *char_to_glyph_pos,
             ctog[i] = i;
         memcpy(buf, src, len * sizeof(int));
         
-        /* apply each filter */
-#ifdef CONFIG_ARABIC
-		TODO: Param when including aribic?
-        if (unicode_class & UNICODE_ARABIC) {
-            len = arab_join(buf, ctog1, len);
-            /* not needed for arabjoin */
-            //compose_char_to_glyph(ctog, src_size, ctog1);
-        }
-#endif
-
-#ifdef CONFIG_DEVANAGARI
-		//TODO: Param when including indic?
-        if (unicode_class & UNICODE_INDIC) {
-            len = devanagari_log2vis(buf, ctog1, len);
-            compose_char_to_glyph(ctog, src_size, ctog1);
-        }
-#endif
-        
+        /* apply each filter */        
         len = unicode_ligature(buf, ctog1, len);
         compose_char_to_glyph(ctog, src_size, ctog1);
 

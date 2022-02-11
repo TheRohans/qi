@@ -221,7 +221,9 @@ static void term_close(QEditScreen *s)
     fcntl(0, F_SETFL, 0);
     /* go to the last line */
     // printf("\033[%d;%dH\033[m\033[K", s->height, 1);
-	printf(ESC_CURSOR_POS ESC_SET_ATTRIBUTE_MODE_1 ESC_ERASE_END_OF_LINE, s->height, 1, 0);
+	printf(ESC_CURSOR_POS 
+           ESC_SET_ATTRIBUTE_MODE_1 
+           ESC_ERASE_END_OF_LINE, s->height, 1, 0);
     fflush(stdout);
 }
 
@@ -606,13 +608,13 @@ static void term_flush(QEditScreen *s)
 						    printf(ESC_SET_ATTRIBUTE_MODE_2, 
 								   30 + fgcolor, 40 + bgcolor);
                         }
+						
                         /* do not display escape codes or invalid codes */
                         if (cc < 32 || (cc >= 128 && cc < 128 + 32)) {
                             buf[0] = '.';
                             buf[1] = '\0';
                         } else {
-                            unicode_to_charset((char *)buf, 
-                                               cc, s->charset);
+							unicode_to_charset((char *)buf, cc, s->charset);
                         }
                         printf("%s", buf);
                     }

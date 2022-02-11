@@ -174,11 +174,11 @@ int utf8_decode(const char **pp)
     p = *(const unsigned char**)pp;
     c = *p++;
     if (c < 128) {
-        /* fast case for ASCII */
+        // fast case for ASCII
     } else {
         l = utf8_length[c];
         if (l == 1)
-            goto fail; /* can only be multi byte code here */
+            goto fail; // can only be multi byte code here
         c = c & first_code_mask[l];
         for (i = 1; i < l; i++) {
             c1 = *p;
@@ -189,7 +189,7 @@ int utf8_decode(const char **pp)
         }
         if (c < min_code[l])
             goto fail;
-        /* exclude surrogate pairs and special codes */
+        // exclude surrogate pairs and special codes
         if ((c >= 0xd800 && c <= 0xdfff) ||
                 c == 0xfffe || c == 0xffff)
             goto fail;
