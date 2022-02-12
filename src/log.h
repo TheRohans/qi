@@ -22,4 +22,6 @@
 #define LOG(M) // M
 #endif
 
+#define QASSERT(e)      do { if (!(e)) fprintf(stderr, "%s:%d: assertion failed: %s\n", __FILE__, __LINE__, #e); } while (0)
+
 #endif // end _QI_LOG
