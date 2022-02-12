@@ -3171,7 +3171,7 @@ static void parse_args(ExecCmdState *es)
     } while (--rep_count > 0);
 
     qs->last_cmd_func = d->action.func;
- fail:
+fail:
     free_cmd(es);
 }
 
@@ -3205,7 +3205,7 @@ static void arg_edit_cb(void *opaque, char *str)
 
     if (!str) {
         // command aborted
-    fail:
+fail:
         free(str);
         free_cmd(es);
         return;
@@ -3974,7 +3974,7 @@ void do_completion(EditState *s)
                 goto no_match;
         match_len++;
     }
- no_match:
+no_match:
     if (match_len > len) {
         /* add the possible chars */
         eb_write(s->b, 0, outputs[0]->str, match_len);
@@ -4013,7 +4013,7 @@ void do_completion(EditState *s)
             completion_popup_window->offset = 0;
         }
     }
- the_end:
+the_end:
     free_strings(&cs);
 }
 
@@ -4374,7 +4374,7 @@ static EditBuffer *predict_switch_to_buffer(EditState *s)
     }
     /* select current buffer if none found */
     b = s->b;
- found:
+found:
     return b;
 }
 
@@ -4613,7 +4613,7 @@ static void do_load1(EditState *s, const char *filename1,
     /* XXX: invalid place */
     edit_invalidate(s);
     return;
- fail:
+fail:
     put_status(s, "Could not open '%s'", filename);
 }
 
@@ -4799,7 +4799,7 @@ static void quit_key(void *opaque, int ch)
     case '.':
         /* save current and exit */
         is->state = QS_NOSAVE;
-    do_save:
+do_save:
         b = is->b;
         save_buffer(b);
         break;
@@ -4896,7 +4896,7 @@ int eb_search(EditBuffer *b, int offset, int dir, u8 *buf, int size,
                 continue;
         }
 
-    word_start_found:
+word_start_found:
         i = 0;
         for (;;) {
             eb_read(b, offset + i, &ch, 1);
@@ -5057,7 +5057,7 @@ static void isearch_key(void *opaque, int ch)
     case KEY_CTRL('g'):
         s->offset = is->start_offset;
         put_status(s, "Quit");
-    the_end:
+the_end:
         /* save current searched string */
         if (is->pos > 0) {
             j = 0;
@@ -5075,7 +5075,7 @@ static void isearch_key(void *opaque, int ch)
         goto addpos;
     case KEY_CTRL('r'):
         is->dir = -1;
-    addpos:
+addpos:
         /* use last seached string if no input */
         if (is->pos == 0) {
             memcpy(is->search_string, last_search_string, 
@@ -5087,15 +5087,6 @@ static void isearch_key(void *opaque, int ch)
                 is->search_string[is->pos++] = FOUND_TAG | is->found_offset;
         }
         break;
-#if 0
-//    case KEY_CTRL('q'):
-//        ch = get_key(s->screen);
-//        goto addch; 
-//    case KEY_CTRL('w'):
-//    case KEY_CTRL('y'):
-//        // emacs compatibility: get word / line
-//        break;
-#endif
         /* case / word */
     case KEY_CTRL('w'):
         is->search_flags ^= SEARCH_FLAG_WORD;
@@ -5216,7 +5207,7 @@ static void query_replace_display(QueryReplaceState *is)
 {
     EditState *s = is->s;
 
- redo:
+redo:
     is->found_offset = eb_search(s->b, is->found_offset, 1, 
                                  is->search_bytes, is->search_bytes_len, 
                                  0, NULL, NULL);
@@ -6496,49 +6487,7 @@ static inline void init_all_modules(void)
     config_init();
 	//example_init();
 #endif
-	
 }
-//#endif
-
-#ifdef CONFIG_DLL
-void load_all_modules(QEmacsState *qs)
-{
-    QErrorContext ec = qs->ec;
-    FindFileState *ffs;
-    char filename[MAX_FILENAME_SIZE];
-    void *h;
-    int (*init_func)(void);
-    
-    ffs = find_file_open(qs->res_path, "*.so");
-    if (!ffs)
-        return;
-
-    qs->ec.function = "load-all-modules";
-
-    while (!find_file_next(ffs, filename, sizeof(filename))) {
-        h = dlopen(filename, RTLD_LAZY);
-        if (!h) {
-            char *error = dlerror();
-            put_status(NULL, "Could not open module '%s': %s",
-                       filename, error);
-            continue;
-        }
-        init_func = dlsym(h, "__qe_module_init");
-        if (!init_func) {
-            dlclose(h);
-            put_status(NULL,
-                       "Could not find qemacs initializer in module '%s'", 
-                       filename);
-            continue;
-        }
-        
-        /* all is OK: we can init the module now */
-        init_func();
-    }
-    find_file_close(ffs);
-    qs->ec = ec;
-}
-#endif
 
 typedef struct QEArgs {
     int argc;
