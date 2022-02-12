@@ -26,7 +26,7 @@ file_handler.close()
 
 # Define the class
 class Employee:
-	name = "Mostak Mahmud"
+    name = "Mostak Mahmud"
     # Define the method
     def details(self):
         print("Post: Marketing Officer")
