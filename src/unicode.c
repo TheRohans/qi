@@ -4,6 +4,15 @@
  * Content is available under GNU Free Documentation License 1.2
  */
 #include "unicode.h"
+#include "log.h"
+
+typedef struct {
+	char mask;       /* char data will be bitwise AND with this */
+	char lead;       /* start bytes of current char in utf-8 encoded character */
+	uint32_t beg;    /* beginning of codepoint range */
+	uint32_t end;    /* end of codepoint range */
+	int bits_stored; /* the number of bits from the codepoint that fits in char */
+}utf_t;
 
 utf_t * utf[] = {
 	/*             mask        lead        beg      end       bits */
@@ -28,13 +37,20 @@ int codepoint_len(const rune cp)
 		}
 		++len;
 	}
-	if(len > 4) /* Out of bounds */
-		exit(1);
+	
+	QASSERT(len <= 4);		
+//  if(len > 4) /* Out of bounds */
+//	   exit(1);
  
 	return len;
 }
  
-/* len of utf-8 encoded char (lengths are in bytes) */
+/**
+ * Using the first char of a utf8 char, get the length
+ * lengths are in the number of bytes.
+ * For example:
+ *  1110xxxxx would return 3
+ */
 int utf8_len(const char ch)
 {
 	int len = 0;
@@ -44,19 +60,24 @@ int utf8_len(const char ch)
 		}
 		++len;
 	}
-	if(len > 4) { /* Malformed leading byte */
-		exit(1);
-	}
+	
+	// Malformed leading byte
+	QASSERT(len <= 4);
+	
+//	if(len > 4) { /* Malformed leading byte */
+//		exit(1);
+//	}
 	return len;
 }
 
 /**
  * Take a rune and turn it into an array of chars
- * that can be used as a %s kind of output
+ * that can be used as a %s kind of output. The max
+ * the buffer can be is 5 (adds a null \0);
  */
-char *to_utf8(const rune cp)
+void to_utf8(char *buff, const rune cp)
 {
-	static char ret[5];
+	char* ret = buff;
 	const int bytes = codepoint_len(cp);
  
 	int shift = utf[0]->bits_stored * (bytes - 1);
@@ -67,7 +88,6 @@ char *to_utf8(const rune cp)
 		shift -= utf[0]->bits_stored;
 	}
 	ret[bytes] = '\0';
-	return ret;
 }
 
 /**
@@ -89,29 +109,3 @@ rune to_rune(const char chr[4])
  
 	return codep;
 }
-
-/*
-int main(void)
-{
-	const uint32_t *in, input[] = {0x0041, 0x00f6, 0x0416, 0x20ac, 0x1d11e, 0x0};
- 
-	printf("Character  Unicode  UTF-8 encoding (hex)\n");
-	printf("----------------------------------------\n");
- 
-	char *utf8;
-	rune codepoint;
-	for(in = input; *in; ++in) {
-		utf8 = to_utf8(*in);
-		codepoint = to_rune(utf8);
-		printf("%s          U+%-7.4x", utf8, codepoint);
- 
-		for(int i = 0; utf8[i] && i < 4; ++i) {
-			printf("%hhx ", utf8[i]);
-		}
-		printf("\n");
-	}
-	return 0;
-}
-*/
-
-

@@ -8,14 +8,16 @@
 
 static char *test_to_utf8()
 {
-    char *utf8 = to_utf8(0x1d11e);
+	char utf8[5];
+    to_utf8(utf8, 0x1d11e);
     r2_assert("to utf8 failed", (strcmp(utf8, "𝄞") == 0));
     return 0;
 }
 
 static char *test_to_rune()
 {
-    char *utf8 = to_utf8(0x1d11e);
+	char utf8[5];
+    to_utf8(utf8, 0x1d11e);
     rune codepoint = to_rune(utf8);
     r2_assert("to rune failed", (codepoint == 0x1d11e));
     return 0;
