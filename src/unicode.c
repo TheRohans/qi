@@ -6,6 +6,12 @@
 #include "unicode.h"
 #include "log.h"
 
+//////////////////////
+// This file is currently not being used
+// trying to make an easier to understand 
+// utf8 input
+/////////////////////
+
 typedef struct {
 	char mask;       /* char data will be bitwise AND with this */
 	char lead;       /* start bytes of current char in utf-8 encoded character */
@@ -38,10 +44,8 @@ int codepoint_len(const rune cp)
 		++len;
 	}
 	
-	QASSERT(len <= 4);		
-//  if(len > 4) /* Out of bounds */
-//	   exit(1);
- 
+	QASSERT(len <= 4);
+
 	return len;
 }
  
@@ -63,10 +67,7 @@ int utf8_len(const char ch)
 	
 	// Malformed leading byte
 	QASSERT(len <= 4);
-	
-//	if(len > 4) { /* Malformed leading byte */
-//		exit(1);
-//	}
+
 	return len;
 }
 

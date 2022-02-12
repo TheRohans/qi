@@ -30,7 +30,6 @@ void stack_free(Stack* S) {
 	//noop at the moment
 }
 
-
 //void dump_stack(Stack* S)
 //{
 //	int i;
