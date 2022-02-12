@@ -171,7 +171,8 @@ static int config_mode_probe(ModeProbeData *p)
     const char *r;
 
     // file names
-    if(strfind("|Makefile|Dockerfile|", p->filename, 1) == 0) return 100;
+    if(strfind("|Makefile|Dockerfile|", basename(p->filename), 0)) 
+        return 100;
     
     // file extension
     r = extension(p->filename);

@@ -23,10 +23,6 @@
 #include "qfribidi.h"
 #include "plugins/plugincore.h"
 
-#ifdef CONFIG_DLL
-#include <dlfcn.h>
-#endif
-
 /* each history list */
 typedef struct HistoryEntry {
     struct HistoryEntry *next;
@@ -5855,6 +5851,17 @@ redraw:
 
 static int text_mode_probe(ModeProbeData *p)
 {
+    // 100% sure these text file names are text files
+    if(strfind("|LICENSE|COPYING|", basename(p->filename), 0)) return 100;
+
+    // 100% sure these are text files
+    const char *r = extension(p->filename);
+    if (*r) {
+        if (strfind("|txt|text|", r + 1, 1))
+            return 100;
+    }
+
+    // 10% sure this file would be text
     return 10;
 }
 

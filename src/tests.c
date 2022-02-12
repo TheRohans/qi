@@ -5,7 +5,6 @@
 #include "r2_unit.h"
 #include <stdio.h>
 
-
 ///////////////////////////////////////////////
 // ADD TESTS HERE
 // This is crazy town :-o
@@ -13,10 +12,11 @@
 // function <whatever>_test() in the all tests() method
 ///////////////////////////////////////////////
 #include "tests/unicode.c"
+#include "tests/util.c"
 ///////////////////////////////////////////////
 // Add suites here...
 // Defined in the tests files above
-char *(*s[1])(void) = {unicode_test};
+char *(*s[2])(void) = {unicode_test, util_test};
 ///////////////////////////////////////////////
 
 //
