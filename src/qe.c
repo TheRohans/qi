@@ -397,7 +397,7 @@ void text_move_eol(EditState *s)
 
 int isword(int c)
 {
-    //XXX: any unicode char >= 128 is considered as word.
+    // XXX: any unicode char >= 128 is considered as word.
     return (c >= 'a' && c <= 'z') ||
         (c >= 'A' && c <= 'Z') ||
         (c >= '0' && c <= '9') ||
@@ -860,7 +860,7 @@ typedef struct {
     int offsetc;
 } ScrollContext;
 
-/*!
+/**
  * called each time the cursor could be displayed 
  */
 static int scroll_cursor_func(DisplayState *ds,
@@ -976,6 +976,11 @@ void center_cursor(EditState *s)
 
     // try to center display
     perform_scroll_up_down(s, -((s->height / 2) - cm.yc));
+}
+
+void do_center_cursor(EditState *s) 
+{
+	center_cursor(s);
 }
 
 /**
@@ -1191,12 +1196,6 @@ static void quote_key(void *opaque, int key)
     qe_ungrab_keys();
 }
 
-void do_quote(EditState *s)
-{
-    qe_grab_keys(quote_key, NULL);
-    put_status(s, "Quote: ");
-}
-
 void do_insert(EditState *s)
 {
     s->insert = !s->insert;
@@ -1341,6 +1340,8 @@ void do_exchange_point_and_mark(EditState *s)
     s->b->mark = s->offset;
     s->offset = tmp;
 }
+
+
 ///////////////////////////////////////////////////////////////////
 
 static int reload_buffer(EditState *s, EditBuffer *b, FILE *f1)
@@ -1379,6 +1380,13 @@ static int reload_buffer(EditState *s, EditBuffer *b, FILE *f1)
     }
 }
 
+void do_revert_buffer(EditState *s) 
+{
+	QEmacsState *qs = s->qe_state;
+    EditBuffer *b = s->b;
+	reload_buffer(s, b, NULL);
+    put_status(s, "Buffer reverted from disk");
+}
 
 static void do_set_mode_file(EditState *s, ModeDef *m, 
                              ModeSavedData *saved_data, FILE *f1)
@@ -1508,54 +1516,6 @@ QECharset *read_charset(EditState *s, const char *charset_str)
         return NULL;
     }
     return charset;
-}
-
-void do_set_buffer_file_coding_system(EditState *s, const char *charset_str)
-{
-    QECharset *charset;
-    
-    charset = read_charset(s, charset_str);
-    if (!charset)
-        return;
-    eb_set_charset(s->b, charset);
-}
-
-/*!
- * convert the charset of a buffer to another charset
- */ 
-void do_convert_buffer_file_coding_system(EditState *s, 
-                                          const char *charset_str)
-{
-    QECharset *charset;
-    EditBuffer *b1, *b;
-    int offset, c, len;
-    char buf[MAX_CHAR_BYTES];
-    
-    charset = read_charset(s, charset_str);
-    if (!charset)
-        return;
-
-    b1 = eb_new("*tmp*", BF_SYSTEM);
-
-    //well, not very fast, but simple 
-    b = s->b;
-    for (offset = 0; offset < b->total_size;) {
-        c = eb_nextc(b, offset, &offset);
-        len = unicode_to_charset(buf, c, charset);
-        eb_write(b1, b1->total_size, buf, len);
-    }
-    
-    // replace current buffer with convertion 
-    eb_delete(b, 0, b->total_size);
-    eb_insert_buffer(b, 0, b1, 0, b1->total_size);
-
-    eb_free(b1);
-    eb_set_charset(b, charset);
-}
-
-void do_toggle_bidir(EditState *s)
-{
-    s->bidir = !s->bidir;
 }
 
 void do_toggle_line_numbers(EditState *s)
@@ -1788,31 +1748,24 @@ void display_window_borders(EditState *e)
 static void apply_style(QEStyleDef *style, int style_index)
 {
     QEStyleDef *s;
-#ifndef WIN32
-    // if (style_index & QE_STYLE_TTY) {
-    //     style->fg_color = tty_colors[TTY_GET_FG(style_index)];
-    //     style->bg_color = tty_colors[TTY_GET_BG(style_index)];
-    // } else 
-#endif
-    {
-        s = &qe_styles[style_index & ~QE_STYLE_SEL];
-        if (s->fg_color != COLOR_TRANSPARENT)
-            style->fg_color = s->fg_color;
-        if (s->bg_color != COLOR_TRANSPARENT)
-            style->bg_color = s->bg_color;
-        if (s->font_style != 0)
-            style->font_style = s->font_style;
-        if (s->font_size != 0)
-            style->font_size = s->font_size;
-    }
-    /* for selection, we need a special handling because only color is
-           changed */
-    if (style_index & QE_STYLE_SEL) {
-        s = &qe_styles[QE_STYLE_SELECTION];
-        style->fg_color = s->fg_color;
-        style->bg_color = s->bg_color;
-    }
 
+	s = &qe_styles[style_index & ~QE_STYLE_SEL];
+	if (s->fg_color != COLOR_TRANSPARENT)
+		style->fg_color = s->fg_color;
+	if (s->bg_color != COLOR_TRANSPARENT)
+		style->bg_color = s->bg_color;
+	if (s->font_style != 0)
+		style->font_style = s->font_style;
+	if (s->font_size != 0)
+		style->font_size = s->font_size;
+
+    // for selection, we need a special handling because 
+	// only color is changed 
+    // if (style_index & QE_STYLE_SEL) {
+    //    s = &qe_styles[QE_STYLE_SELECTION];
+    //    style->fg_color = s->fg_color;
+    //    style->bg_color = s->bg_color;
+    //}
 }
 
 void get_style(EditState *e, QEStyleDef *style, int style_index)
@@ -1861,79 +1814,6 @@ void do_define_color(EditState *e, const char *name, const char *value)
         put_status(e, "Invalid color '%s'", value);
 }
 
-/*! Note: we use the same syntax as CSS styles to ease merging */
-void do_set_style(EditState *e, const char *stylestr, 
-                  const char *propstr, const char *value)
-{
-    QEStyleDef *style;
-    int v, prop_index;
-
-    style = find_style(stylestr);
-    if (!style) {
-        put_status(e, "Unknown style '%s'", stylestr);
-        return;
-    }
-
-    prop_index = css_get_enum(propstr, 
-                              "color,background-color,font-family,font-style,font-weight,font-size,text-decoration");
-    if (prop_index < 0) {
-        put_status(e, "Unknown property '%s'", propstr);
-        return;
-    }
-    switch (prop_index) {
-    case 0:
-        if (css_get_color(&style->fg_color, value))
-            goto bad_color;
-        break;
-    case 1:
-        if (css_get_color(&style->bg_color, value))
-            goto bad_color;
-        break;
-    bad_color:      
-        put_status(e, "Unknown color '%s'", value);
-        return;
-    case 2:
-        v = css_get_font_family(value);
-        style->font_style = (style->font_style & ~QE_FAMILY_MASK) | v;
-        break;
-    case 3:
-        // XXX: cannot handle inherit correctly
-        v = style->font_style;
-        if (!strcmp(value, "italic")) {
-            v |= QE_STYLE_ITALIC;
-        } else if (!strcmp(value, "normal")) {
-            v &= ~QE_STYLE_ITALIC;
-        }
-        style->font_style = v;
-        break;
-    case 4:
-        // XXX: cannot handle inherit correctly
-        v = style->font_style;
-        if (!strcmp(value, "bold")) {
-            v |= QE_STYLE_BOLD;
-        } else if (!strcmp(value, "normal")) {
-            v &= ~QE_STYLE_BOLD;
-        }
-        style->font_style = v;
-        break;
-    case 5:
-        if (!strcmp(value, "inherit")) {
-            style->font_size = 0;
-        } else {
-            style->font_size = strtol(value, NULL, 0);
-        }
-        break;
-    case 6:
-        // XXX: cannot handle inherit correctly 
-        if (!strcmp(value, "none")) {
-            style->font_style &= ~QE_STYLE_UNDERLINE;
-        } else if (!strcmp(value, "underline")) {
-            style->font_style |= QE_STYLE_UNDERLINE;
-        }
-        break;
-    }
-}
-
 void do_set_display_size(EditState *s, int w, int h)
 {
     if (w != NO_ARG && h != NO_ARG) {
@@ -1966,22 +1846,6 @@ void do_toggle_mode_line(EditState *s)
     s->flags ^= WF_MODELINE;
     do_refresh(s);
 }
-
-void do_set_system_font(EditState *s, const char *qe_font_name, 
-                        const char *system_fonts)
-{
-    int font_type;
-
-    font_type = css_get_enum(qe_font_name, "fixed,serif,sans");
-    if (font_type < 0) {
-        put_status(s, "Invalid qi font");
-        return;
-    }
-    pstrcpy(s->qe_state->system_fonts[font_type],
-            sizeof(s->qe_state->system_fonts[0]),
-            system_fonts);
-}
-
 
 void display_init(DisplayState *s, EditState *e, enum DisplayType do_disp)
 {
@@ -2309,9 +2173,6 @@ static void flush_fragment(DisplayState *s)
 
     // convert fragment to glyphs (currently font independent, but may
     // change)
-    //dst_max_size = MAX_SCREEN_WIDTH - s->line_index;
-    //if (dst_max_size <= 0)
-    //    goto the_end;
     dst_max_size = MAX_WORD_SIZE; // assumming s->fragment_index MAX_WORD_SIZE
     nb_glyphs = unicode_to_glyphs(s->line_chars + s->line_index, 
                                   char_to_glyph_pos, dst_max_size,
@@ -2765,7 +2626,7 @@ void set_colorize_func(EditState *s, ColorizeFunc colorize_func)
 }
                           
 #else
-//building tiny, so dummy out the set_colorize function
+// building tiny, so dummy out the set_colorize function
 void set_colorize_func(EditState *s, ColorizeFunc colorize_func) {;}
 #endif
 //////////////////////////////////////////////////////////////////////
@@ -3315,7 +3176,7 @@ static void parse_args(ExecCmdState *es)
 }
 
 /**
- * Free the 
+ * Free the command
  */
 static void free_cmd(ExecCmdState *es)
 {
@@ -3412,7 +3273,7 @@ void edit_display(QEmacsState *qs)
     EditState *s;
     int has_popups;
     
-    //first call hooks for mode specific fixups 
+    // first call hooks for mode specific fixups 
     for (s = qs->first_window; s != NULL; s = s->next_window) {
         if (s->mode->display_hook)
             s->mode->display_hook(s);
@@ -3434,7 +3295,7 @@ void edit_display(QEmacsState *qs)
             window_display(s);
         }
     }
-    //refresh popups if any 
+    // refresh popups if any 
     if (has_popups) {
         for (s = qs->first_window; s != NULL; s = s->next_window) {
             if (s->flags & WF_POPUP) {
@@ -3522,7 +3383,7 @@ static void qe_key_init(void)
 }
 
 /**
- * Process the given key.  Translate the key press into a
+ * Process the given key. Translate the key press into a
  * command
  */
 static void qe_key_process(int key)
@@ -3541,7 +3402,8 @@ again:
         // allow key_grabber to quit and unget last key
         if (c->grab_key_cb || qs->ungot_key == -1)
             return;
-        key = qs->ungot_key;
+        
+		key = qs->ungot_key;
         qs->ungot_key = -1;
     }
 
@@ -3581,7 +3443,8 @@ again:
             }
         }
     }
-    if (!kd) {
+
+	if (!kd) {
         //no key found
         if (c->nb_keys == 1) {
             if (!KEY_SPECIAL(key)) {
@@ -3623,7 +3486,7 @@ again:
         dpy_flush(&global_screen);
         return;
     } else if (c->nb_keys == kd->nb_keys) {
-    exec_cmd:
+exec_cmd:
         d = kd->cmd;
         if (d->action.func == (void *)do_universal_argument && 
             !c->describe_key) {
@@ -3647,6 +3510,7 @@ again:
             } else {
                 exec_command(s, d, c->argval);
             }
+			
             qe_key_init();
             edit_display(qs);
             dpy_flush(&global_screen);
@@ -3659,7 +3523,7 @@ again:
             return;
         }
     }
- next:
+next:
     // display key pressed 
     if (!s->minibuf) {
         //Should print argument if any in a more readable way
@@ -4424,8 +4288,10 @@ void less_mode_init(void)
 }
 
 #ifndef CONFIG_TINY
-/** insert a window to the left. Close all windows which are totally
-   under it (XXX: should try to move them first */
+/** 
+ * insert a window to the left. Close all windows which are totally
+ * under it (XXX: should try to move them first 
+ */
 EditState *insert_window_left(EditBuffer *b, int width, int flags)
 {
     QEmacsState *qs = &qe_state;
@@ -4750,35 +4616,6 @@ static void do_load1(EditState *s, const char *filename1,
  fail:
     put_status(s, "Could not open '%s'", filename);
 }
-
-#if 0
-//static void load_progress_cb(void *opaque, int size)
-//{
-//    EditState *s = opaque;
-//    EditBuffer *b = s->b;
-//    if (size >= 1024 && !b->probed)
-//        probe_mode(s, S_IFREG);
-//}
-//
-//static void load_completion_cb(void *opaque, int err)
-//{
-//    EditState *s = opaque;
-//    int mode;
-//
-//    mode = S_IFREG;
-//    if (err == -ENOENT || err == -ENOTDIR) {
-//        put_status(s, "(New file)");
-//    } else if (err == -EISDIR) {
-//        mode = S_IFDIR;
-//    } else if (err < 0) {
-//        put_status(s, "Could not read file");
-//    }
-//    if (!s->b->probed)
-//        probe_mode(s, mode);
-//    edit_display(s->qe_state);
-//    dpy_flush(&global_screen);
-//}
-#endif
 
 void do_load(EditState *s, const char *filename)
 {
@@ -5910,7 +5747,7 @@ void qe_event_init(void)
 	sigaction(SIGWINCH, &sigwinsize, NULL);
 
     itimer.it_interval.tv_sec = 0;
-    itimer.it_interval.tv_usec = 20 * 1000; /* 50 times per second */
+    itimer.it_interval.tv_usec = 20 * 1000; /* 50 times per second? */
     itimer.it_value = itimer.it_interval;
     setitimer(ITIMER_VIRTUAL, &itimer, NULL);
 }
@@ -5940,70 +5777,6 @@ void window_get_min_size(EditState *s, int *w_ptr, int *h_ptr)
     *h_ptr = h;
 }
 
-/**
- * resize a window on bottom right edge 
- */
-void window_resize(EditState *s, int target_w, int target_h)
-{
-    QEmacsState *qs = s->qe_state;
-    EditState *e;
-    int delta_y, delta_x, min_w, min_h, new_h, new_w;
-
-    delta_x = target_w - (s->x2 - s->x1);
-    delta_y = target_h - (s->y2 - s->y1);
-
-    /* then see if we can resize without having too small windows */
-    window_get_min_size(s, &min_w, &min_h);
-    if (target_w < min_w ||
-        target_h < min_h)
-        return;
-    /* check if moving would uncover empty regions */
-    if ((s->x2 >= qs->screen->width && delta_x != 0) ||
-        (s->y2 >= qs->screen->height - qs->status_height && delta_y != 0))
-        return;
-
-    for (e = qs->first_window; e != NULL; e = e->next_window) {
-        if (e->minibuf || e == s)
-            continue;
-        window_get_min_size(e, &min_w, &min_h);
-        if (e->y1 == s->y2) {
-            new_h = e->y2 - e->y1 - delta_y;
-            goto test_h;
-        } else if (e->y2 == s->y2) {
-            new_h = e->y2 - e->y1 + delta_y;
-        test_h:
-            if (new_h < min_h)
-                return;
-        }
-        if (e->x1 == s->x2) {
-            new_w = e->x2 - e->x1 - delta_x;
-            goto test_w;
-        } else if (e->x2 == s->x2) {
-            new_w = e->x2 - e->x1 + delta_x;
-        test_w:
-            if (new_w < min_w)
-                return;
-        }
-    }
-
-    /* now everything is OK, we can resize all windows */
-    for (e = qs->first_window; e != NULL; e = e->next_window) {
-        if (e->minibuf || e == s)
-            continue;
-        if (e->y1 == s->y2)
-            e->y1 += delta_y;
-        else if (e->y2 == s->y2)
-            e->y2 += delta_y;
-        if (e->x1 == s->x2)
-            e->x1 += delta_x;
-        else if (e->x2 == s->x2)
-            e->x2 += delta_x;
-        compute_client_area(e);
-    }
-    s->x2 = s->x1 + target_w;
-    s->y2 = s->y1 + target_h;
-    compute_client_area(s);
-}
 
 /* mouse handling */
 
@@ -6048,159 +5821,7 @@ static void save_selection(void)
     }
 }
 
-/* XXX: need a more general scheme for other modes such as HTML/image */
-/* CG: remove this */
-/*
-void wheel_scroll_up_down(EditState *s, int dir)
-{
-    int line_height;
-
-    // only apply to text modes
-    if (!s->mode->text_display)
-        return;
-
-    line_height = get_line_height(s->screen, s->default_style);
-    perform_scroll_up_down(s, dir * WHEEL_SCROLL_STEP * line_height);
-}
-
-void mouse_event(QEEvent *ev)
-{
-    QEmacsState *qs = &qe_state;
-    EditState *e;
-    int mouse_x, mouse_y;
-    mouse_x = ev->button_event.x;
-    mouse_y = ev->button_event.y;
-
-    switch (ev->type) {
-    case QE_BUTTON_RELEASE_EVENT:
-        save_selection();
-        motion_type = MOTION_NONE;
-        break;
-
-    case QE_BUTTON_PRESS_EVENT:
-        for (e = qs->first_window; e != NULL; e = e->next_window) {
-            // test if mouse is inside the text area
-            if (mouse_x >= e->xleft && mouse_x < e->xleft + e->width &&
-                mouse_y >= e->ytop && mouse_y < e->ytop + e->height) {
-                if (e->mode->mouse_goto) {
-                    save_selection();
-                    e->mode->mouse_goto(e, mouse_x - e->xleft,
-                                        mouse_y - e->ytop);
-                    switch (ev->button_event.button) {
-                    case QE_BUTTON_LEFT:
-                        motion_type = MOTION_TEXT;
-                        motion_x = 0; // indicate first move
-                        motion_target = e;
-                        break;
-                    case QE_BUTTON_MIDDLE:
-                        do_yank(e);
-                        break;
-                    case QE_WHEEL_UP:
-                        wheel_scroll_up_down(e, -1);
-                        break;
-                    case QE_WHEEL_DOWN:
-                        wheel_scroll_up_down(e, 1);
-                        break;
-                    }
-                    edit_display(qs);
-                    dpy_flush(qs->screen);
-                }
-                break;
-            }
-            // test if inside modeline
-            if ((e->flags & WF_MODELINE) &&
-                mouse_x >= e->xleft && mouse_x < e->xleft + e->width &&
-                mouse_y >= e->ytop + e->height && 
-                mouse_y < e->ytop + e->height + qs->mode_line_height) {
-                // mark that motion can occur
-                motion_type = MOTION_MODELINE;
-                motion_target = e;
-                motion_y = e->ytop + e->height;
-                break;
-            }
-            // test if inside right window separator
-            if ((e->flags & WF_RSEPARATOR) &&
-                mouse_x >= e->x2 - qs->separator_width && mouse_x < e->x2 &&
-                mouse_y >= e->ytop && mouse_y < e->ytop + e->height) {
-                // mark that motion can occur
-                motion_type = MOTION_RSEPARATOR;
-                motion_target = e;
-                motion_x = e->x2 - qs->separator_width;
-                break;
-            }
-        }
-        break;
-    case QE_MOTION_EVENT:
-        switch (motion_type) {
-        case MOTION_NONE:
-        default:
-            break;
-        case MOTION_TEXT:
-            {
-                EditState *e = motion_target;
-                if (!check_motion_target(e)) {
-                    e->show_selection = 0;
-                    motion_type = MOTION_NONE;
-                } else {
-                    // put a mark if first move
-                    if (!motion_x) {
-                        // test needed for list mode
-                        if (e->b)
-                            e->b->mark = e->offset;
-                        motion_x = 1;
-                    }
-                    // highlight selection
-                    e->show_selection = 1;
-                    if (mouse_x >= e->xleft && mouse_x < e->xleft + e->width &&
-                        mouse_y >= e->ytop && mouse_y < e->ytop + e->height) {
-                            // if inside the buffer, then update cursor 
-                            // position
-                            e->mode->mouse_goto(e, mouse_x - e->xleft,
-                                                mouse_y - e->ytop);
-                            edit_display(qs);
-                            dpy_flush(qs->screen);
-                     }
-                }
-            }
-            break;
-        case MOTION_MODELINE:
-            if ((mouse_y / 8) != (motion_y / 8)) {
-                if (!check_motion_target(motion_target)) {
-                    motion_type = MOTION_NONE;
-                } else {
-                    motion_y = mouse_y;
-                    window_resize(motion_target, 
-                                  motion_target->x2 - motion_target->x1,
-                                  motion_y - motion_target->y1);
-                    do_refresh(qs->first_window);
-                    edit_display(qs);
-                    dpy_flush(qs->screen);
-                }
-            }
-            break;
-        case MOTION_RSEPARATOR:
-            if ((mouse_x / 8) != (motion_x / 8)) {
-                if (!check_motion_target(motion_target)) {
-                    motion_type = MOTION_NONE;
-                } else {
-                    motion_x = mouse_x;
-                    window_resize(motion_target, 
-                                  motion_x - motion_target->x1,
-                                  motion_target->y2 - motion_target->y1);
-                    do_refresh(qs->first_window);
-                    edit_display(qs);
-                    dpy_flush(qs->screen);
-                }
-            }
-            break;
-        }
-        break;
-    default:
-        break;
-    }
-}
-*/
-#endif
+#endif // end ndef CONFIG_TINY
 
 /* put key in the unget buffer so that get_key() will return it */
 void unget_key(int key)
@@ -6224,21 +5845,18 @@ void qe_handle_event(QEEvent *ev)
     case QE_EXPOSE_EVENT:
         do_refresh(qs->first_window);
         goto redraw;
-    case QE_UPDATE_EVENT:
-    redraw:
-        edit_display(qs);
-        dpy_flush(qs->screen);
-        break;
+		
 #ifndef CONFIG_TINY
-    case QE_BUTTON_PRESS_EVENT:
-    case QE_BUTTON_RELEASE_EVENT:
-    case QE_MOTION_EVENT:
-        // mouse_event(ev);
-        break;
     case QE_SELECTION_CLEAR_EVENT:
         save_selection();
         goto redraw;
 #endif
+
+	case QE_UPDATE_EVENT:
+redraw:
+        edit_display(qs);
+        dpy_flush(qs->screen);
+        break;		
     default:
         break;
     }
@@ -6777,8 +6395,7 @@ extern QEDisplay dummy_dpy;
 static int dummy_dpy_init(QEditScreen *s, int w, int h)
 {
     memcpy(&s->dpy, &dummy_dpy, sizeof(QEDisplay));
-
-    s->charset = &charset_8859_1;
+    s->charset = &charset_utf8; // &charset_8859_1;
     
     return 0;
 }
@@ -6964,7 +6581,6 @@ void qe_init(void *opaque)
     register_completion("style", style_completion);
     register_completion("file", file_completion);
     register_completion("buffer", buffer_completion);
-    //register_completion("color", color_completion);
     
     minibuffer_init();
     less_mode_init();
@@ -7048,16 +6664,10 @@ void qe_init(void *opaque)
         show_popup(b);
         edit_display(qs);
         dpy_flush(&global_screen);
-    }
-	
+    }	
 }
 
-
-#ifdef CONFIG_WIN32
-int main1(int argc, char **argv)
-#else
 int main(int argc, char **argv)
-#endif
 {
     QEArgs args;
 
