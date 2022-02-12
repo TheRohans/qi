@@ -170,12 +170,15 @@ static int config_mode_probe(ModeProbeData *p)
 {
     const char *r;
 
-    //currently, only use the file extension
+    // file extension
     r = extension(p->filename);
     if (*r) {
         if (strfind("|yaml|yml|ini|make|mk|mak|config|conf|toml|", r + 1, 1))
             return 100;
     }
+    // file names
+    if(strfind("|Makefile|Dockerfile|", p->filename, 1) == 0) return 100;
+    
     return 0;
 }
 
