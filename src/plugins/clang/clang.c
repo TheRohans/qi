@@ -212,8 +212,10 @@ void c_colorize_line(unsigned int *buf, int len,
 #define MAX_BUF_SIZE    512
 #define MAX_STACK_SIZE  64
 
-/* gives the position of the first non while space character in
-   buf. TABs are counted correctly */
+/**
+ * gives the position of the first non while space character in
+ * buf. TABs are counted correctly 
+ */
 static int find_indent1(EditState *s, unsigned int *buf)
 {
     unsigned int *p;
@@ -253,8 +255,10 @@ enum {
     INDENT_FIND_EQ,
 };
 
-/* insert n spaces at *offset_ptr. Update offset_ptr to point just
-   after. Tabs are inserted if s->indent_tabs_mode is true. */
+/**
+ * insert n spaces at *offset_ptr. Update offset_ptr to point just
+ * after. Tabs are inserted if s->indent_tabs_mode is true. 
+ */
 static void insert_spaces(EditState *s, int *offset_ptr, int i)
 {
     int offset, size;
@@ -461,7 +465,8 @@ void do_c_indent(EditState *s)
         }
     prev_line: ;
     }
- end_parse:
+
+end_parse:
     // compute special cases which depend on the chars on the current line
     len = get_colorized_line(s, buf, MAX_BUF_SIZE - 1, offset, line_num1);
 
@@ -540,19 +545,26 @@ void do_c_indent_region(EditState *s)
 void do_c_electric(EditState *s, int key)
 {
 	do_char(s, key);
-	if(key != '\n' && key != '}') {
-		do_return(s);
-	} 
+    
+    if(key == '{') {
+        do_char(s, '}');
+        do_left_right(s, -1);
+        return;
+    }
+    
+	//if(key != '\n') { // && key != '}') {
+	//	do_return(s);
+	//}
+    
 	do_c_indent(s);
 	
-	//if its a close brace go past it and add a newline
-	if(key == '}') {
-		do_left_right(s, 1);
+	// if its a close brace go past it and add a newline
+	// if(key == '}') {
+	//	do_left_right(s, 1);
 		//do_return(s);
 		//one more indent in case we are in a block in a block
-		//yo dawg, I hear you like blocks
 		//do_c_indent(s);
-	}
+	//}
 }
 
 static int c_mode_probe(ModeProbeData *p)
@@ -587,12 +599,16 @@ static CmdDef c_commands[] = {
     CMD0( KEY_CTRLX(';'), KEY_NONE, "c-comment-region", do_c_comment_region)
     
     CMD_( KEY_NONE, KEY_NONE, "c-indent-region", do_c_indent_region, "*")
+    
     /* CG: should use 'k' intrinsic argument */
-	//CMDV( ';', KEY_NONE, "c-electric-semi&comma", do_c_electric, ';', "*v")
-	CMDV( ':', KEY_NONE, "c-electric-colon", do_c_electric, ':', "*v")
+	// CMDV( ';', KEY_NONE, "c-electric-semi&comma", do_c_electric, ';', "*v")
+	// CMDV( ':', KEY_NONE, "c-electric-colon", do_c_electric, ':', "*v")
+    
 	CMDV( '{', KEY_NONE, "c-electric-obrace", do_c_electric, '{', "*v")
-	CMDV( '}', KEY_NONE, "c-electric-cbrace", do_c_electric, '}', "*v")
-	CMDV( KEY_RET, KEY_NONE, "c-electric-newline", do_c_electric, '\n', "*v")
+	// CMDV( '}', KEY_NONE, "c-electric-cbrace", do_c_electric, '}', "*v")
+	
+    CMDV( KEY_RET, KEY_NONE, "c-electric-newline", do_c_electric, '\n', "*v")
+    
     CMD_DEF_END,
 };
 
@@ -602,6 +618,7 @@ int c_init(void)
 {
     /* c mode is almost like the text mode, so we copy and patch it */
     memcpy(&c_mode, &text_mode, sizeof(ModeDef));
+    
     c_mode.name = "C";
     c_mode.mode_probe = c_mode_probe;
     c_mode.mode_init = c_mode_init;
