@@ -107,7 +107,7 @@ static int markdown_mode_probe(ModeProbeData *p)
     //currently, only use the file extension
     r = extension(p->filename);
     if (*r) {
-        if (strfind("|md|markdown|mdown|mkd|mdtext|mdtxt|mkdn|", r + 1, 1))
+        if (strfind("|md|markdown|mdown|mkd|mdtext|mdtxt|mkdn|txt|text|", r + 1, 1))
             return 100;
     }
     return 0;
