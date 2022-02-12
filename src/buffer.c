@@ -17,9 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include "qe.h"
-#ifndef WIN32
 #include <sys/mman.h>
-#endif
 
 static void eb_addlog(EditBuffer *b, enum LogOperation op, 
                       int offset, int size);
@@ -458,8 +456,6 @@ EditBuffer *eb_new(const char *name, int flags)
     b->next = qs->first_buffer;
     qs->first_buffer = b;
 
-    /* CG: default charset should be selectable */
-    //eb_set_charset(b, &charset_8859_1);
     eb_set_charset(b, &charset_utf8);
     
     /* add mark move callback */
@@ -788,15 +784,16 @@ int eb_prevc(EditBuffer *b, int offset, int *prev_ptr)
         offset = 0;
         ch = '\n';
     } else {
-        /* XXX: it cannot be generic here. Should use the
-           line/column system to be really generic */
+        // XXX: it cannot be generic here. Should use the
+        //   line/column system to be really generic
         offset--;
         q = buf + sizeof(buf) - 1;
         eb_read(b, offset, q, 1);
-        if (b->charset == &charset_utf8) {
+		
+        // if (b->charset == &charset_utf8) {
             while (*q >= 0x80 && *q < 0xc0) {
                 if (offset == 0 || q == buf) {
-                    /* error : take only previous char */
+                    // error : take only previous char
                     offset += buf - 1 - q;
                     ch = buf[sizeof(buf) - 1];
                     goto the_end;
@@ -805,12 +802,16 @@ int eb_prevc(EditBuffer *b, int offset, int *prev_ptr)
                 q--;
                 eb_read(b, offset, q, 1);
             }
+			
             ch = utf8_decode((const char **)(void *)&q);
-        } else {
-            ch = *q;
-        }
+			// this makes C+a not work because comparing to 
+			// newline returns false.
+			// ch = to_rune((const char **)(void *)&q);
+        // } else {
+        //    ch = *q;
+        //}
     }
- the_end:
+the_end:
     if (prev_ptr)
         *prev_ptr = offset;
     return ch;
