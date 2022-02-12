@@ -101,7 +101,7 @@ the cursor will move to the home position, at the upper left of the screen. */
 ///////////////////////////////
 /* Sets multiple display attribute settings. The following lists standard attributes: */
 #define ESC_SET_ATTRIBUTE_MODE_3   "\033[%d;%d;%dm"
-#define ESC_SET_ATTRIBUTE_MODE_2   "\033[%d;%dm"
+#define ESC_SET_ATTRIBUTE_MODE_2   "\033[;%d;%dm"
 #define ESC_SET_ATTRIBUTE_MODE_1   "\033[%dm"
 /*
 0	Reset all attributes

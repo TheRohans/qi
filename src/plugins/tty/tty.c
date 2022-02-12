@@ -33,8 +33,12 @@
 
 #include "tty.h"
 
+/////////////////////////////////////////////////////
+
 typedef struct TTYChar {
-    unsigned short ch;
+    // Unicode needs 4 bytes
+    // unsigned int ch;
+    unsigned int ch;
     unsigned char bgcolor;
     unsigned char fgcolor;
 } TTYChar;
@@ -52,7 +56,7 @@ typedef struct TTYState {
     unsigned char *line_updated;
     struct termios oldtty;
     int cursor_x, cursor_y;
-    /* input handling */
+    // input handling
     enum InputState input_state;
     int input_param;
     int utf8_state;
@@ -73,14 +77,29 @@ static int term_probe(void)
 
 static QEDisplay tty_dpy;
 
+#define NB_COLORS 8
+
+unsigned int tty_colors[NB_COLORS] = {
+    QERGB(0x00, 0x00, 0x00),
+    QERGB(0xff, 0x00, 0x00),
+    QERGB(0x00, 0xff, 0x00),
+    QERGB(0xff, 0xff, 0x00),
+    QERGB(0x00, 0x00, 0xff),
+    QERGB(0xff, 0x00, 0xff),
+    QERGB(0x00, 0xff, 0xff),
+    QERGB(0xff, 0xff, 0xff),
+};
 
 #define MAX_WH 500
 
-/* return (0,0) if error */
+/////////////////////////////////////////////////////
+
+/**
+ * return (0,0) if error 
+ */
 static void get_cursor_pos(int *pw, int *ph)
 {
     int w, h, c, state;
-    // printf("\033[6n");
     printf(ESC_QUERY_CURSOR_POSITION);
     fflush(stdout);
     w = 0;
@@ -119,11 +138,13 @@ static void get_cursor_pos(int *pw, int *ph)
             break;
         }
     }
- the_end:
+
+the_end:
     *pw = w;
     *ph = h;
     return;
- fail:
+
+fail:
     *pw = 0;
     *ph = 0;
 }
@@ -134,7 +155,6 @@ static void get_cursor_pos(int *pw, int *ph)
 static void tty_get_screen_size(int *pw, int *ph)
 {
     int w, h;
-    // printf("\033[%d;%dH", MAX_WH, MAX_WH);
 	printf(ESC_CURSOR_POS, MAX_WH, MAX_WH);
     get_cursor_pos(&w, &h);
     if (h < 1 || w < 1 || h > MAX_WH || w > MAX_WH) {
@@ -154,7 +174,6 @@ static int term_init(QEditScreen *s, int w, int h)
 {
     TTYState *ts;
     struct termios tty;
-    // struct sigaction sig;
 
     memcpy(&s->dpy, &tty_dpy, sizeof(QEDisplay));
 
@@ -175,39 +194,24 @@ static int term_init(QEditScreen *s, int w, int h)
     tty.c_cc[VMIN] = 1;
     tty.c_cc[VTIME] = 0;
     
-    tcsetattr (0, TCSANOW, &tty);
+    tcsetattr(0, TCSANOW, &tty);
 
-//#if 0
-//    /* test UTF8 support by looking at the cursor position (idea from
-//       Ricardas Cepas <rch@pub.osf.lt>). Since uClibc actually tests
-//       to ensure that the format string is a valid multibyte sequence
-//       in the current locale (ANSI/ISO C99), use a format specifer of
-//       %s to avoid printf() failing with EILSEQ. */
-//    printf ("%s", "\030\032" "\r\xEF\x81\x81" "\033[6n\033D");
-//    scanf ("\033[%u;%u", &y, &x);/* get cursor position */
-//    printf("\033[1F" "\033[%uX", (x-1)); /* go back; erase 1 or 3 char */
-//    s->charset = &charset_8859_1;
-//    if (x == 2) {
-//        s->charset = &charset_utf8;
-//    }
-//#else
-    // s->charset = &charset_8859_1;
-    // Assume UTF-8
+    // only support utf8
     s->charset = &charset_utf8;
-//#endif
 
     atexit(term_exit);
-
+    
+//    struct sigaction sig;
 //    sig.sa_handler = &handle_sigwinch;
 //    sigemptyset(&sig.sa_mask);
 //    sig.sa_flags = 0; // SA_RESTART;
 //    sigaction(SIGWINCH, &sig, NULL);
 
     fcntl(0, F_SETFL, O_NONBLOCK);
-    /* If stdout is to a pty, make sure we aren't in nonblocking mode.
-     * Otherwise, the printf()s in term_flush() can fail with EAGAIN,
-     * causing repaint errors when running in an xterm or in a screen
-     * session. */
+    // If stdout is to a pty, make sure we aren't in nonblocking mode.
+    // Otherwise, the printf()s in term_flush() can fail with EAGAIN,
+    // causing repaint errors when running in an xterm or in a screen
+    // session.
     fcntl(1, F_SETFL, 0);
 
     set_read_handler(0, tty_read_handler, s);
@@ -220,7 +224,6 @@ static void term_close(QEditScreen *s)
 {
     fcntl(0, F_SETFL, 0);
     /* go to the last line */
-    // printf("\033[%d;%dH\033[m\033[K", s->height, 1);
 	printf(ESC_CURSOR_POS 
            ESC_SET_ATTRIBUTE_MODE_1 
            ESC_ERASE_END_OF_LINE, s->height, 1, 0);
@@ -254,12 +257,13 @@ void tty_resize(int sig)
     }
     
     size = s->width * s->height * sizeof(TTYChar);
+    
     ts->old_screen = realloc(ts->old_screen, size);
     ts->screen = realloc(ts->screen, size);
     ts->line_updated = realloc(ts->line_updated, s->height);
     
     memset(ts->old_screen, 0, size);
-    memset(ts->screen, ' ', size);
+    memset(ts->screen, 0x22, size);
     memset(ts->line_updated, 1, s->height);
 
     s->clip_x1 = 0;
@@ -299,25 +303,23 @@ static void tty_read_handler(void *opaque)
 
     if (read(0, ts->buf + ts->utf8_index, 1) != 1)
         return;
-
-    /* charset handling */
-    if (s->charset == &charset_utf8) {
+    
+    // charset handling
+    if (s->charset == &charset_utf8) {        
         if (ts->utf8_state == 0) {
             const char *p;
             p = (const char *)ts->buf;
             ch = utf8_decode(&p);
+            // ch = to_rune(ch);
         } else {
             ts->utf8_state = utf8_length[ts->buf[0]] - 1;
             ts->utf8_index = 0;
             return;
         }
-    } else {
-        ch = ts->buf[0];
     }
         
     switch(ts->input_state) {
     case IS_NORM:
-        // if (ch == '\033')
         if (ch == ESC_START)
             ts->input_state = IS_ESC;
         else
@@ -352,7 +354,7 @@ static void tty_read_handler(void *opaque)
                 ch = KEY_SHIFT_TAB;
                 goto the_end;
             default:
-                /* xterm CTRL-arrows */
+                // xterm CTRL-arrows
                 if (ts->input_param == 5 && ch >= 'A' && ch <= 'D')
                     ch += 'a' - 'A';
                 ch = KEY_ESC1(ch);
@@ -363,11 +365,11 @@ static void tty_read_handler(void *opaque)
         }
         break;
     case IS_ESC2:
-        /* xterm fn */
+        // xterm fn
         ts->input_state = IS_NORM;
         if (ch >= 'P' && ch <= 'S') {
             ch = KEY_F1 + ch - 'P';
-        the_end:
+the_end:
             ev->key_event.type = QE_KEY_EVENT;
             ev->key_event.key = ch;
             qe_handle_event(ev);
@@ -383,19 +385,6 @@ static inline int color_dist(unsigned int c1, unsigned c2)
             2 * abs( ((c1 >> 8) & 0xff) - ((c2 >> 8) & 0xff)) +
             abs( ((c1 >> 16) & 0xff) - ((c2 >> 16) & 0xff)));
 }
-
-#define NB_COLORS 8
-
-unsigned int tty_colors[NB_COLORS] = {
-    QERGB(0x00, 0x00, 0x00),
-    QERGB(0xff, 0x00, 0x00),
-    QERGB(0x00, 0xff, 0x00),
-    QERGB(0xff, 0xff, 0x00),
-    QERGB(0x00, 0x00, 0xff),
-    QERGB(0xff, 0x00, 0xff),
-    QERGB(0x00, 0xff, 0xff),
-    QERGB(0xff, 0xff, 0xff),
-};
 
 static int get_tty_color(QEColor color)
 {
@@ -441,16 +430,16 @@ static void term_fill_rectangle(QEditScreen *s,
             ts->line_updated[y] = 1;
             for(x=x1;x<x2;x++) {
                 ptr->bgcolor = bgcolor;
-                ptr->ch = ' ';
                 ptr->fgcolor = 7;
+                ptr->ch = ' ';
                 ptr++;
             }
             ptr += wrap;
         }
-    }
+   }
 }
 
-/* XXX: could alloc font in wrapper */
+// XXX: could alloc font in wrapper
 static QEFont *term_open_font(QEditScreen *s,
                               int style, int size)
 {
@@ -469,27 +458,27 @@ static void term_close_font(QEditScreen *s, QEFont *font)
     free(font);
 }
 
-/*
+/**
  * Modified implementation of wcwidth() from Markus Kuhn. We do not
  * handle non spacing and enclosing combining characters and control
  * chars.  
  */
 static int term_glyph_width(QEditScreen *s, unsigned int ucs)
 {
-  /* fast test for majority of non-wide scripts */
-  if (ucs < 0x900)
-    return 1;
+    // fast test for majority of non-wide scripts
+    if (ucs < 0x900)
+        return 1;
 
-  return 1 +
-    ((ucs >= 0x1100 && ucs <= 0x115f) || /* Hangul Jamo */
-     (ucs >= 0x2e80 && ucs <= 0xa4cf && (ucs & ~0x0011) != 0x300a &&
-      ucs != 0x303f) ||                  /* CJK ... Yi */
-     (ucs >= 0xac00 && ucs <= 0xd7a3) || /* Hangul Syllables */
-     (ucs >= 0xf900 && ucs <= 0xfaff) || /* CJK Compatibility Ideographs */
-     (ucs >= 0xfe30 && ucs <= 0xfe6f) || /* CJK Compatibility Forms */
-     (ucs >= 0xff00 && ucs <= 0xff5f) || /* Fullwidth Forms */
-     (ucs >= 0xffe0 && ucs <= 0xffe6)
-     );
+    return 1 +
+        ((ucs >= 0x1100 && ucs <= 0x115f) || // Hangul Jamo
+         (ucs >= 0x2e80 && ucs <= 0xa4cf && (ucs & ~0x0011) != 0x300a &&
+          ucs != 0x303f) ||                  // CJK ... Yi 
+         (ucs >= 0xac00 && ucs <= 0xd7a3) || // Hangul Syllables
+         (ucs >= 0xf900 && ucs <= 0xfaff) || // CJK Compatibility Ideographs
+         (ucs >= 0xfe30 && ucs <= 0xfe6f) || // CJK Compatibility Forms
+         (ucs >= 0xff00 && ucs <= 0xff5f) || // Fullwidth Forms
+         (ucs >= 0xffe0 && ucs <= 0xffe6)
+         );
 }
 
 static void term_text_metrics(QEditScreen *s, QEFont *font, 
@@ -525,15 +514,15 @@ static void term_draw_text(QEditScreen *s, QEFont *font,
 
     if (x < s->clip_x1) {
         ptr += s->clip_x1;
-        /* left clip */
+        // left clip
         while (len > 0) {
             cc = *str++;
             len--;
             w = term_glyph_width(s, cc);
             x += w;
             if (x >= s->clip_x1) {
-                /* now we are on the screen. need to put spaces for
-                   wide chars */
+                // now we are on the screen. need to put spaces for
+                // wide chars 
                 n = x;
                 if (s->clip_x2 < n)
                     n = s->clip_x2;
@@ -552,7 +541,7 @@ static void term_draw_text(QEditScreen *s, QEFont *font,
     for (; len > 0; len--) {
         cc = *str++;
         w = term_glyph_width(s, cc);
-        /* XXX: would need to put spacs for wide chars */
+        // XXX: would need to put spacs for wide chars
         if (x + w > s->clip_x2) 
             break;
         ptr->fgcolor = fgcolor;
@@ -579,53 +568,62 @@ static void term_flush(QEditScreen *s)
     TTYState *ts = s->private;
     TTYChar *ptr, *optr;
     int x, y, bgcolor, fgcolor;
-    char buf[10];
-    unsigned int cc;
+    char buf[5] = {0};
+    
+    // unsigned int cc;
+    unsigned short cc;
 
     bgcolor = -1;
     fgcolor = -1;
-            
-    for(y=0;y<s->height;y++) {
+    
+    for(y=0; y < s->height; y++) {
         if (ts->line_updated[y]) {
             ts->line_updated[y] = 0;
-            ptr = ts->screen + y * s->width;
-            optr = ts->old_screen + y * s->width;
+            
+            // get a TTYChar pointer to an x,y on the screen
+            ptr = ts->screen + (y * s->width);
+            optr = ts->old_screen + (y * s->width);
 
             if (memcmp(ptr, optr, sizeof(TTYChar) * s->width) != 0) {
-                /* XXX: currently, we update the whole line */
-                // printf("\033[%d;%dH", y + 1, 1);
+                // XXX: currently, we update the whole line
 				printf(ESC_CURSOR_POS, y + 1, 1);
 				
-                for(x=0;x<s->width;x++) {
+                for(x=0; x < s->width; x++) {
+                    // get the current char at the current
+                    // screen position. **note** currently this
+                    // can only be a short which is not big
+                    // enough for utf8
                     cc = ptr->ch;
+                    
                     if (cc != 0xffff) {
-                        /* output attributes */
+                        // output attributes
                         if (((fgcolor != ptr->fgcolor && cc != ' ') ||
                              (bgcolor != ptr->bgcolor))) {
                             fgcolor = ptr->fgcolor;
                             bgcolor = ptr->bgcolor;
-                            // printf("\033[;%d;%dm", 
 						    printf(ESC_SET_ATTRIBUTE_MODE_2, 
 								   30 + fgcolor, 40 + bgcolor);
                         }
-						
-                        /* do not display escape codes or invalid codes */
+                        
+                        // do not display escape codes or invalid codes
                         if (cc < 32 || (cc >= 128 && cc < 128 + 32)) {
                             buf[0] = '.';
                             buf[1] = '\0';
                         } else {
 							unicode_to_charset((char *)buf, cc, s->charset);
+                            // to_utf8(buf, cc);
                         }
+                        // write the text to the screen
                         printf("%s", buf);
                     }
-                    /* update old screen data */
+                    
+                    // update old screen data
                     *optr++ = *ptr++;
                 }
             }
         }
     }
 
-    // printf("\033[%d;%dH", ts->cursor_y + 1, ts->cursor_x + 1);
 	printf(ESC_CURSOR_POS, ts->cursor_y + 1, ts->cursor_x + 1);
     fflush(stdout);
 }
