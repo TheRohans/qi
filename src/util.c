@@ -109,20 +109,6 @@ void find_file_close(FindFileState *s)
     free(s);
 }
 
-#ifdef WIN32
-/* convert '/' to '\' */
-static void path_win_to_unix(char *buf)
-{
-    char *p;
-    p = buf;
-    while (*p) {
-        if (*p == '\\')
-            *p = '/';
-        p++;
-    }
-}
-#endif
-
 /* suppress redundant ".", ".." and "/" from paths */
 /* XXX: make it better */
 static void canonize_path1(char *buf, int buf_size, const char *path)
@@ -523,6 +509,7 @@ static int strtokey1(const char **pp)
         key = KEY_CTRL(p[2]);
     } else {
         key = utf8_decode(&p);
+        // key = to_rune(&p);
     }
     *pp = p1;
 
@@ -595,6 +582,8 @@ void keytostr(char *buf, int buf_size, int key)
         char *q;
         q = utf8_encode(buf1, key);
         *q = '\0';
+        // TODO: maybe...
+        // to_utf8(buf1, key);
         pstrcpy(buf, buf_size, buf1);
     }
 }
