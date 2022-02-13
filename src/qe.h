@@ -206,30 +206,6 @@ typedef struct QECharset {
 extern QECharset *first_charset;
 extern QECharset charset_utf8, charset_8859_1; //!< predefined charsets 
 extern QECharset charset_vt100;                //!< used for the tty output 
-//extern QECharset charset_8859_2;
-//extern QECharset charset_cp1125;
-//extern QECharset charset_cp737;
-//extern QECharset charset_koi8_r;
-//extern QECharset charset_8859_4;
-//extern QECharset charset_cp1250;
-//extern QECharset charset_cp850;
-//extern QECharset charset_koi8_u;
-//extern QECharset charset_viscii;
-//extern QECharset charset_8859_13;
-//extern QECharset charset_8859_5;
-//extern QECharset charset_cp1251;
-//extern QECharset charset_cp852;
-//extern QECharset charset_mac_lat2;
-//extern QECharset charset_8859_15;
-//extern QECharset charset_8859_7;
-//extern QECharset charset_cp1257;
-//extern QECharset charset_cp866;
-//extern QECharset charset_macroman;
-//extern QECharset charset_8859_16;
-//extern QECharset charset_8859_9;
-//extern QECharset charset_cp437;
-//extern QECharset charset_kamen;
-//extern QECharset charset_tcvn5712;
 
 typedef struct CharsetDecodeState {
     /* 256 ushort table for hyper fast decoding */
