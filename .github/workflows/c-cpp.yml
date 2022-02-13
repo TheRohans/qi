@@ -12,6 +12,8 @@ jobs:
     steps:
     - name: Checkout repo
       uses: actions/checkout@v2
+    - name: Test
+      run: ./configure --cc=gcc; make test; ./build/run_tests
     - name: Build
       run: ./configure --cc=gcc; make clean qi
 
@@ -20,6 +22,8 @@ jobs:
     steps:
     - name: Checkout repo
       uses: actions/checkout@v2
+    - name: Test
+      run: ./configure --cc=gcc; make test; ./build/run_tests
     - name: Buid
       run: ./configure --cc=clang; make clean qi
 
