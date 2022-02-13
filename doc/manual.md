@@ -174,7 +174,7 @@ C-x p					: previous-window
 ### Miscellaneous
 
 ```
-C-l                     : refresh (display, force redraw)
+C-t                     : refresh (display, force redraw)
 M-q                     : fill-paragraph (force to 76 chars)
 C-x RET l               : toggle-line-numbers
 C-x RET t               : truncate-lines

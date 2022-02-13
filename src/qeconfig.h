@@ -53,7 +53,7 @@ CmdDef basic_commands[] = {
     CMD_( KEY_META('r'), KEY_NONE, "replace-string", do_replace_string, "*s{Replace String: }|search|s{With: }|replace|")
     CMD0( KEY_CTRLX('u'), KEY_CTRL('_'), "undo", do_undo)
     CMD_( KEY_RET, KEY_NONE, "newline", do_return, "*")
-    CMD0( KEY_CTRL('l'), KEY_NONE, "refresh", do_refresh_complete)
+    CMD0( KEY_CTRL('t'), KEY_NONE, "refresh", do_refresh_complete)
     // CG: should take a string if no numeric argument given
     CMD_( KEY_META('g'), KEY_NONE, "goto-line", do_goto_line, "i{Goto line: }")
     CMD_( KEY_NONE, KEY_NONE, "goto-char", do_goto_char, "i{Goto char: }")
