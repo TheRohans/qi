@@ -1364,7 +1364,7 @@ static int reload_buffer(EditState *s, EditBuffer *b, FILE *f1)
     if (!f1)
         fclose(f);
     if (ret < 0) {
-    fail:
+fail:
         if (!f1) {
             put_status(s, "Could not load '%s'", b->filename);
         } else {
@@ -4530,8 +4530,8 @@ static ModeDef *probe_mode(EditState *s, int mode, uint8_t *buf, int len)
 }
 
 /**
- * Load a file into a buffer, either by full path or
- * or assuming the filename is within one of the resource folders
+ * Load a file into a buffer, either by full path, or
+ * assuming the filename is within one of the resource folders
  * _load\_resource_
  */
 static void do_load1(EditState *s, const char *filename1,
@@ -4577,15 +4577,15 @@ static void do_load1(EditState *s, const char *filename1,
     s->offset = 0;
     s->wrap = WRAP_LINE;
 
-    /* first we try to read the first bytes of the buffer to find the
-       buffer data type */
+    // first we try to read the first bytes of the buffer to find the
+    // buffer data type
     if (stat(filename, &st) < 0) {
         put_status(s, "(New file)");
-        /* Try to determine the desired mode based on the filename.
-         * This avoids having to set c-mode for each new .c or .h file. */
+        // Try to determine the desired mode based on the filename.
+        // This avoids having to set c-mode for each new .c or .h file.
         buf[0] = '\0';
         selected_mode = probe_mode(s, S_IFREG, buf, 0);
-        /* XXX: avoid loading file */
+        // XXX: avoid loading file
         if (selected_mode)
             do_set_mode(s, selected_mode, NULL);
         return;
@@ -4598,7 +4598,7 @@ static void do_load1(EditState *s, const char *filename1,
                 goto fail;
             buf_size = fread(buf, 1, sizeof(buf) - 1, f);
             if (buf_size < 0) {
-            fail1:
+fail1:
                 fclose(f);
                 goto fail;
             }
@@ -4612,11 +4612,11 @@ static void do_load1(EditState *s, const char *filename1,
         goto fail1;
     bdt = selected_mode->data_type;
 
-    /* autodetect buffer charset (could move it to raw buffer loader) */
+    // autodetect buffer charset (could move it to raw buffer loader)
     if (bdt == &raw_data_type) 
         eb_set_charset(b, detect_charset(buf, buf_size));
 
-    /* now we can set the mode */
+    // now we can set the mode
     do_set_mode_file(s, selected_mode, NULL, f);
     do_load_qirc(s, s->b->filename);
 
@@ -4624,7 +4624,7 @@ static void do_load1(EditState *s, const char *filename1,
         fclose(f);
     }
 
-    /* XXX: invalid place */
+    // XXX: invalid place
     edit_invalidate(s);
     return;
 fail:
@@ -6573,17 +6573,8 @@ void qe_init(void *opaque)
     b = eb_new(BUF_SCRATCH, BF_SAVELOG);
     // will be positionned by do_refresh()
     s = edit_new(b, 0, 0, 0, 0, WF_MODELINE);
-
-#ifdef CONFIG_DEBUG
-	// create a debug buffer
-	eb_new(BUF_DEBUG, BF_SAVELOG);
-	// EditBuffer *dbuf = eb_new(BUF_DEBUG, BF_SAVELOG);
-	// EditState *dstate = edit_new(dbuf, 0, 0, 0, 0, WF_MODELINE);
-	// eb_insert(dbuf, 0, "Hello World", 11);	
-	// fill_rectangle(&global_screen, 1, 1, 10, 10, 4);
-#endif
 	
-	LOG("** Debug window for 气 **");
+	LOG("** Debug window for 气 %d **", getpid());
 	
     // at this stage, no screen is defined. Initialize a
     // dummy display driver to have a consistent state
@@ -6602,12 +6593,12 @@ void qe_init(void *opaque)
     // select the suitable display manager
     dpy = probe_display();
     if (!dpy) {
-        fprintf(stderr, "No suitable display found, exiting\n");
+        LOG("%s", "No suitable display found, exiting");
         exit(1);
     }
 
     if (dpy->dpy_init(&global_screen, screen_width, screen_height) < 0) {
-        fprintf(stderr, "Could not initialize display '%s', exiting\n", dpy->name);
+        LOG("Could not initialize display '%s', exiting", dpy->name);
         exit(1);
     }
 
@@ -6634,6 +6625,7 @@ void qe_init(void *opaque)
     edit_display(qs);
     dpy_flush(&global_screen);
 
+	// Example: popup
     b = eb_find("*errors*");
     if (b != NULL) {
         show_popup(b);

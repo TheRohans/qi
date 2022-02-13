@@ -13,8 +13,8 @@
 #include <sys/wait.h>
 #include <sys/ioctl.h>
 #include <termios.h>
-#include "qe.h"
 
+#include "qe.h"
 
 static void do_runner(EditState *e, const char *cmd)
 {
@@ -37,13 +37,15 @@ static void do_runner(EditState *e, const char *cmd)
 
     getcwd(cwd, sizeof(cwd));
 
-    /* get the directory of the open file and change into it
-     */
+    // get the directory of the open file and change into it
     p = strrchr(e->b->filename, '/');
     if (p == e->b->filename)
         p++;
     len = p - e->b->filename + 1;
     pstrcpy(dir, sizeof(dir), e->b->filename);
+    
+    LOG("%s", dir)
+    
     chdir(dir);
 
     /* if (func->output_to_buffer) {
@@ -64,12 +66,23 @@ static void do_runner(EditState *e, const char *cmd)
         //     switch_to_buffer(func->es, b);
         // }
     } else { */
-        int pid = fork();
+        pid_t pid = fork();
+        
         if (pid == 0) {
             // child process
             setsid();
             execv("/bin/sh", (char *const*)argv);
             exit(1);
+        } else if (pid > 0) {
+            // parent process
+            if(wait(0) == -1) {
+                LOG("%s", "Could not wait for child process")
+            }
+            LOG("%s", "child process finished")
+        } else {
+            // Error
+            LOG("%s", "Could not fork process")
+            
         }
     // }
     chdir(cwd);
