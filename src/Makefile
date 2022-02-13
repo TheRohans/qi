@@ -108,5 +108,6 @@ distclean: clean
 
 test:
 	@echo '======================================== Building qi tests ==== '
+	mkdir -p ../build
 	$(CC) $(CFLAGS) $(TESTS_SRC) tests.c $(LIBS) -o ../build/run_tests
 	make -C plugins test
