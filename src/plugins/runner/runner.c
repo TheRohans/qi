@@ -30,11 +30,16 @@ static void do_runner(EditState *e, const char *cmd)
         return;
     }
 
-    argv[0] = "/bin/sh";
-    argv[1] = "-c";
-    argv[2] = cmd;
-    argv[3] = NULL;
+//    argv[0] = "/bin/sh";
+//    argv[1] = "-c";
+//    argv[2] = cmd;
+//    argv[3] = NULL;
 
+    argv[0] = "gofmt";
+    argv[1] = "-w";
+    argv[2] = e->b->filename;
+    argv[3] = NULL;
+    
     getcwd(cwd, sizeof(cwd));
 
     // get the directory of the open file and change into it
@@ -45,46 +50,26 @@ static void do_runner(EditState *e, const char *cmd)
     pstrcpy(dir, sizeof(dir), e->b->filename);
     
     LOG("%s", dir)
-    
     chdir(dir);
 
-    /* if (func->output_to_buffer) {
-        // if the buffer already exists, kill it 
-        EditBuffer *b = eb_find("*LaTeX output*");
-        if (b) {
-            // XXX: e should not become invalid
-            b->modified = 0;
-            do_kill_buffer(func->es, "*LaTeX output*");
+    pid_t pid = fork();
+    if (pid == 0) {
+        // child process
+        setsid();
+        execvp(argv[0], (char *const*)argv);
+        exit(1);
+    } else if (pid > 0) {
+        // parent process
+        if(wait(NULL) == -1) {
+            LOG("%s", "Could not wait for child process");
         }
+        LOG("%s", "child process finished");
+        do_revert_buffer(e);
+    } else {
+        // Error
+        LOG("%s", "Could not fork process");
+    }
 
-        // create new buffer
-        // TODO: fix the shell plugin to get this to work, but
-        // I don't think this should rely on the other plugin being loaded
-        // b = new_shell_buffer("*LaTeX output*", "/bin/sh", argv, 0);
-        // if (b) {
-        //     // XXX: try to split window if necessary
-        //     switch_to_buffer(func->es, b);
-        // }
-    } else { */
-        pid_t pid = fork();
-        
-        if (pid == 0) {
-            // child process
-            setsid();
-            execv("/bin/sh", (char *const*)argv);
-            exit(1);
-        } else if (pid > 0) {
-            // parent process
-            if(wait(0) == -1) {
-                LOG("%s", "Could not wait for child process")
-            }
-            LOG("%s", "child process finished")
-        } else {
-            // Error
-            LOG("%s", "Could not fork process")
-            
-        }
-    // }
     chdir(cwd);
 }
 
