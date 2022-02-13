@@ -1378,9 +1378,27 @@ static int reload_buffer(EditState *s, EditBuffer *b, FILE *f1)
 
 void do_revert_buffer(EditState *s) 
 {
+	int line_num = 0;
+	int col_num = 0;
+
 	// QEmacsState *qs = s->qe_state;
     EditBuffer *b = s->b;
+	
+	// save current position
+	eb_get_pos(s->b, &line_num, &col_num, s->offset);
+	
+	// Remove the current text
+	do_mark_whole_buffer(s);
+	do_kill_region(s, 1);
+	
+	// reload the buffer, this either has a bug or a 
+	// bad name. It will append the file contents to
+	// the end of the file, hence the delete above
 	reload_buffer(s, b, NULL);
+	
+	// Jump back to the line we were on
+	do_goto_line(s, line_num);
+	
     put_status(s, "Buffer reverted from disk");
 }
 
