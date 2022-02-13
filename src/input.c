@@ -17,9 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include "qe.h"
-#ifndef WIN32
 #include <sys/mman.h>
-#endif
 
 InputMethod *input_methods;
 

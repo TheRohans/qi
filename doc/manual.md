@@ -105,6 +105,7 @@ C-i                     : tabulate
 RET                     : newline
 M-{                     : backward-paragraph
 M-}                     : forward-paragraph
+C-l                     : center-line
 ```
 
 ### Region handling
@@ -139,8 +140,8 @@ C-x C-b                 : list-buffers
 ```
 C-s                     : isearch-backward
 C-r                     : isearch-forward
-	C-c						: toggle case sensitivity
-	C-w						: toggle word find
+   C-c                      : toggle case sensitivity
+   C-w                      : toggle word find
 M-%                     : query-replace
 M-r                     : replace-string
 ```
@@ -173,7 +174,7 @@ C-x p					: previous-window
 ### Miscellaneous
 
 ```
-C-l                     : refresh
+C-t                     : refresh (display, force redraw)
 M-q                     : fill-paragraph (force to 76 chars)
 C-x RET l               : toggle-line-numbers
 C-x RET t               : truncate-lines
@@ -258,3 +259,16 @@ You can use one of the examples in `src/plugin/' to develop a Qi plugins
 (aka modules).
 
 Plugins can add any dynamic resource qi supports (modes, keybindings, ...).
+
+### Helpful Functions
+
+```
+put_error(EditorState *s, const char *fmt, ...)
+put_status(EditorState *s, const char *fmt, ...)
+void switch_to_buffer(EditState *s, EditBuffer *b)
+void show_popup(EditBuffer *b) 
+EditState *insert_window_left(EditBuffer *b, int width, int flags)
+eb_new(<buffer_name>, BF_SAVELOG)
+LOG("write to the debug buffer")
+```
+

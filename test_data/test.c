@@ -6,6 +6,6 @@ void main(void) {
     
     void *thing = malloc(sizeof(char)*10);
     &thing = "0123456789";
-    
+
     printf("%s", *thing);
 }

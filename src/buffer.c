@@ -17,9 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include "qe.h"
-#ifndef WIN32
 #include <sys/mman.h>
-#endif
 
 static void eb_addlog(EditBuffer *b, enum LogOperation op, 
                       int offset, int size);
@@ -74,7 +72,9 @@ static void update_page(Page *p)
     p->flags &= ~(PG_VALID_POS | PG_VALID_CHAR | PG_VALID_COLORS);
 }
 
-/* Read or write in the buffer. We must have 0 <= offset < b->total_size */
+/**
+ * Read or write in the buffer. We must have 0 <= offset < b->total_size 
+ */
 static int eb_rw(EditBuffer *b, int offset, u8 *buf, int size1, int do_write)
 {
     Page *p;
@@ -118,7 +118,9 @@ int eb_read(EditBuffer *b, int offset, void *buf, int size)
     return eb_rw(b, offset, buf, size, 0);
 }
 
-/* Note: eb_write can be used to insert after the end of the buffer */
+/**
+ * Note: eb_write can be used to insert after the end of the buffer 
+ */
 void eb_write(EditBuffer *b, int offset, void *buf_arg, int size)
 {
     int len, left;
@@ -133,8 +135,10 @@ void eb_write(EditBuffer *b, int offset, void *buf_arg, int size)
     }
 }
 
-/* internal function for insertion : 'buf' of size 'size' at the
-   beginning of the page at page_index */
+/**
+ * internal function for insertion : 'buf' of size 'size' 
+ * at the beginning of the page at page_index 
+ */
 static void eb_insert1(EditBuffer *b, int page_index, const u8 *buf, int size)
 {
     int len, n;
@@ -328,8 +332,10 @@ void eb_insert_buffer(EditBuffer *dest, int dest_offset,
     dest->cur_page = NULL;
 }
 
-/* Insert 'size' bytes from 'buf' into 'b' at offset 'offset'. We must
-   have : 0 <= offset <= b->total_size */
+/**
+ * Insert 'size' bytes from 'buf' into 'b' at offset 'offset'. 
+ * We must have : 0 <= offset <= b->total_size 
+ */
 void eb_insert(EditBuffer *b, int offset, const void *buf, int size)
 {
     eb_addlog(b, LOGOP_INSERT, offset, size);
@@ -450,8 +456,6 @@ EditBuffer *eb_new(const char *name, int flags)
     b->next = qs->first_buffer;
     qs->first_buffer = b;
 
-    /* CG: default charset should be selectable */
-    //eb_set_charset(b, &charset_8859_1);
     eb_set_charset(b, &charset_utf8);
     
     /* add mark move callback */
@@ -590,11 +594,9 @@ void eb_offset_callback(EditBuffer *b,
     }
 }
 
-
-
-/************************************************************/
-/* undo buffer */
-
+/**
+ * Add an operation to the buffer's undo buffer 
+ */
 static void eb_addlog(EditBuffer *b, enum LogOperation op, 
                       int offset, int size)
 {
@@ -782,15 +784,16 @@ int eb_prevc(EditBuffer *b, int offset, int *prev_ptr)
         offset = 0;
         ch = '\n';
     } else {
-        /* XXX: it cannot be generic here. Should use the
-           line/column system to be really generic */
+        // XXX: it cannot be generic here. Should use the
+        //   line/column system to be really generic
         offset--;
         q = buf + sizeof(buf) - 1;
         eb_read(b, offset, q, 1);
-        if (b->charset == &charset_utf8) {
+		
+        // if (b->charset == &charset_utf8) {
             while (*q >= 0x80 && *q < 0xc0) {
                 if (offset == 0 || q == buf) {
-                    /* error : take only previous char */
+                    // error : take only previous char
                     offset += buf - 1 - q;
                     ch = buf[sizeof(buf) - 1];
                     goto the_end;
@@ -799,12 +802,16 @@ int eb_prevc(EditBuffer *b, int offset, int *prev_ptr)
                 q--;
                 eb_read(b, offset, q, 1);
             }
+			
             ch = utf8_decode((const char **)(void *)&q);
-        } else {
-            ch = *q;
-        }
+			// this makes C+a not work because comparing to 
+			// newline returns false.
+			// ch = to_rune((const char **)(void *)&q);
+        // } else {
+        //    ch = *q;
+        //}
     }
- the_end:
+the_end:
     if (prev_ptr)
         *prev_ptr = offset;
     return ch;
@@ -1053,114 +1060,6 @@ int eb_get_char_offset(EditBuffer *b, int offset)
 
 #define IOBUF_SIZE 32768
 
-#if 0
-
-typedef struct BufferIOState {
-    URLContext *handle;
-    void (*progress_cb)(void *opaque, int size);
-    void (*completion_cb)(void *opaque, int err);
-    void *opaque;
-    int offset;
-    int saved_flags;
-    int saved_log;
-    int nolog;
-    unsigned char buffer[IOBUF_SIZE];
-} BufferIOState;
-
-static void load_connected_cb(void *opaque, int err);
-static void load_read_cb(void *opaque, int size);
-static void eb_io_stop(EditBuffer *b, int err);
-
-/* load a buffer asynchronously and launch the callback. The buffer
-   stays in 'loading' state while begin loaded. It is also marked
-   readonly. */
-int load_buffer(EditBuffer *b, const char *filename, 
-                int offset, int nolog,
-                void (*progress_cb)(void *opaque, int size), 
-                void (*completion_cb)(void *opaque, int err), void *opaque)
-{
-    URLContext *h;
-    BufferIOState *s;
-    
-    /* cannot load a buffer if already I/Os or readonly */
-    if (b->flags & (BF_LOADING | BF_SAVING | BF_READONLY))
-        return -1;
-    s = malloc(sizeof(BufferIOState));
-    if (!s)
-        return -1;
-    b->io_state = s;
-    h = url_new();
-    if (!h) {
-        free(b->io_state);
-        b->io_state = NULL;
-        return -1;
-    }
-    s->handle = h;
-    s->saved_flags = b->flags;
-    s->nolog = nolog;
-    if (s->nolog) {
-        s->saved_log = b->save_log;
-        b->save_log = 0;
-    }
-    b->flags |= BF_LOADING | BF_READONLY;
-    s->handle = h;
-    s->progress_cb = progress_cb;
-    s->completion_cb = completion_cb;
-    s->opaque = opaque;
-    s->offset = offset;
-    printf("connect_async: '%s'\n", filename);
-    url_connect_async(s->handle, filename, URL_RDONLY,
-                      load_connected_cb, b);
-    return 0;
-}
-
-static void load_connected_cb(void *opaque, int err)
-{
-    EditBuffer *b = opaque;
-    BufferIOState *s = b->io_state;
-    printf("connect_cb: err=%d\n", err);
-    if (err) {
-        eb_io_stop(b, err);
-        return;
-    }
-    url_read_async(s->handle, s->buffer, IOBUF_SIZE, load_read_cb, b);
-}
-
-static void load_read_cb(void *opaque, int size)
-{
-    EditBuffer *b = opaque;
-    BufferIOState *s = b->io_state;
-
-    printf("read_cb: size=%d\n", size);
-    if (size < 0) {
-        eb_io_stop(b, -EIO);
-    } else if (size == 0) {
-        /* end of file */
-        eb_io_stop(b, 0);
-    } else {
-        eb_insert(b, s->offset, s->buffer, size);
-        s->offset += size;
-        /* launch next read request */
-        url_read_async(s->handle, s->buffer, IOBUF_SIZE, load_read_cb, b);
-    }
-}
-
-static void eb_io_stop(EditBuffer *b, int err)
-{
-    BufferIOState *s = b->io_state;
-
-    b->flags = s->saved_flags;
-    if (s->nolog) {
-        b->modified = 0;
-        b->save_log = s->saved_log;
-    }
-    url_close(s->handle);
-    s->completion_cb(s->opaque, err);
-    free(s);
-    b->io_state = NULL;
-}
-#endif
-
 int raw_load_buffer1(EditBuffer *b, FILE *f, int offset)
 {
     int len;
@@ -1177,16 +1076,6 @@ int raw_load_buffer1(EditBuffer *b, FILE *f, int offset)
     }
     return 0;
 }
-
-#ifdef WIN32
-
-/* currently no mmap is used */
-int mmap_buffer(EditBuffer *b, const char *filename)
-{
-    return -1;
-}
-
-#else
 
 int mmap_buffer(EditBuffer *b, const char *filename)
 {
@@ -1228,8 +1117,6 @@ int mmap_buffer(EditBuffer *b, const char *filename)
     b->file_handle = fd;
     return 0;
 }
-
-#endif
 
 static int raw_load_buffer(EditBuffer *b, FILE *f)
 {
@@ -1457,10 +1344,9 @@ int save_buffer(EditBuffer *b)
     if (ret < 0)
         return ret;
 
-#ifndef WIN32
     /* set correct file mode to old file permissions */
     chmod(filename, mode);
-#endif
+
     /* reset log */
     log_reset(b);
     b->modified = 0;

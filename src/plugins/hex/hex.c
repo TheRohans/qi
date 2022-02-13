@@ -310,7 +310,6 @@ ModeDef ascii_mode = {
     .move_eol = hex_move_eol,
     .scroll_up_down = text_scroll_up_down,
     .write_char = text_write_char,
-    .mouse_goto = text_mouse_goto,
     .mode_line = hex_mode_line,
 };
 
@@ -329,7 +328,6 @@ ModeDef hex_mode = {
     .move_eol = hex_move_eol,
     .scroll_up_down = text_scroll_up_down,
     .write_char = hex_write_char,
-    .mouse_goto = text_mouse_goto,
     .mode_line = hex_mode_line,
 };
 
@@ -351,4 +349,3 @@ int hex_init(void)
     return 0;
 }
 
-//qe_module_init(hex_init);

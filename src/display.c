@@ -18,6 +18,7 @@
  */
 #include "qe.h"
 
+/** GLOBAL: first (and only at the moment) display screen */
 QEDisplay *first_dpy = NULL;
 
 void fill_rectangle(QEditScreen *s,

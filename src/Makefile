@@ -1,3 +1,5 @@
+.PHONY: test
+
 include config.mak
 
 # from configure / config.mak
@@ -37,11 +39,6 @@ endif
 
 DEFINES=-DHAVE_QE_CONFIG_H
 
-ifdef CONFIG_DLL
-LIBS+=-ldl
-LDFLAGS+=-Wl
-endif
-
 LIBS+=-lm
 
 LOAD_PATH=../build
@@ -54,11 +51,12 @@ TARGETLIBS:=
 TARGETS+=qi$(EXE)
 
 # qfribidi.o == CONFIG_UNICODE_JOIN
-_OBJS=qe.o charset.o buffer.o input.o unicode_join.o display.o util.o cutils.o qstack.o qfribidi.o unix.o
+_OBJS=qe.o charset.o buffer.o input.o unicode.o unicode_join.o display.o \
+util.o cutils.o qstack.o qfribidi.o unix.o
 
 OBJS = $(patsubst %,$(LOAD_PATH)/%,$(_OBJS))
 
-TEST_SRC=$(wildcard *_test.c)
+TEST_SRC=$(wildcard ./tests/*.c)
 
 # Inlucde all the plugin libraries (extras if not doing a tiny build)
 PLUGS=-lplugincore
@@ -108,7 +106,8 @@ clean:
 distclean: clean
 	rm -f config.h config.mak
 
-#############################################################################
-
-test: $(TEST_SRC)
+test:
+	@echo '======================================== Building qi tests ==== '
+	mkdir -p ../build
+	$(CC) $(CFLAGS) $(TESTS_SRC) tests.c $(LIBS) -o ../build/run_tests
 	make -C plugins test

@@ -18,22 +18,7 @@
  */
 #include "qe.h"
 #include <dirent.h>
-
-#ifdef WIN32
-#include <sys/timeb.h>
-
-/* XXX: not suffisant, but OK for basic operations */
-int fnmatch(const char *pattern, const char *string, int flags)
-{
-    if (pattern[0] == '*')
-        return 0;
-    else
-        return strcmp(pattern, string) != 0;
-}
-
-#else
 #include <fnmatch.h>
-#endif
 
 struct FindFileState {
     char path[MAX_FILENAME_SIZE];
@@ -108,20 +93,6 @@ void find_file_close(FindFileState *s)
         closedir(s->dir);
     free(s);
 }
-
-#ifdef WIN32
-/* convert '/' to '\' */
-static void path_win_to_unix(char *buf)
-{
-    char *p;
-    p = buf;
-    while (*p) {
-        if (*p == '\\')
-            *p = '/';
-        p++;
-    }
-}
-#endif
 
 /* suppress redundant ".", ".." and "/" from paths */
 /* XXX: make it better */
@@ -242,9 +213,6 @@ void canonize_absolute_path(char *buf, int buf_size, const char *path1)
         }
         /* CG: not sufficient for windows drives */
         getcwd(cwd, sizeof(cwd));
-#ifdef WIN32
-        path_win_to_unix(cwd);
-#endif
         makepath(path, sizeof(path), cwd, path1);
     } else {
         pstrcpy(path, sizeof(path), path1);
@@ -315,8 +283,13 @@ void splitpath(char *dirname, int dirname_size,
         pstrcpy(filename, filename_size, base);
 }
 
-/* find a word in a list using '|' as separator,
+/**
+ * find a word in a list using '|' as separator,
  * optionally fold case to lower case.
+ * 
+ * casefold: 1 search string to lower, 0 don't modify search string
+ * 
+ * returns: 1 if found, 0 if not found
  */
 int strfind(const char *keytable, const char *str, int casefold)
 {
@@ -329,17 +302,20 @@ int strfind(const char *keytable, const char *str, int casefold)
         str = buf;
         css_strtolower(buf, sizeof(buf));
     }
+
     c = *str;
     len = strlen(str);
     /* need to special case the empty string */
     if (len == 0)
-        return strstr(keytable, "||") != NULL;
+        return (strstr(keytable, "||") != NULL);
 
     /* initial and trailing | are optional */
     /* they do not cause the empty string to match */
     for (p = keytable;;) {
-        if (!memcmp(p, str, len) && (p[len] == '|' || p[len] == '\0'))
+        if (!memcmp(p, str, len) 
+            && (p[len] == '|' || p[len] == '\0'))
             return 1;
+        
         for (;;) {
             p = strchr(p + 1, c);
             if (!p)
@@ -348,6 +324,7 @@ int strfind(const char *keytable, const char *str, int casefold)
                 break;
         }
     }
+    return 0;
 }
 
 void skip_spaces(const char **pp)
@@ -507,22 +484,12 @@ static int strtokey1(const char **pp)
             return key;
         }
     }
-#if 0
-    if (p[0] == 'f' && p[1] >= '1' && p[1] <= '9') {
-        i = p[1] - '0';
-        p += 2;
-        if (p1 == isdigit((unsigned char)*p))
-            i = i * 10 + *p++ - '0';
-        key = KEY_F1 + i - 1;
-        *pp = p1;
-        return key;
-    }
-#endif
     if (p[0] == 'C' && p[1] == '-' && p1 == p + 3) {
         /* control */
         key = KEY_CTRL(p[2]);
     } else {
         key = utf8_decode(&p);
+        // key = to_rune(&p);
     }
     *pp = p1;
 
@@ -595,6 +562,8 @@ void keytostr(char *buf, int buf_size, int key)
         char *q;
         q = utf8_encode(buf1, key);
         *q = '\0';
+        // TODO: maybe...
+        // to_utf8(buf1, key);
         pstrcpy(buf, buf_size, buf1);
     }
 }
@@ -735,7 +704,7 @@ int css_get_color(QEColor *color_ptr, const char *p)
     } else if (*p == '#') {
         /* handle '#' notation */
         p++;
-    parse_num:
+parse_num:
         len = strlen(p);
         switch (len) {
         case 3:
@@ -761,7 +730,7 @@ int css_get_color(QEColor *color_ptr, const char *p)
     } else if (strstart(p, "rgba(", &p)) {
         /* extension for alpha */
         n = 4;
-    parse_rgba:
+parse_rgba:
         for (i = 0; i < n; i++) {
             /* XXX: floats ? */
             skip_spaces(&p);
@@ -835,15 +804,9 @@ int stat(__const char *__path,
 
 int get_clock_ms(void)
 {
-#ifdef CONFIG_WIN32
-    struct _timeb tb;
-    _ftime(&tb);
-    return tb.time * 1000 + tb.millitm;
-#else
     struct timeval tv;
     gettimeofday(&tv, NULL);
     return tv.tv_sec * 1000 + (tv.tv_usec / 1000);
-#endif
 }
 
 /* set one string. */
@@ -919,23 +882,23 @@ void umemmove(unsigned int *dest, unsigned int *src, int len)
 /* copy the n first char of a string and truncate it. */
 char *pstrncpy(char *buf, int buf_size, const char *s, int len)
 {
-        char *q;
-        int c;
+    char *q;
+    int c;
 
-        if (buf_size > 0) {
-                q = buf;
-                if (len >= buf_size)
-                        len = buf_size - 1;
-                while (len > 0) {
-                        c = *s++;
-                        if (c == '\0')
-                                break;
-                        *q++ = c;
-                        len--;
-                }
-                *q = '\0';
+    if (buf_size > 0) {
+        q = buf;
+        if (len >= buf_size)
+                len = buf_size - 1;
+        while (len > 0) {
+            c = *s++;
+            if (c == '\0')
+                    break;
+            *q++ = c;
+            len--;
         }
-        return buf;
+        *q = '\0';
+    }
+    return buf;
 }
 
 /**
@@ -947,32 +910,32 @@ char *pstrncpy(char *buf, int buf_size, const char *s, int len)
  */
 int qmemcat(QString *q, const unsigned char *data1, int len1)
 {
-        int new_len, len, alloc_size;
-        unsigned char *data;
+    int new_len, len, alloc_size;
+    unsigned char *data;
 
-        data = q->data;
-        len = q->len;
-        new_len = len + len1;
+    data = q->data;
+    len = q->len;
+    new_len = len + len1;
     /* see if we got a new power of two */
     /* NOTE: we got this trick from the excellent 'links' browser */
-        if ((len ^ new_len) >= len) {
+    if ((len ^ new_len) >= len) {
         /* find immediately bigger 2^n - 1 */
-                alloc_size = new_len;
-                alloc_size |= (alloc_size >> 1);
-                alloc_size |= (alloc_size >> 2);
-                alloc_size |= (alloc_size >> 4);
-                alloc_size |= (alloc_size >> 8);
-                alloc_size |= (alloc_size >> 16);
+        alloc_size = new_len;
+        alloc_size |= (alloc_size >> 1);
+        alloc_size |= (alloc_size >> 2);
+        alloc_size |= (alloc_size >> 4);
+        alloc_size |= (alloc_size >> 8);
+        alloc_size |= (alloc_size >> 16);
         /* allocate one more byte for end of string marker */
-                data = realloc(data, alloc_size + 1);
-                if (!data)
-                        return -1;
-                q->data = data;
-        }
-        memcpy(data + len, data1, len1);
-        data[new_len] = '\0'; /* we force a trailing '\0' */
-        q->len = new_len;
-        return 0;
+        data = realloc(data, alloc_size + 1);
+        if (!data)
+                return -1;
+        q->data = data;
+    }
+    memcpy(data + len, data1, len1);
+    data[new_len] = '\0'; /* we force a trailing '\0' */
+    q->len = new_len;
+    return 0;
 }
 
 /*
@@ -980,23 +943,23 @@ int qmemcat(QString *q, const unsigned char *data1, int len1)
  */
 int qstrcat(QString *q, const char *str)
 {
-        return qmemcat(q, (unsigned char *)str, strlen(str));
+    return qmemcat(q, (unsigned char *)str, strlen(str));
 }
 
 /* XXX: we use a fixed size buffer */
 int qprintf(QString *q, const char *fmt, ...)
 {
-        char buf[4096];
-        va_list ap;
-        int len, ret;
+    char buf[4096];
+    va_list ap;
+    int len, ret;
 
-        va_start(ap, fmt);
-        len = vsnprintf(buf, sizeof(buf), fmt, ap);
+    va_start(ap, fmt);
+    len = vsnprintf(buf, sizeof(buf), fmt, ap);
     /* avoid problems for non C99 snprintf() which can return -1 if overflow */
-        if (len < 0)
-                len = strlen(buf);
-        ret = qmemcat(q, (unsigned char *)buf, len);
-        va_end(ap);
-        return ret;
+    if (len < 0)
+            len = strlen(buf);
+    ret = qmemcat(q, (unsigned char *)buf, len);
+    va_end(ap);
+    return ret;
 }
 

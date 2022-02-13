@@ -25,6 +25,7 @@ CmdDef basic_commands[] = {
     CMD1( KEY_META('d') , KEY_NONE, "delete-word", do_delete_word, 1)
     CMD1( KEY_CTRL('k'), KEY_NONE, "kill-line", do_kill_region, 2 )
     CMD0( KEY_CTRL('@'), KEY_NONE, "set-mark-command", do_set_mark )
+	CMD0( KEY_CTRL('l'), KEY_NONE, "center-line", do_center_cursor )
     CMD1( KEY_CTRL('w'), KEY_NONE, "kill-region", do_kill_region, 1 )
     CMD1( KEY_META('w'), KEY_NONE, "copy-region", do_kill_region, 0 )
     CMD0( KEY_META('<'), KEY_CTRL_HOME, "beginning-of-buffer", do_bof )
@@ -35,10 +36,9 @@ CmdDef basic_commands[] = {
     CMD_( KEY_META('y'), KEY_NONE, "yank-pop", do_yank_pop, "*")
     // do_tab will not change read only buffer
     CMD0( KEY_CTRL('i'), KEY_NONE, "tabulate", do_tab)
-    // CMD_( KEY_CTRL('q'), KEY_NONE, "quoted-insert", do_quote, "*")
     CMD1( KEY_CTRLX(KEY_CTRL('s')), KEY_NONE, "save-buffer", do_save, 0 )
     CMD1( KEY_CTRLX(KEY_CTRL('w')), KEY_NONE, "write-file", do_save, 1 )
-    CMD0( KEY_CTRLX(KEY_CTRL('c')), KEY_NONE, "suspend-emacs", do_quit )
+    CMD0( KEY_CTRLX(KEY_CTRL('c')), KEY_NONE, "exit-qi", do_quit )
     CMD_( KEY_CTRLX(KEY_CTRL('f')), KEY_NONE, "find-file", do_load, "s{Find file: }[file]|file|")
     CMD_( KEY_CTRLX(KEY_CTRL('v')), KEY_NONE, "find-alternate-file", do_find_alternate_file, "s{Find alternate file: }[file]|file|")
     CMD_( KEY_CTRLX('b'), KEY_NONE, "switch-to-buffer", do_switch_to_buffer, "s{Switch to buffer: }[buffer]|buffer|")
@@ -53,7 +53,7 @@ CmdDef basic_commands[] = {
     CMD_( KEY_META('r'), KEY_NONE, "replace-string", do_replace_string, "*s{Replace String: }|search|s{With: }|replace|")
     CMD0( KEY_CTRLX('u'), KEY_CTRL('_'), "undo", do_undo)
     CMD_( KEY_RET, KEY_NONE, "newline", do_return, "*")
-    CMD0( KEY_CTRL('l'), KEY_NONE, "refresh", do_refresh_complete)
+    CMD0( KEY_CTRL('t'), KEY_NONE, "refresh", do_refresh_complete)
     // CG: should take a string if no numeric argument given
     CMD_( KEY_META('g'), KEY_NONE, "goto-line", do_goto_line, "i{Goto line: }")
     CMD_( KEY_NONE, KEY_NONE, "goto-char", do_goto_char, "i{Goto char: }")
@@ -65,14 +65,13 @@ CmdDef basic_commands[] = {
     CMD0( KEY_CTRLX(KEY_CTRL('x')), KEY_NONE, "exchange-point-and-mark", do_exchange_point_and_mark)
     CMDV( KEY_META('l'), KEY_NONE, "downcase-word", do_changecase_word, 0, "*v")
     CMDV( KEY_META('u'), KEY_NONE, "upcase-word", do_changecase_word, 1, "*v")
+	
+	// These are too dangerous for me :-/
+	// need to highlight selected region first
     // CMDV( KEY_CTRLX(KEY_CTRL('l')), KEY_NONE, "downcase-region", do_changecase_region, 0, "*v")
     // CMDV( KEY_CTRLX(KEY_CTRL('u')), KEY_NONE, "upcase-region", do_changecase_region, 1, "*v")
 
     // keyboard macros
-    //CMD0( KEY_CTRLX('('), KEY_NONE, "start-kbd-macro", do_start_macro)
-    //CMD0( KEY_CTRLX(')'), KEY_NONE, "end-kbd-macro", do_end_macro)
-    //CMD0( KEY_CTRLX('e'), KEY_CTRL('\\'), "call-last-kbd-macro", do_call_macro)
-    //CMD_( KEY_NONE, KEY_NONE, "define-kbd-macro", do_define_kbd_macro, "s{Macro name: }[command]s{Macro keys: }s{Bind to key: }[key]")
     CMD_( KEY_NONE, KEY_NONE, "global-set-key", do_global_set_key, "s{Set key globally: }[key]s{command: }[command]|command|")
 
     // window handling
@@ -91,29 +90,16 @@ CmdDef basic_commands[] = {
     CMD1( KEY_CTRLX('3'), KEY_NONE, "split-window-horizontally", do_split_window, 1)
     
     // help
-    // TODO: ctrl+h is backspace in terminal settings (like ssh'ing with an ipad)
-	//CMD0( KEY_CTRLH(KEY_CTRL('h')), KEY_F1, "help-for-help", do_help_for_help)
 	CMD0( KEY_CTRLX('?'), KEY_F1, "help-for-help", do_help_for_help)
-    //CMD0( KEY_CTRLH('b'), KEY_NONE, "describe-bindings", do_describe_bindings)
 	CMD0( KEY_NONE, KEY_NONE, "describe-bindings", do_describe_bindings)
-    //CMD0( KEY_CTRLH('c'), KEY_CTRLH('k'), "describe-key-briefly", do_describe_key_briefly)
 	CMD0( KEY_NONE, KEY_NONE, "describe-key-briefly", do_describe_key_briefly)
     CMD0( KEY_CTRL('h'), KEY_NONE, "backward-delete-char", do_backspace)
 
-    // international
-    CMD_( KEY_CTRLXRET('f'), KEY_NONE, "set-buffer-file-coding-system", do_set_buffer_file_coding_system, "s{Charset: }[charset]")
-    CMD_( KEY_NONE, KEY_NONE, "convert-buffer-file-coding-system", do_convert_buffer_file_coding_system, "*s{Charset: }[charset]")
-    // CMD0( KEY_CTRLXRET('b'), KEY_NONE, "toggle-bidir", do_toggle_bidir)
-    CMD_( KEY_CTRLXRET(KEY_CTRL('\\')), KEY_NONE, "set-input-method", do_set_input_method, "s{Input method: }[input]")
-    CMD0( KEY_CTRLX(KEY_CTRL('\\')), KEY_NONE, "switch-input-method", do_switch_input_method)
-
     // styles & display
-    //CMD_( KEY_NONE, KEY_NONE, "define-color", do_define_color, "s{Color name: }[color]|color|s{Color value: }[color]|color|")
-    //CMD_( KEY_NONE, KEY_NONE, "set-style", do_set_style, "s{Style: }[style]|style|s{CSS Property Name: }" "s{CSS Property Value: }")
-    //CMD_( KEY_NONE, KEY_NONE, "set-display-size", do_set_display_size, "i{Width: }i{Height: }")
-    //CMD_( KEY_NONE, KEY_NONE, "set-system-font", do_set_system_font, "s{Font family: }s{System fonts: }")
     CMD0( KEY_CTRLX('f'), KEY_NONE, "toggle-full-screen", do_toggle_full_screen)
     CMD0( KEY_NONE, KEY_NONE, "toggle-mode-line", do_toggle_mode_line)
+	
+	CMD0( KEY_NONE, KEY_NONE, "revert-buffer", do_revert_buffer)
 
     // other stuff
     CMD_( KEY_NONE, KEY_NONE, "load-file-from-path", do_load_file_from_path, "s{Load file from path: }|file|")

@@ -20,8 +20,6 @@
 
 QECharset *first_charset = NULL;
 
-static QECharset charset_7bit;
-
 /* specific tables */
 static unsigned short table_idem[256];
 static unsigned short table_utf8[256];
@@ -38,14 +36,12 @@ static const unsigned char first_code_mask[7] = {
 
 void charset_init(void)
 {
-    int l, i, n;
-
     memset(utf8_length, 1, 256);
 
-    i = 0xc0;
-    l = 2;
+    int i = 0xc0;
+    int l = 2;
     while (l <= 6) {
-        n = first_code_mask[l] + 1;
+        int n = first_code_mask[l] + 1;
         while (n > 0) {
             utf8_length[i++] = l;
             n--;
@@ -64,10 +60,7 @@ void charset_init(void)
     for (i = 0xc0; i < 0xfe; i++)
         table_utf8[i] = ESCAPE_CHAR;
 
-    qe_register_charset(&charset_8859_1);
-    qe_register_charset(&charset_vt100);
     qe_register_charset(&charset_utf8);
-    qe_register_charset(&charset_7bit);
 }
 
 void qe_register_charset(QECharset *charset)
@@ -75,96 +68,22 @@ void qe_register_charset(QECharset *charset)
     QECharset **pp;
 
     pp = &first_charset;
+	
     while (*pp != NULL) 
         pp = &(*pp)->next;
+
     *pp = charset;
 }
 
 /********************************************************/
-/* 8859-1 */
-
-static void decode_8859_1_init(CharsetDecodeState *s)
-{
-    s->table = table_idem;
-}
-
-static unsigned char *encode_8859_1(QECharset *charset, 
-                                    unsigned char *p, int c)
-{
-    if (c <= 0xff) {
-        *p++ = c;
-        return p;
-    } else {
-        return NULL;
-    }
-}
-
-static const char *aliases_8859_1[] = { "ISO-8859-1", "iso-ir-100", "latin1", "l1", "819", NULL };
-
-QECharset charset_8859_1 = {
-    "8859-1",
-    aliases_8859_1,
-    decode_8859_1_init,
-    NULL,
-    encode_8859_1,
-};
-
-/********************************************************/
-/* vt100 */
-
-static void decode_vt100_init(CharsetDecodeState *s)
-{
-    s->table = table_idem;
-}
-
-static unsigned char *encode_vt100(QECharset *charset, 
-                                   unsigned char *p, int c)
-{
-    if (c <= 0xff) {
-        *p++ = c;
-        return p;
-    } else {
-        return NULL;
-    }
-}
-
-QECharset charset_vt100 = {
-    "vt100",
-    NULL,
-    decode_vt100_init,
-    NULL,
-    encode_vt100,
-};
-
-/********************************************************/
-/* 7 bit */
-
-static unsigned char *encode_7bit(QECharset *charset,
-                                  unsigned char *p, int c)
-{
-    if (c <= 0x7f) {
-        *p++ = c;
-        return p;
-    } else {
-        return NULL;
-    }
-}
-
-static const char *aliases_7bit[] = { "us-ascii", "ascii", "7bit", "7-bit", "iso-ir-6", "ANSI_X3.4", "646", NULL };
-
-static QECharset charset_7bit = {
-    "7bit",
-    aliases_7bit,
-    decode_8859_1_init,
-    NULL,
-    encode_7bit,
-};
-
-/********************************************************/
 /* UTF8 */
 
-/* return the utf8 char and increment 'p' of at least one char. strict
-   decoding is done (refuse non canonical UTF8) */
+/**
+ * return the utf8 char and increment the 'p' pointer by the
+ * number of bytes we are taking to make the utf8 char.
+ *
+ * strict decoding is done (refuse non canonical UTF8) 
+ */
 int utf8_decode(const char **pp)
 {
     unsigned int c, c1;
@@ -173,12 +92,29 @@ int utf8_decode(const char **pp)
 
     p = *(const unsigned char**)pp;
     c = *p++;
-    if (c < 128) {
-        /* fast case for ASCII */
+    if (c <= 127) {
+        // fast case for ASCII single byte character
     } else {
+//		l = utf8_len(c);
+//		
+//		QASSERT(l < 5);
+//		
+//		char *uc = malloc(sizeof(char)*l);		
+//		uc[0] = c;
+//		for (i = 1; i <= l; i++) {
+//			char c2 = *p; //(i+1);
+//            uc[i] = c2;
+//			p++;
+//        }
+//		
+//		c = to_rune(uc);
+//		free(uc);
+		
         l = utf8_length[c];
         if (l == 1)
-            goto fail; /* can only be multi byte code here */
+			// can only be multi byte code here
+            goto fail;
+
         c = c & first_code_mask[l];
         for (i = 1; i < l; i++) {
             c1 = *p;
@@ -187,22 +123,32 @@ int utf8_decode(const char **pp)
             p++;
             c = (c << 6) | (c1 & 0x3f);
         }
+		
         if (c < min_code[l])
             goto fail;
-        /* exclude surrogate pairs and special codes */
-        if ((c >= 0xd800 && c <= 0xdfff) ||
-                c == 0xfffe || c == 0xffff)
+		
+        // exclude surrogate pairs and special codes
+        if ((c >= 0xd800 && c <= 0xdfff) 
+			|| c == 0xfffe 
+			|| c == 0xffff)
             goto fail;
     }
+	
+	// returns the char and moves the pointer up by one
     *(const unsigned char**)pp = p;
     return c;
- fail:
+
+fail:
     *(const unsigned char**)pp = p;
     return INVALID_CHAR;
 }
 
-/* NOTE: the buffer must be at least 6 bytes long. Return the position
-   of the next char. */
+/**
+ * NOTE: the buffer must be at least 6 bytes long. Return 
+ * the position of the next char. 
+ * 
+ * TODO: replace this with the code in unicode.c
+ */
 char *utf8_encode(char *q, int c)
 {
     if (c < 0x80) {
@@ -234,6 +180,9 @@ char *utf8_encode(char *q, int c)
     return q;
 }
 
+/**
+ * TODO: replace this with the code in unicode.c
+ */
 int utf8_to_unicode(unsigned int *dest, int dest_length, 
                     const char *str)
 {
@@ -268,9 +217,12 @@ static int decode_utf8_func(CharsetDecodeState *s, const unsigned char **pp)
     return utf8_decode((const char **)(void *)pp);
 }
 
+/**
+ * TODO: replace this with the code in unicode.c
+ */
 unsigned char *encode_utf8(QECharset *charset, unsigned char *q, int c)
 {
-    return (unsigned char*)utf8_encode((char*)q, c);
+	return (unsigned char*)utf8_encode((char*)q, c);
 }
 
 static const char *aliases_utf_8[] = { "utf8", NULL };
@@ -312,7 +264,7 @@ void charset_decode_init(CharsetDecodeState *s, QECharset *charset)
     if (charset->table_alloc) {
         table = malloc(256 * sizeof(unsigned short));
         if (!table) {
-            charset = &charset_8859_1;
+            charset = &charset_utf8; // &charset_8859_1;
         } else {
             s->table = table;
         }
@@ -326,7 +278,7 @@ void charset_decode_init(CharsetDecodeState *s, QECharset *charset)
 void charset_decode_close(CharsetDecodeState *s)
 {
     if (s->charset->table_alloc &&
-        s->charset != &charset_8859_1)
+        s->charset != &charset_utf8) // &charset_8859_1)
         free(s->table);
     /* safety */
     memset(s, 0, sizeof(CharsetDecodeState));
@@ -335,46 +287,29 @@ void charset_decode_close(CharsetDecodeState *s)
 /* detect the charset. Actually only UTF8 is detected */
 QECharset *detect_charset (const unsigned char *buf, int size)
 {
-    int i, l, c, has_utf8;
-
-    has_utf8 = 0;
-    for (i = 0; i < size;) {
-        c = buf[i++];
-        if ((c >= 0x80 && c < 0xc0) || c >= 0xfe)
-            goto no_utf8;
-        l = utf8_length[c];
-        while (l > 1) {
-            has_utf8 = 1;
-            if (i >= size)
-                break;
-            c = buf[i++];
-            if (!(c >= 0x80 && c < 0xc0)) {
-            no_utf8:
-                has_utf8 = 0;
-                break;
-            }
-            l--;
-        }
-    }
-    if (has_utf8)
-        return &charset_utf8;
-    else
-        //return &charset_8859_1;
-		//8859-1 is so last year.  Just do utf8.
-		return &charset_utf8;
+	return &charset_utf8;
 }
 
-/* the function uses '?' to indicate that no match could be found in
-   current charset */
+/**
+ * the function uses '?' to indicate that no match could be found in
+ * current charset 
+ * 
+ * TODO: replace with the code in unicode.c
+ */
 int unicode_to_charset(char *buf, unsigned int c, QECharset *charset)
 {
-    char *q;
+    // to_utf8(buf, c);
+	// return 1;
+	
+	char *q;
 
     q = (char *)charset->encode_func(charset, (unsigned char*)buf, c);
+	
     if (!q) {
         q = buf;
         *q++ ='?';
     }
     *q = '\0';
+	
     return q - buf;
 }
