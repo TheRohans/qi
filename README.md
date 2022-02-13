@@ -2,7 +2,17 @@
 
 [![.github/workflows/c-cpp.yml](https://github.com/TheRohans/qi/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/TheRohans/qi/actions/workflows/c-cpp.yml)
 
-![docs](doc/qi.svg)
+```
+          _ 
+         (_)
+   __ _   _ 
+  / _` | | |
+ | (_| | | |
+  \__, | |_|
+     | |    
+     |_|    
+
+```
 
 Qi's goal is to be my perfect editor. It attempts to combine the things I
 like about _emacs_ with the speed and system integration of _vi_. Qi focuses

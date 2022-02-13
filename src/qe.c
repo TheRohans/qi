@@ -1172,25 +1172,25 @@ void text_write_char(EditState *s, int key)
 /*
  * XXX: may be better to move it into qe_key_process() 
  */
-static void quote_key(void *opaque, int key)
-{
-    // CG: should pass s as opaque 
-    QEmacsState *qs = &qe_state;
-    EditState *s;
-
-    s = qs->active_window;
-    if (!s)
-        return;
-
-    // CG: why not insert special keys as well? 
-    if (!KEY_SPECIAL(key) ||
-        (key >= 0 && key <= 31)) {
-        do_char(s, key);
-        edit_display(qs);
-        dpy_flush(&global_screen);
-    }
-    qe_ungrab_keys();
-}
+//static void quote_key(void *opaque, int key)
+//{
+//    // CG: should pass s as opaque 
+//    QEmacsState *qs = &qe_state;
+//    EditState *s;
+//
+//    s = qs->active_window;
+//    if (!s)
+//        return;
+//
+//    // CG: why not insert special keys as well? 
+//    if (!KEY_SPECIAL(key) ||
+//        (key >= 0 && key <= 31)) {
+//        do_char(s, key);
+//        edit_display(qs);
+//        dpy_flush(&global_screen);
+//    }
+//    qe_ungrab_keys();
+//}
 
 void do_insert(EditState *s)
 {
@@ -1378,7 +1378,7 @@ static int reload_buffer(EditState *s, EditBuffer *b, FILE *f1)
 
 void do_revert_buffer(EditState *s) 
 {
-	QEmacsState *qs = s->qe_state;
+	// QEmacsState *qs = s->qe_state;
     EditBuffer *b = s->b;
 	reload_buffer(s, b, NULL);
     put_status(s, "Buffer reverted from disk");
