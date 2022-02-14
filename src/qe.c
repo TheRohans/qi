@@ -1376,6 +1376,9 @@ fail:
     }
 }
 
+/**
+ * Reload the files contents from disk
+ */
 void do_revert_buffer(EditState *s) 
 {
 	int line_num = 0;
@@ -1395,6 +1398,10 @@ void do_revert_buffer(EditState *s)
 	// bad name. It will append the file contents to
 	// the end of the file, hence the delete above
 	reload_buffer(s, b, NULL);
+	
+	// Kludgy - remove all undo info so you can't undo
+	// the kill_region above.
+	log_reset(b);
 	
 	// Jump back to the line we were on
 	do_goto_line(s, line_num);
