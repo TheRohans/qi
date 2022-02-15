@@ -752,6 +752,8 @@ typedef struct EditState {
 // hardcoded it to the calculated value. If you move them or change data types
 // this number will be wrong. Uncomment the next line and output the value to
 // see the new answer.
+// This is not as easy as it first seems, this does different things based on
+// architecture. Need more input...
 #define SAVED_DATA_SIZE ((int)(uintptr_t)&((EditState *)0)->end_of_saved_data)
 // #define SAVED_DATA_SIZE 108
 
