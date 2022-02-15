@@ -51,7 +51,7 @@ endif
 
 checks:
 ifneq (, $(shell which cppcheck))
-	cppcheck --enable=all --suppress=missingIncludeSystem .
+	cppcheck --enable=all --suppress=missingIncludeSystem ./src
 endif
 
 
