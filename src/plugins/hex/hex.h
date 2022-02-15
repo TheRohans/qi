@@ -26,4 +26,3 @@ void hex_mode_line(EditState *s, char *buf, int buf_size);
 int hex_init(void);
 
 #endif
-

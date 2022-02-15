@@ -16,51 +16,36 @@
 
 #include "qe.h"
 
-static void do_runner(EditState *e, const char *cmd)
+// gofmt -w <filename>
+// terraform fmt [options -list=false] [DIR]
+// clang-format -i <filename>
+//    clang-format -style=llvm -dump-config > .clang-format
+
+static void do_runner(EditState *s, const char *cmd)
 {
-    // struct latex_function *func = (struct latex_function *)opaque;
-    char cwd[MAX_FILENAME_SIZE];
-    char dir[MAX_FILENAME_SIZE];
     const char *argv[4];
-    char *p;
-    // int len;
 
     if (cmd == 0) {
-        // put_status(func->es, "aborted");
+        put_status(s, "Run aborted");
         return;
     }
 
-//    argv[0] = "/bin/sh";
-//    argv[1] = "-c";
-//    argv[2] = cmd;
+//    argv[0] = "gofmt";
+//    argv[1] = "-w";
+//    argv[2] = s->b->filename;
 //    argv[3] = NULL;
-
-    argv[0] = "gofmt";
-    argv[1] = "-w";
-    argv[2] = e->b->filename;
+	
+    argv[0] = "clang-format";
+    argv[1] = "-i";
+    argv[2] = s->b->filename;
     argv[3] = NULL;
-    
-    char *w = getcwd(cwd, sizeof(cwd));
-	if(w == NULL) {
-		LOG("%s", "Get working directory failed");
-		// TODO let user know.
-		return;
-	}
 
-    // get the directory of the open file and change into it
-    p = strrchr(e->b->filename, '/');
-    if (p == e->b->filename)
-        p++;
-    // len = p - e->b->filename + 1;
-    pstrcpy(dir, sizeof(dir), e->b->filename);
-    
-    LOG("%s", dir);
-    int wk = chdir(dir);
-	if(wk != 0) {
-		LOG("%s", "Could not change into directory");
-		return;
-	}
-
+//	argv[0] = "terraform";
+//	argv[1] = "fmt";
+//	argv[2] = "-list=false";
+//    argv[3] = s->b->filename;
+//    argv[4] = NULL;
+//	
     pid_t pid = fork();
     if (pid == 0) {
         // child process
@@ -71,19 +56,16 @@ static void do_runner(EditState *e, const char *cmd)
         // parent process
         if(wait(NULL) == -1) {
             LOG("%s", "Could not wait for child process");
+	        put_status(s, "Run failed, couldn't wait for child");
         }
         LOG("%s", "child process finished");
-        do_revert_buffer(e);
+        do_revert_buffer(s);
+        put_status(s, "Done");
     } else {
         // Error
         LOG("%s", "Could not fork process");
+        put_status(s, "Run failed, couldn't fork process");
     }
-
-    wk = chdir(cwd);
-	if(wk != 0) {
-		LOG("%s", "Could not return to directory");
-		return;
-	}
 }
 
 /* specific runner commands */
