@@ -6518,8 +6518,11 @@ static inline void init_all_modules(void)
 	hex_init();
 	list_init();
 	tty_init();
+// RR: working on fmt style code
+#ifdef CONFIG_BETA
 	runner_init();
-	
+#endif
+    
 #ifndef CONFIG_TINY
 	//If they are not building the tiny version, init some the
 	//extra cool plugins

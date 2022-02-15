@@ -23,7 +23,9 @@
 
 static void do_runner(EditState *s, const char *cmd)
 {
-    const char *argv[4];
+
+#ifdef CONFIG_BETA
+	const char *argv[4];
 
     if (cmd == 0) {
         put_status(s, "Run aborted");
@@ -66,6 +68,8 @@ static void do_runner(EditState *s, const char *cmd)
         LOG("%s", "Could not fork process");
         put_status(s, "Run failed, couldn't fork process");
     }
+#endif
+	
 }
 
 /* specific runner commands */
@@ -80,7 +84,6 @@ int runner_init(void)
 {
     /* commands and default keys */
     qe_register_cmd_table(runner_commands, "runner");
-    
     return 0;
 }
 
