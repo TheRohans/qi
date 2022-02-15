@@ -1,6 +1,8 @@
-.PHONY: doc
+.PHONY: doc build test
 
 all: banner_help 
+
+build: clean qi
 
 qi:
 	@echo '======================================== Building qi == '
@@ -19,7 +21,7 @@ ifneq (, $(shell which afl-fuzz))
 	export AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1; \
 	export AFL_SKIP_CPUFREQ=1; \
 	export AFL_NO_FORKSRV=1; \
-		afl-fuzz -t 2000+ -i $(PWD)/test_data/ -o build/fuzz $(PWD)/qi @@
+	   afl-fuzz -t 2000+ -i $(PWD)/test_data/ -o build/fuzz $(PWD)/qi @@
 endif
 endif
 
@@ -39,6 +41,10 @@ dist: clean qi doc
 	mv qi dist/qi
 	mv doc/output dist/doc
 
+install:
+	@echo '============================================ Installl == '
+	make -C src install
+
 distclean: clean
 	rm -f config.h config.mak
 	rm -rf dist
@@ -51,7 +57,9 @@ endif
 
 checks:
 ifneq (, $(shell which cppcheck))
-	cppcheck --enable=all --suppress=missingIncludeSystem .
+	cppcheck --enable=all --suppress=missingIncludeSystem \
+	--xml --xml-version=2 ./src \
+	2>report-src.xml
 endif
 
 

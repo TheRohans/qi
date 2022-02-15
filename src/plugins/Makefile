@@ -7,6 +7,7 @@ test:
 	make -C hex test
 	make -C list test
 	make -C tty test
+	make -C runner test
 #	make -C shell test
 	
 core:
@@ -14,6 +15,7 @@ core:
 	make -C hex all
 	make -C list all
 	make -C tty all
+	make -C runner all
 #	make -C shell all
 # make the group header file
 	find ./ -name "*.h" -exec cat {} >> ./plugincore.g \;
@@ -28,7 +30,7 @@ core:
 
 extra:
 	@echo "======================================== Extra plugins == "
-# buffers
+# buffer browser
 	make -C bufed all
 # direcotry browsing
 	make -C dired all
@@ -62,6 +64,7 @@ clean:
 	make -C list clean
 	make -C tty clean
 #	make -C shell clean
+	make -C runner clean
 	@echo "======================================== Cleaning all extra plugins == "
 	make -C bufed clean
 	make -C dired clean

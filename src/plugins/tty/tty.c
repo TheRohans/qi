@@ -298,7 +298,7 @@ static void tty_read_handler(void *opaque)
 {
     QEditScreen *s = opaque;
     TTYState *ts = s->private;
-    int ch;
+    int ch = 0;
     QEEvent ev1, *ev = &ev1;
 
     if (read(0, ts->buf + ts->utf8_index, 1) != 1)

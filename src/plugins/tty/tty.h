@@ -137,4 +137,3 @@ int tty_init(void);
 void tty_resize(int sig);
 
 #endif
-

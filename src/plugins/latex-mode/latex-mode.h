@@ -5,5 +5,4 @@ EditBuffer *new_shell_buffer(const char *name, const char *path, const char **ar
 
 int latex_init(void);
 
-#endif
-
+#endif // end of guard

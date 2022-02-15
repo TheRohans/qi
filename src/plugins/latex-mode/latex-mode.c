@@ -229,7 +229,11 @@ static void latex_cmd_run(void *opaque, char *cmd)
     argv[2] = cmd;
     argv[3] = NULL;
 
-    getcwd(cwd, sizeof(cwd));
+    char *wk = getcwd(cwd, sizeof(cwd));
+	if(wk == NULL) {
+		LOG("%s", "Change directory didn't work");
+		return;
+	}
 
     /* get the directory of the open file and change into it
      */
@@ -238,7 +242,13 @@ static void latex_cmd_run(void *opaque, char *cmd)
         p++;
     // len = p - func->es->b->filename + 1;
     pstrcpy(dir, sizeof(dir), func->es->b->filename);
-    chdir(dir);
+    
+	int w = chdir(dir);
+	if(w < 0) {
+		LOG("%s", "Change directory didn't work");
+		return;
+	}
+
 
     if (func->output_to_buffer) {
         /* if the buffer already exists, kill it */
@@ -266,7 +276,13 @@ static void latex_cmd_run(void *opaque, char *cmd)
             exit(1);
         }
     }
-    chdir(cwd);
+	
+    w = chdir(cwd);
+	if(w < 0) {
+		LOG("%s", "Change directory didn't work");
+		return;
+	}
+
 }
 
 static void do_latex(EditState *e, const char *cmd)

@@ -209,7 +209,12 @@ static void qe_register_binding2(int key,
 
 void do_cd(EditState *s, const char *name)
 {
-	chdir(name);
+	int w = chdir(name);
+	if(w < 0) {
+		LOG("%s", "Change directory failed");
+	    put_status(s, "Could not change to directory: %s", name);
+		return;
+	}
 	// CG: Should issue diagnostics upon failure 
 	// TODO: should this be in the edit state as the "project directory"?
     put_status(s, "Current directory: %s", name);
@@ -1364,7 +1369,7 @@ static int reload_buffer(EditState *s, EditBuffer *b, FILE *f1)
     if (!f1)
         fclose(f);
     if (ret < 0) {
-    fail:
+fail:
         if (!f1) {
             put_status(s, "Could not load '%s'", b->filename);
         } else {
@@ -1376,6 +1381,9 @@ static int reload_buffer(EditState *s, EditBuffer *b, FILE *f1)
     }
 }
 
+/**
+ * Reload the files contents from disk
+ */
 void do_revert_buffer(EditState *s) 
 {
 	int line_num = 0;
@@ -1395,6 +1403,10 @@ void do_revert_buffer(EditState *s)
 	// bad name. It will append the file contents to
 	// the end of the file, hence the delete above
 	reload_buffer(s, b, NULL);
+	
+	// Kludgy - remove all undo info so you can't undo
+	// the kill_region above.
+	log_reset(b);
 	
 	// Jump back to the line we were on
 	do_goto_line(s, line_num);
@@ -4501,21 +4513,32 @@ static void get_default_path(EditState *s, char *buf, int buf_size)
     splitpath(buf, buf_size, NULL, 0, filename);
 }
 
+/**
+ * Try to figure out what kind of file this is using the ModeDefs
+ * 
+ * TODO: the `int mode` part of this is not c99 valid since it's
+ * using the S_IFREG bit mask to tell if the file is a regular file.
+ * that's now not visible and should be replaced with S_ISREG macro.
+ *
+ * > instead of (sb.st_mode & S_IFMT) == S_IFREG, use S_ISREG(sb.st_mode)
+ *
+ * Which isn't super easy to replace here.
+ */
 static ModeDef *probe_mode(EditState *s, int mode, uint8_t *buf, int len)
 {
     EditBuffer *b = s->b;
-    ModeDef *m, *selected_mode;
-    ModeProbeData probe_data;
-    int best_probe_percent, percent;
 
-    m = first_mode;
-    selected_mode = NULL;
-    best_probe_percent = 0;
+    ModeDef *m = first_mode;
+    ModeDef *selected_mode = NULL;
+    int best_probe_percent = 0;
+	
+	ModeProbeData probe_data;
     probe_data.buf = buf;
     probe_data.buf_size = len;
     probe_data.filename = b->filename;
     probe_data.mode = mode;
 
+	int percent;
     while (m != 0) {
         if (m->mode_probe) {
             percent = m->mode_probe(&probe_data);
@@ -4530,8 +4553,8 @@ static ModeDef *probe_mode(EditState *s, int mode, uint8_t *buf, int len)
 }
 
 /**
- * Load a file into a buffer, either by full path or
- * or assuming the filename is within one of the resource folders
+ * Load a file into a buffer, either by full path, or
+ * assuming the filename is within one of the resource folders
  * _load\_resource_
  */
 static void do_load1(EditState *s, const char *filename1,
@@ -4577,15 +4600,15 @@ static void do_load1(EditState *s, const char *filename1,
     s->offset = 0;
     s->wrap = WRAP_LINE;
 
-    /* first we try to read the first bytes of the buffer to find the
-       buffer data type */
+    // first we try to read the first bytes of the buffer to find the
+    // buffer data type
     if (stat(filename, &st) < 0) {
         put_status(s, "(New file)");
-        /* Try to determine the desired mode based on the filename.
-         * This avoids having to set c-mode for each new .c or .h file. */
+        // Try to determine the desired mode based on the filename.
+        // This avoids having to set c-mode for each new .c or .h file.
         buf[0] = '\0';
         selected_mode = probe_mode(s, S_IFREG, buf, 0);
-        /* XXX: avoid loading file */
+        // XXX: avoid loading file
         if (selected_mode)
             do_set_mode(s, selected_mode, NULL);
         return;
@@ -4598,7 +4621,7 @@ static void do_load1(EditState *s, const char *filename1,
                 goto fail;
             buf_size = fread(buf, 1, sizeof(buf) - 1, f);
             if (buf_size < 0) {
-            fail1:
+fail1:
                 fclose(f);
                 goto fail;
             }
@@ -4612,11 +4635,11 @@ static void do_load1(EditState *s, const char *filename1,
         goto fail1;
     bdt = selected_mode->data_type;
 
-    /* autodetect buffer charset (could move it to raw buffer loader) */
+    // autodetect buffer charset (could move it to raw buffer loader)
     if (bdt == &raw_data_type) 
         eb_set_charset(b, detect_charset(buf, buf_size));
 
-    /* now we can set the mode */
+    // now we can set the mode
     do_set_mode_file(s, selected_mode, NULL, f);
     do_load_qirc(s, s->b->filename);
 
@@ -4624,7 +4647,7 @@ static void do_load1(EditState *s, const char *filename1,
         fclose(f);
     }
 
-    /* XXX: invalid place */
+    // XXX: invalid place
     edit_invalidate(s);
     return;
 fail:
@@ -6495,7 +6518,11 @@ static inline void init_all_modules(void)
 	hex_init();
 	list_init();
 	tty_init();
-	
+// RR: working on fmt style code
+#ifdef CONFIG_BETA
+	runner_init();
+#endif
+    
 #ifndef CONFIG_TINY
 	//If they are not building the tiny version, init some the
 	//extra cool plugins
@@ -6572,17 +6599,8 @@ void qe_init(void *opaque)
     b = eb_new(BUF_SCRATCH, BF_SAVELOG);
     // will be positionned by do_refresh()
     s = edit_new(b, 0, 0, 0, 0, WF_MODELINE);
-
-#ifdef CONFIG_DEBUG
-	// create a debug buffer
-	eb_new(BUF_DEBUG, BF_SAVELOG);
-	// EditBuffer *dbuf = eb_new(BUF_DEBUG, BF_SAVELOG);
-	// EditState *dstate = edit_new(dbuf, 0, 0, 0, 0, WF_MODELINE);
-	// eb_insert(dbuf, 0, "Hello World", 11);	
-	// fill_rectangle(&global_screen, 1, 1, 10, 10, 4);
-#endif
 	
-	LOG("** Debug window for 气 **");
+	LOG("** Debug window for 气 %d **", getpid());
 	
     // at this stage, no screen is defined. Initialize a
     // dummy display driver to have a consistent state
@@ -6601,12 +6619,12 @@ void qe_init(void *opaque)
     // select the suitable display manager
     dpy = probe_display();
     if (!dpy) {
-        fprintf(stderr, "No suitable display found, exiting\n");
+        LOG("%s", "No suitable display found, exiting");
         exit(1);
     }
 
     if (dpy->dpy_init(&global_screen, screen_width, screen_height) < 0) {
-        fprintf(stderr, "Could not initialize display '%s', exiting\n", dpy->name);
+        LOG("Could not initialize display '%s', exiting", dpy->name);
         exit(1);
     }
 
@@ -6633,6 +6651,7 @@ void qe_init(void *opaque)
     edit_display(qs);
     dpy_flush(&global_screen);
 
+	// Example: popup
     b = eb_find("*errors*");
     if (b != NULL) {
         show_popup(b);

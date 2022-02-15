@@ -193,6 +193,29 @@ toggle-line-numbers()
 set-indent-width(2)
 ```
 
+## Analysing Code
+
+(TBD)
+
+### LSP (Language Server)
+
+- `gopls`
+- `clangd`
+
+### Formatting
+
+- `gofmt`
+- `terraform fmt`
+- `clang-format -i -style=file src/xxx.c`
+
+```{name=.clang-format}
+BasedOnStyle: llvm
+IndentWidth: 4
+AllowShortFunctionsOnASingleLine: None
+KeepEmptyLinesAtTheStartOfBlocks: false
+BreakBeforeBraces: Allman
+```
+
 ## Editing Modes
 
 Qi has support for a few differnt file types by default. File support is
@@ -251,7 +274,7 @@ see a list of all the currently open buffers. You can use Bufed to do that.
 You can activate Bufed with _C-x C-b_. You can select with _RET_ or _right_
 the current buffer.
 
-## Developper's Guide
+## Developer's Guide
 
 ### Plugins
 
@@ -259,6 +282,26 @@ You can use one of the examples in `src/plugin/' to develop a Qi plugins
 (aka modules).
 
 Plugins can add any dynamic resource qi supports (modes, keybindings, ...).
+
+### Debugging
+
+When you configure the application build with `--enable-debug`, on top of
+adding debug symbols that can be used with `gdb`, there is a preprocessor
+macro added to the code `LOG`. `LOG` will output debug information to
+`stderr`.
+
+This can be unexpected because by default the messages will get written to
+`stdout`. They will start showing up randomly in the text editor UI. You can 
+fix this by running debug builds using the command:
+
+```
+./qi 2>err.txt
+```
+
+If you then open the err.txt file within qi, you can monitor the messages
+written by `LOG` (by doing `M-x revert-buffer` from within the err.txt
+pane).
+
 
 ### Helpful Functions
 
@@ -269,6 +312,6 @@ void switch_to_buffer(EditState *s, EditBuffer *b)
 void show_popup(EditBuffer *b) 
 EditState *insert_window_left(EditBuffer *b, int width, int flags)
 eb_new(<buffer_name>, BF_SAVELOG)
-LOG("write to the debug buffer")
+LOG("%s", "write to the debug buffer")
 ```
 
