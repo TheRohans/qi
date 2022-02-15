@@ -9,7 +9,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <ctype.h>
+
 #include <signal.h>
+
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <errno.h>
@@ -672,73 +674,66 @@ enum WrapType {
 #define DIR_RTL 1
 
 typedef struct EditState {
-    int offset;     //!< offset of the cursor
-    /* text display state */
-    int offset_top; 
-    int y_disp;    //!< virtual position of the displayed text
-    int x_disp[2]; //!< position for LTR and RTL text resp.
-    int minibuf;   //!< true if single line editing 
-    int disp_width;  //!< width in hex or ascii mode
-    int hex_mode;    //!< true if we are currently editing hexa
-    int unihex_mode; //!< true if unihex editing (hex_mode must be true too) 
-    int hex_nibble;  //!< current hexa nibble 
-    int insert;
-    int bidir;
-    int cur_rtl;     //!< TRUE if the cursor on over RTL chars 
-    enum WrapType wrap;
-    int line_numbers;
-    int tab_size;
-    int indent_size;
-    int indent_tabs_mode; //!< if true, use tabs to indent
-    int interactive; //!< true if interaction is done instead of editing (e.g. for shell mode or HTML)
-    int force_highlight;  //!< if true, force showing of cursor even if window not focused (list mode only)
-    int mouse_force_highlight; //!< if true, mouse can force highlight (list mode only)
-    /** low level colorization function */
-    GetColorizedLineFunc get_colorized_line_func;
-    /** colorization function */
-    ColorizeFunc colorize_func;
-    /** default text style */
-    int default_style;
+	/* -- If you change the layout or size of any of these, see SAVED_DATA_SIZE -- */
+    int offset;                   //!< 4 offset of the cursor
+    int offset_top;               //!< 4 text display state
+    int y_disp;                   //!< 4 virtual position of the displayed text
+    int x_disp[2];                //!< 4 position for LTR and RTL text resp.
+    int minibuf;                  //!< 4 true if single line editing 
+    int disp_width;               //!< 4 width in hex or ascii mode
+    int hex_mode;                 //!< 4 true if we are currently editing hexa
+    int unihex_mode;              //!< 4 true if unihex editing (hex_mode must be true too) 
+    int hex_nibble;               //!< 4 current hexa nibble 
+    int insert;                   //!< 4
+	                              // -- 40
+    int bidir;                    //!< 4
+    int cur_rtl;                  //!< 4 TRUE if the cursor on over RTL chars 
+    enum WrapType wrap;           //!< 4
+    int line_numbers;             //!< 4
+    int tab_size;                 //!< 4
+    int indent_size;              //!< 4
+    int indent_tabs_mode;         //!< 4 if true, use tabs to indent
+    int interactive;              //!< 4 true if interaction is done instead of editing (e.g. for shell mode or HTML)
+    int force_highlight;          //!< 4 if true, force showing of cursor even if window not focused (list mode only)
+    int mouse_force_highlight;    //!< 4 if true, mouse can force highlight (list mode only)
+		                          // -- 40
+    GetColorizedLineFunc get_colorized_line_func; //!< 8 low level colorization function
+    ColorizeFunc colorize_func;                   //!< 8 colorization function
+	                              // -- 16
+    int default_style;            //!< 4 default text style
+    int end_of_saved_data;        //!< 4
+	                              // -- 8 ===> 104
+	/* -- after this limit, the fields are not saved into the buffer -- */
 
-    /** after this limit, the fields are not saved into the buffer */
-    int end_of_saved_data;
-
-    struct ModeDef *mode; //!< mode specific info
-    void *mode_data; //!< mode private data
-
+    struct ModeDef *mode;         //!< mode specific info
+    void *mode_data;              //!< mode private data
     EditBuffer *b;
-
-    // state before line n, one byte per line 
-    unsigned char *colorize_states; 
+    unsigned char *colorize_states;   //!< state before line n, one byte per line 
     int colorize_nb_lines;
     int colorize_nb_valid_lines;
     // maximum valid offset, MAXINT if not modified. Needed to invalide
     //   'colorize_states' 
     int colorize_max_valid_offset; 
 
-    int busy; //!< true if editing cannot be done if the window (e.g. the parser HTML is parsing the buffer to produce the display
-    int display_invalid; //!< true if the display was invalidated. Full redraw should be done
-    int borders_invalid; //!< true if window borders should be redrawn 
-    int show_selection;  //!< if true, the selection is displayed
-	// display area info 
-    int width, height;
+    int busy;                     //!< true if editing cannot be done if the window (e.g. the parser HTML is parsing the buffer to produce the display
+    int display_invalid;          //!< true if the display was invalidated. Full redraw should be done
+    int borders_invalid;          //!< true if window borders should be redrawn 
+    int show_selection;           //!< if true, the selection is displayed
+    int width, height;	          //!< display area info 
     int ytop, xleft;
-    /** full window size, including borders */
-    int x1, y1, x2, y2;
-    int flags; //!< display flags
+    int x1, y1, x2, y2;           //!< full window size, including borders
+    int flags;                    //!< display flags
 #define WF_POPUP      0x0001 //!< popup window (with borders)
 #define WF_MODELINE   0x0002 //!< mode line must be displayed 
 #define WF_RSEPARATOR 0x0004 //!< right window separator
-
     char *prompt;
     struct QEmacsState *qe_state;
-    struct QEditScreen *screen; //!< copy of qe_state->screen
-    // display shadow to optimize redraw
-    char modeline_shadow[MAX_SCREEN_WIDTH];
-    QELineShadow *line_shadow;  //!< per window shadow 
+    struct QEditScreen *screen;   //!< copy of qe_state->screen
+    char modeline_shadow[MAX_SCREEN_WIDTH]; //!< display shadow to optimize redraw
+    QELineShadow *line_shadow;              //!< per window shadow 
     int shadow_nb_lines;
     // compose state for input method
-    struct InputMethod *input_method; //!< current input method
+    struct InputMethod *input_method;          //!< current input method
     struct InputMethod *selected_input_method; //!< selected input method (used to switch)
     int compose_len;
     int compose_start_offset;
@@ -746,7 +741,19 @@ typedef struct EditState {
     struct EditState *next_window;
 } EditState;
 
-#define SAVED_DATA_SIZE ((int)(uintptr_t)&((EditState *)0)->end_of_saved_data)
+// TODO: Need to sort out what this is trying to do. This is erroring:
+// qe.h:773:5: error: variably modified `generic_data` at file scope [-Werror]
+// 
+// becuase this value is being used to create an array size at compile
+// time, but this... is some kind of magic.
+// I am pretty sure it's looking a the structure above, grabing a pointer to 
+// version of it, and then seeing how many bytes it has up until the property
+// 'end_of_saved_data'. This is pretty cool, but it's causing errors so I've 
+// hardcoded it to the calculated value. If you move them or change data types
+// this number will be wrong. Uncomment the next line and output the value to
+// see the new answer.
+// #define SAVED_DATA_SIZE ((int)(uintptr_t)&((EditState *)0)->end_of_saved_data)
+#define SAVED_DATA_SIZE 108
 
 int to_hex(int key);
 
@@ -756,7 +763,7 @@ typedef struct ModeProbeData {
     char *filename;
     unsigned char *buf;
     int buf_size;
-    int mode;                 //!< unix mode
+    int mode;                           //!< unix mode
 } ModeProbeData;
 
 /**
@@ -764,12 +771,9 @@ typedef struct ModeProbeData {
  * when the mode is started again on a buffer 
  */
 typedef struct ModeSavedData {
-    struct ModeDef *mode;     //!< the mode is saved there 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
+    struct ModeDef *mode;               //!< the mode is saved there 
     char generic_data[SAVED_DATA_SIZE]; //!< generic text data
-#pragma GCC diagnostic pop
-    int data_size;            //!< mode specific saved data
+    int data_size;                      //!< mode specific saved data
     char data[1];
 } ModeSavedData;
 
@@ -1115,6 +1119,8 @@ void do_other_window(EditState *s);
 void do_delete_window(EditState *s, int force);
 void edit_display(QEmacsState *qs);
 void edit_invalidate(EditState *s);
+
+void do_revert_buffer(EditState *s);
 
 /* text mode */
 extern ModeDef text_mode;
