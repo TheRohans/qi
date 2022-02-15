@@ -209,7 +209,12 @@ static void qe_register_binding2(int key,
 
 void do_cd(EditState *s, const char *name)
 {
-	chdir(name);
+	int w = chdir(name);
+	if(w < 0) {
+		LOG("%s", "Change directory failed");
+	    put_status(s, "Could not change to directory: %s", name);
+		return;
+	}
 	// CG: Should issue diagnostics upon failure 
 	// TODO: should this be in the edit state as the "project directory"?
     put_status(s, "Current directory: %s", name);
@@ -4508,21 +4513,32 @@ static void get_default_path(EditState *s, char *buf, int buf_size)
     splitpath(buf, buf_size, NULL, 0, filename);
 }
 
+/**
+ * Try to figure out what kind of file this is using the ModeDefs
+ * 
+ * TODO: the `int mode` part of this is not c99 valid since it's
+ * using the S_IFREG bit mask to tell if the file is a regular file.
+ * that's now not visible and should be replaced with S_ISREG macro.
+ *
+ * > instead of (sb.st_mode & S_IFMT) == S_IFREG, use S_ISREG(sb.st_mode)
+ *
+ * Which isn't super easy to replace here.
+ */
 static ModeDef *probe_mode(EditState *s, int mode, uint8_t *buf, int len)
 {
     EditBuffer *b = s->b;
-    ModeDef *m, *selected_mode;
-    ModeProbeData probe_data;
-    int best_probe_percent, percent;
 
-    m = first_mode;
-    selected_mode = NULL;
-    best_probe_percent = 0;
+    ModeDef *m = first_mode;
+    ModeDef *selected_mode = NULL;
+    int best_probe_percent = 0;
+	
+	ModeProbeData probe_data;
     probe_data.buf = buf;
     probe_data.buf_size = len;
     probe_data.filename = b->filename;
     probe_data.mode = mode;
 
+	int percent;
     while (m != 0) {
         if (m->mode_probe) {
             percent = m->mode_probe(&probe_data);

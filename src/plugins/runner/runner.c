@@ -23,7 +23,7 @@ static void do_runner(EditState *e, const char *cmd)
     char dir[MAX_FILENAME_SIZE];
     const char *argv[4];
     char *p;
-    int len;
+    // int len;
 
     if (cmd == 0) {
         // put_status(func->es, "aborted");
@@ -40,17 +40,26 @@ static void do_runner(EditState *e, const char *cmd)
     argv[2] = e->b->filename;
     argv[3] = NULL;
     
-    getcwd(cwd, sizeof(cwd));
+    char *w = getcwd(cwd, sizeof(cwd));
+	if(w == NULL) {
+		LOG("%s", "Get working directory failed");
+		// TODO let user know.
+		return;
+	}
 
     // get the directory of the open file and change into it
     p = strrchr(e->b->filename, '/');
     if (p == e->b->filename)
         p++;
-    len = p - e->b->filename + 1;
+    // len = p - e->b->filename + 1;
     pstrcpy(dir, sizeof(dir), e->b->filename);
     
-    LOG("%s", dir)
-    chdir(dir);
+    LOG("%s", dir);
+    int wk = chdir(dir);
+	if(wk != 0) {
+		LOG("%s", "Could not change into directory");
+		return;
+	}
 
     pid_t pid = fork();
     if (pid == 0) {
@@ -70,7 +79,11 @@ static void do_runner(EditState *e, const char *cmd)
         LOG("%s", "Could not fork process");
     }
 
-    chdir(cwd);
+    wk = chdir(cwd);
+	if(wk != 0) {
+		LOG("%s", "Could not return to directory");
+		return;
+	}
 }
 
 /* specific runner commands */

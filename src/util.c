@@ -212,7 +212,13 @@ void canonize_absolute_path(char *buf, int buf_size, const char *path1)
             }
         }
         /* CG: not sufficient for windows drives */
-        getcwd(cwd, sizeof(cwd));
+        char * err = getcwd(cwd, sizeof(cwd));
+		if(err == NULL) {
+			LOG("%s", "Could not change directory");
+			// TODO: let user know?
+			return;
+		}
+		
         makepath(path, sizeof(path), cwd, path1);
     } else {
         pstrcpy(path, sizeof(path), path1);
