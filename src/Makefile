@@ -16,6 +16,7 @@ CONFIG_UNICODE_JOIN=y
 CONFIG_ALL_KMAPS=y
 
 CFLAGS:=-Wall
+# Note: Using c99 (or any ansi version) with signals is a mine field of terrible.
 # CFLAGS:=-std=c99 -Wall -Wpedantic -Werror -pedantic -pedantic-errors
 # https://stackoverflow.com/questions/6491019/struct-sigaction-incomplete-error
 # CFLAGS:=-std=c99 -Wall -Wpedantic -pedantic -D_XOPEN_SOURCE=700

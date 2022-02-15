@@ -19,7 +19,7 @@ ifneq (, $(shell which afl-fuzz))
 	export AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1; \
 	export AFL_SKIP_CPUFREQ=1; \
 	export AFL_NO_FORKSRV=1; \
-		afl-fuzz -t 2000+ -i $(PWD)/test_data/ -o build/fuzz $(PWD)/qi @@
+	   afl-fuzz -t 2000+ -i $(PWD)/test_data/ -o build/fuzz $(PWD)/qi @@
 endif
 endif
 
