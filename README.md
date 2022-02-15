@@ -56,7 +56,7 @@ Qi should build on any POSIX system. It is currently being run daily on:
 
 ```shell
 ./configure
-make build
+make dist
 sudo make install
 ```
 
@@ -80,7 +80,7 @@ Example of custom build:
 
 ```shell
 ./configure --cc=clang --prefix=~/ --enable-beta
-make build
+make dist
 make install
 ```
 
