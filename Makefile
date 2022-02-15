@@ -51,7 +51,9 @@ endif
 
 checks:
 ifneq (, $(shell which cppcheck))
-	cppcheck --enable=all --suppress=missingIncludeSystem ./src
+	cppcheck --enable=all --suppress=missingIncludeSystem \
+	--xml --xml-version=2 ./src \
+	2>report-src.xml
 endif
 
 

@@ -30,9 +30,15 @@ static char *test_strfind_notfind_case() {
   return 0;
 }
 
+static char *test_testing_fail() {
+	r2_assert("this is supposed to fail", 1 == 0);
+	return 0;
+}
+
 static char *util_test() {
   r2_run_test(test_strfind_find_nocase);
   r2_run_test(test_strfind_notfind_nocase);
   r2_run_test(test_strfind_notfind_case);
+  r2_run_test(test_testing_fail);
   return 0;
 }
