@@ -47,11 +47,22 @@ Qi was forked from QEmacs 3.2 with a lot of features stripped out.
 
 ## Building
 
-1. Run the configure tool:
+Qi should build on any POSIX system. It is currently being run daily on:
+- Ubuntu 20
+- M1 Macs
+- Raspberry Pi 1
+
+### Quick Start (User)
 
 ```shell
 ./configure
+make build
+sudo make install
 ```
+
+If you leave off the `make install` step, you should have a `qi` binary in the `dist` directory.
+
+### Slower Start (User)
 
 You can see the possible options by typing 
 
@@ -59,13 +70,23 @@ You can see the possible options by typing
 ./configure --help
 ```
 
-2. Run the make file to build the core editor and plugins:
+If you `--enable-tiny` you will get a very small build with almost all of qi's extra features not included. For example, there will be no syntax hilighting, no file browser, and no beta features. Depending on your system, the size of the editor should be down to the 150k range.
+
+`--prefix` can be used to install qi somewhere that doesn't require admin access, and `--cc` can be used to specifiy a different compiler.
+
+Do you feel lucky? Well, `--enable-beta` might be for you. This will turn on features that are currenly under development which could be cool or could crash everything.
+
+Example of custom build:
 
 ```shell
-make dist
+./configure --cc=clang --prefix=~/ --enable-beta
+make build
+make install
 ```
 
-If everything worked, you should have a `qi` binary in the `dist` project directory.
+### Quick Start (Developer)
+
+Using `--enable-debug` will build qi with debugging symbols enabled, and it also activates a macro that does some logging (see [the manual](doc/manual.md#developers-guide) for more information).
 
 ## Licensing
 

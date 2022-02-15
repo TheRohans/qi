@@ -107,6 +107,9 @@ clean:
 distclean: clean
 	rm -f config.h config.mak
 
+install:
+	cp ../dist/qi $(PREFIX)/qi
+
 test:
 	@echo '======================================== Building qi tests ==== '
 	mkdir -p ../build

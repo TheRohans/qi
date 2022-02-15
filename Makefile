@@ -1,6 +1,8 @@
-.PHONY: doc
+.PHONY: doc build test
 
 all: banner_help 
+
+build: clean qi
 
 qi:
 	@echo '======================================== Building qi == '
@@ -38,6 +40,10 @@ dist: clean qi doc
 	mkdir -p dist
 	mv qi dist/qi
 	mv doc/output dist/doc
+
+install:
+	@echo '============================================ Installl == '
+	make -C src install
 
 distclean: clean
 	rm -f config.h config.mak
