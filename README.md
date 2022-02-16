@@ -70,11 +70,11 @@ You can see the possible options by typing
 ./configure --help
 ```
 
-If you `--enable-tiny` you will get a very small build with almost all of qi's extra features not included. For example, there will be no syntax hilighting, no file browser, and no beta features. Depending on your system, the size of the editor should be down to the 150k range.
+If you `--enable-tiny` you will get a very small build with almost all of qi's extra features not included. For example, there will be no syntax highlighting, no file browser, and no beta features. Depending on your system, the size of the editor should be down to the 150k range.
 
-`--prefix` can be used to install qi somewhere that doesn't require admin access, and `--cc` can be used to specifiy a different compiler.
+`--prefix` can be used to install qi somewhere that doesn't require admin access, and `--cc` can be used to specify a different compiler.
 
-Do you feel lucky? Well, `--enable-beta` might be for you. This will turn on features that are currenly under development which could be cool or could crash everything.
+Do you feel lucky? Well, `--enable-beta` might be for you. This will turn on features that are currently under development which could be cool or could crash everything.
 
 Example of custom build:
 

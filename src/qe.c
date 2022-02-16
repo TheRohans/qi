@@ -6281,8 +6281,8 @@ static void show_version(void)
            "Copyright (c) 2013-2022 The Rohans\n"
            "Copyright (c) 2000-2003 Fabrice Bellard\n"
            "Qi comes with ABSOLUTELY NO WARRANTY.\n"
-           "You may redistribute copies of Qi\n"
-           "under the terms of the GNU Lesser General Public License v2.\n");
+           "You may redistribute copies of Qi under the\n"
+           "terms of the GNU Lesser General Public License v2.\n");
     exit(1);
 }
 
