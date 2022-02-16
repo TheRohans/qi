@@ -1,4 +1,7 @@
 .DS_Store
+*~
+*.bak
+
 #build stuff
 *.o
 config.mak
@@ -8,8 +11,6 @@ qe_g
 dist
 
 #temp files
-*~
-*.bak
 plugincore.h
 build
 doc/output
