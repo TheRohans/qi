@@ -370,6 +370,106 @@ void do_word_right(EditState *s, int dir)
 }
 ////////////////////////////////////////////////////////////////////////
 
+/**
+ * Run a system command. Similar to vims "!". The cmd
+ * parameter is the command with each flag set as an 
+ * array element. Also must be NULL terminated. Example:
+ *  argv[0] = "aspell";
+ *  argv[1] = "-c";
+ *  argv[2] = s->b->filename;
+ *  argv[3] = NULL;
+ * This is not exposed to the user yet, and should not 
+ * be in the TINY build.
+ */
+void run_system_cmd(EditState *s, const char **cmd)
+{
+#ifndef CONFIG_TINY
+#ifdef CONFIG_BETA
+//	const char *argv[4];
+
+    if (cmd == 0) {
+        put_status(s, "Run aborted");
+        return;
+    }
+
+//    argv[0] = "gofmt";
+//    argv[1] = "-w";
+//    argv[2] = s->b->filename;
+//    argv[3] = NULL;
+	
+//    argv[0] = "clang-format";
+//    argv[1] = "-i";
+//    argv[2] = s->b->filename;
+//    argv[3] = NULL;
+
+//	argv[0] = "terraform";
+//	argv[1] = "fmt";
+//	argv[2] = "-list=false";
+//  argv[3] = s->b->filename;
+//  argv[4] = NULL;
+
+//    argv[0] = "aspell";
+//    argv[1] = "-c";
+//    argv[2] = s->b->filename;
+//    argv[3] = NULL;
+	
+    pid_t pid = fork();
+    if (pid == 0) {
+        // child process
+        setsid();
+        execvp(cmd[0], (char *const*)cmd);
+        // set the exit status of the program we just ran
+        exit(errno);
+    } else if (pid > 0) {
+        // parent process
+        int status;
+        if(wait(&status) == -1) {
+            LOG("%s", "Could not wait for child process");
+	        put_status(s, "Run failed, couldn't wait for child");
+            return;
+        }
+        // if the exit status of the child proces was 0 refresh
+        // the buffer, if not then something went wrong. Assume
+        // we don't have the app installed.
+        // if(WIFEXITED(status) != 0) {
+        if(WEXITSTATUS(status) != 0) {
+            LOG("child exited with = %d", WEXITSTATUS(status));
+            put_status(s, "Running %s failed. Installed? On your PATH?", cmd[0]);
+            // TODO: if you do not have the app installed you can lose key 
+            // bindings in the editor when this code hits.
+            // I am not sure why. If you get a readonly error, it's fine,
+            // but if not installed. Boom. I think it probably has
+            // something to do with basic_commands getting clobbered by
+            // the child's stdout error? If the app exists, everything is fine
+            // it's only on file not found :-/
+        } else {
+            LOG("%s", "child process finished");
+            do_revert_buffer(s);
+            put_status(s, "Done");
+        }
+    } else {
+        // Error
+        LOG("%s", "Could not fork process");
+        put_status(s, "Run failed, couldn't fork process");
+    }
+#endif // end beta
+#endif // end not tiny
+}
+
+void do_spell_check(EditState *s) 
+{
+	const char *argv[4];
+	
+	// TODO: configure option? Scripting option?
+    argv[0] = "aspell";
+    argv[1] = "-c";
+    argv[2] = s->b->filename;
+    argv[3] = NULL;
+
+	run_system_cmd(s, argv);
+}
+
+////////////////////////////////////////////////////////////////////////
 void text_move_bol(EditState *s)
 {
     int c, offset1;
@@ -1101,7 +1201,6 @@ void do_char(EditState *s, int key)
 void text_write_char(EditState *s, int key)
 {
     int cur_ch, len, cur_len, offset1, ret, insert;
-	// 
 
     char buf[MAX_CHAR_BYTES];
 
@@ -6517,13 +6616,8 @@ static inline void init_all_modules(void)
 	//Warning: these need to start in this order! Segfault otherwise
 	hex_init();
 	list_init();
-	tty_init();
-// RR: working on fmt style code
-#ifdef CONFIG_BETA
-	runner_init();
-#endif
-    
-#ifndef CONFIG_TINY
+	tty_init();  
+#ifndef CONFIG_TINY		
 	//If they are not building the tiny version, init some the
 	//extra cool plugins
 	unihex_init();
