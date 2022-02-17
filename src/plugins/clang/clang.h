@@ -9,6 +9,9 @@ void do_c_indent(EditState *s);
 void do_c_indent_region(EditState *s);
 void do_c_electric(EditState *s, int key);
 
+void do_c_comment(EditState *s);
+void do_c_comment_region(EditState *s);
+
 int c_mode_init(EditState *s, ModeSavedData *saved_data);
 int c_init(void);
 

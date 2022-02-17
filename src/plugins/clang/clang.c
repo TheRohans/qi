@@ -66,7 +66,7 @@ enum {
 };
 
 void c_colorize_line(unsigned int *buf, int len, 
-                     int *colorize_state_ptr, int state_only)
+    int *colorize_state_ptr, int state_only)
 {
     int c, state, type_decl;
     unsigned int *p, *p_start, *p1;
@@ -418,7 +418,7 @@ void do_c_indent(EditState *s)
                     // level test needed for 'for(;;)'
                     if (stack_ptr == 0) {
                         // ; { or } are found before an instruction 
-                    check_instr:
+check_instr:
                         if (lpos >= 0) {
                             // start of instruction already found 
                             pos = lpos;
@@ -463,7 +463,7 @@ void do_c_indent(EditState *s)
                 }
             }
         }
-    prev_line: ;
+prev_line: ;
     }
 
 end_parse:
@@ -574,7 +574,7 @@ static int c_mode_probe(ModeProbeData *p)
     //currently, only use the file extension
     r = extension(p->filename);
     if (*r) {
-        if (strfind("|c|e|h|js|ts|json|cs|jav|java|cxx|cpp|go|tf|", r + 1, 1))
+        if (strfind("|c|e|h|js|ts|json|cs|jav|java|cxx|cpp|tf|", r + 1, 1))
             return 100;
     }
     return 0;
