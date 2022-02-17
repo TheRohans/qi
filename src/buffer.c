@@ -937,7 +937,7 @@ int eb_get_pos(EditBuffer *b, int *line_ptr, int *col_ptr, int offset)
     if (line1)
         col = 0;
     col += col1;
- the_end:
+the_end:
     *line_ptr = line;
     *col_ptr = col;
     return line;
@@ -987,8 +987,10 @@ static int goto_char(u8 *buf, int pos, QECharset *charset)
     return buf_ptr - buf;
 }
 
-/* gives the byte offset of a given character, taking the charset into
-   account */
+/**
+ * Gives the byte offset of a given character, taking the charset into
+ * account 
+ */
 int eb_goto_char(EditBuffer *b, int pos)
 {
     int offset;
@@ -1020,8 +1022,10 @@ int eb_goto_char(EditBuffer *b, int pos)
     return offset;
 }
 
-/* get the char offset corresponding to a given byte offset, taking
-   the charset into account */
+/** 
+ * Get the char offset corresponding to a given byte offset, taking
+ * the charset into account 
+ */
 int eb_get_char_offset(EditBuffer *b, int offset)
 {
     int pos;
@@ -1203,6 +1207,32 @@ void eb_line_pad(EditBuffer *b, int n)
     }
 }
 
+/**
+ * Get a substring of text from the given buffer.
+ * Given an offset into a buffer, grab buf_size of chars
+ * XXX: this is not utf-8 aware
+ */
+int eb_get_substr(EditBuffer *b, char *buf, int offset_start, int buf_size)
+{
+    int len;
+
+    len = b->total_size;
+    if (len > buf_size - 1)
+        len = buf_size - 1;
+        
+    QASSERT(offset_start >= 0 && offset_start < len);
+ 
+    eb_read(b, offset_start, buf, len);
+    buf[len] = '\0';
+    
+    return len;
+}
+
+/**
+ * Staring from the star of the buffer, get a string 
+ * of size buff_size from the given buffer
+ * XXX: this is not utf-8 aware
+ */
 int eb_get_str(EditBuffer *b, char *buf, int buf_size)
 {
     int len;
@@ -1210,12 +1240,16 @@ int eb_get_str(EditBuffer *b, char *buf, int buf_size)
     len = b->total_size;
     if (len > buf_size - 1)
         len = buf_size - 1;
+ 
     eb_read(b, 0, buf, len);
     buf[len] = '\0';
+    
     return len;
 }
 
-/* get the line starting at offset 'offset' */
+/**
+ * Get the line starting at offset 'offset' 
+ */
 int eb_get_line(EditBuffer *b, unsigned int *buf, int buf_size,
                 int *offset_ptr)
 {
