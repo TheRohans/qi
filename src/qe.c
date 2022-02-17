@@ -3870,9 +3870,11 @@ EditState *edit_new(EditBuffer *b,
     s->x2 = x1 + width;
     s->y2 = y1 + height;
     s->flags = flags;
+    
     compute_client_area(s);
     s->next_window = qs->first_window;
     qs->first_window = s;
+    
     if (!qs->active_window)
         qs->active_window = s;
     switch_to_buffer(s, b);
@@ -6631,6 +6633,7 @@ static inline void init_all_modules(void)
     css_init();
     python_init();
     config_init();
+    go_init();
 	//example_init();
 #endif
 }
