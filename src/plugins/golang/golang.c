@@ -1,4 +1,4 @@
-/*
+/**
  * Golang mode for Qi
  * Copyright (c) 2022, Rob Rohan
  * Copyright (c) 2001, 2002 Fabrice Bellard.
@@ -279,6 +279,19 @@ int go_mode_init(EditState *s, ModeSavedData *saved_data)
     return ret;
 }
 
+void do_gofmt(EditState *s) 
+{
+	const char *argv[4];
+	
+	// XXX: configure option? Scripting option?
+    argv[0] = "gofmt";
+    argv[1] = "-w";
+    argv[2] = s->b->filename;
+    argv[3] = NULL;
+
+	run_system_cmd(s, argv);
+}
+
 static CmdDef go_commands[] = {
     CMD0( KEY_META(';'), KEY_NONE, "c-comment", do_c_comment)
     CMD0( KEY_CTRLX(';'), KEY_NONE, "c-comment-region", do_c_comment_region)
@@ -287,6 +300,9 @@ static CmdDef go_commands[] = {
 	CMDV( '(', KEY_NONE, "c-electric-paren", do_go_electric, '(', "*v")
 	
     CMDV( KEY_RET, KEY_NONE, "go-electric-newline", do_go_electric, '\n', "*v")
+    
+    CMD0( KEY_CTRLX('y'), KEY_NONE, "go-fmt", do_gofmt)
+    
     CMD_DEF_END,
 };
 
