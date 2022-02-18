@@ -451,11 +451,7 @@ void run_system_cmd(EditState *s, const char **cmd)
         return;
     }
 
-	
-//    argv[0] = "clang-format";
-//    argv[1] = "-i";
-//    argv[2] = s->b->filename;
-//    argv[3] = NULL;
+    save_buffer(s->b);
 
 //	argv[0] = "terraform";
 //	argv[1] = "fmt";
@@ -463,11 +459,6 @@ void run_system_cmd(EditState *s, const char **cmd)
 //  argv[3] = s->b->filename;
 //  argv[4] = NULL;
 
-//    argv[0] = "aspell";
-//    argv[1] = "-c";
-//    argv[2] = s->b->filename;
-//    argv[3] = NULL;
-	
     pid_t pid = fork();
     if (pid == 0) {
         // child process
@@ -1947,7 +1938,7 @@ static void apply_style(QEStyleDef *style, int style_index)
     //    s = &qe_styles[QE_STYLE_SELECTION];
     //    style->fg_color = s->fg_color;
     //    style->bg_color = s->bg_color;
-    //}
+    // }
 }
 
 void get_style(EditState *e, QEStyleDef *style, int style_index)
