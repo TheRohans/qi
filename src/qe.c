@@ -1883,6 +1883,8 @@ static void apply_style(QEStyleDef *style, int style_index)
 		style->font_style = s->font_style;
 	if (s->font_size != 0)
 		style->font_size = s->font_size;
+    if (s->text_style != TS_NONE)
+		style->text_style = s->text_style;
 
     // for selection, we need a special handling because 
 	// only color is changed 
@@ -2141,6 +2143,9 @@ static void flush_line(DisplayState *s,
                                default_style.bg_color);
             }
             x += x_start;
+            
+            ////////////////////////////////
+            // Draw fragments with background colors to the screen buffer
             for (i = 0; i < nb_fragments; i++) {
                 frag = &fragments[i];
                 get_style(e, &style, frag->style);
@@ -2148,6 +2153,8 @@ static void flush_line(DisplayState *s,
                                style.bg_color);
                 x += frag->width;
             }
+            ////////////////////////////////
+
             x1 = e->xleft + s->width + s->eol_width;
             if (x < x1) {
                 fill_rectangle(screen, x, y, x1 - x, line_height, 
@@ -2167,22 +2174,27 @@ static void flush_line(DisplayState *s,
                                        default_style.font_size);
                     markbuf[0] = '/';
                     draw_text(screen, font, x, y + font->ascent, 
-                              markbuf, 1, default_style.fg_color);
+                              markbuf, 1, default_style.fg_color, 
+                              default_style.text_style);
                     release_font(screen, font);
                 }
             }
             x += x_start;
+
+            ////////////////////////////////
+            // Draw fragments foreground colors to the screen buffer
             for (i = 0; i < nb_fragments; i++) {
                 frag = &fragments[i];
                 get_style(e, &style, frag->style);
-                font = select_font(screen, 
-                                   style.font_style, style.font_size);
+                font = select_font(screen, style.font_style, style.font_size);
                 draw_text(screen, font, x, y + baseline, 
                           s->line_chars + frag->line_index,
-                          frag->len, style.fg_color);
+                          frag->len, style.fg_color, style.text_style);
                 x += frag->width;
                 release_font(screen, font);
             }
+            ////////////////////////////////
+
             x1 = e->xleft + s->width + s->eol_width;
             if (x < x1) {
                 // LTR eol mark 
@@ -2196,7 +2208,8 @@ static void flush_line(DisplayState *s,
                     markbuf[0] = '\\';
                     draw_text(screen, font, 
                               e->xleft + s->width, y + font->ascent,
-                              markbuf, 1, default_style.fg_color);
+                              markbuf, 1, default_style.fg_color, 
+                              default_style.text_style);
                     release_font(screen, font);
                 }
             }
@@ -3689,7 +3702,7 @@ void print_at_byte(QEditScreen *screen,
                    style.bg_color);
     font = select_font(screen, style.font_style, style.font_size);
     draw_text(screen, font, x, y + font->ascent,
-              ubuf, len, style.fg_color);
+              ubuf, len, style.fg_color, style.text_style);
     release_font(screen, font);
 }
 
@@ -6580,8 +6593,9 @@ static void dummy_dpy_text_metrics(QEditScreen *s, QEFont *font,
         
 static void dummy_dpy_draw_text(QEditScreen *s, QEFont *font, 
                                 int x, int y, const unsigned int *str, int len,
-                                QEColor color)
+                                QEColor color, enum TextStyle tstyle)
 {
+
 }
 
 static void dummy_dpy_set_clip(QEditScreen *s,

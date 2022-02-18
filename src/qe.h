@@ -832,7 +832,7 @@ extern unsigned int tty_colors[]; /* from tty.c */
 
 enum QEStyle {
 #define STYLE_DEF(constant, name, fg_color, bg_color, \
-                  font_style, font_size) \
+                  font_style, font_size, text_style) \
                   constant,
 
 #include "qestyles.h"
@@ -847,6 +847,7 @@ typedef struct QEStyleDef {
     QEColor fg_color, bg_color; 
     short font_style;
     short font_size;
+    short text_style;
 } QEStyleDef;
 
 extern QEStyleDef qe_styles[QE_STYLE_NB];

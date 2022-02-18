@@ -41,6 +41,7 @@ typedef struct TTYChar {
     unsigned int ch;
     unsigned char bgcolor;
     unsigned char fgcolor;
+    unsigned char text_style;
 } TTYChar;
 
 enum InputState {
@@ -165,11 +166,6 @@ static void tty_get_screen_size(int *pw, int *ph)
     *ph = h;
 }
 
-//void handle_sigwinch(int sig)
-//{
-//    eb_refresh();
-//}
-
 static int term_init(QEditScreen *s, int w, int h)
 {
     TTYState *ts;
@@ -200,12 +196,6 @@ static int term_init(QEditScreen *s, int w, int h)
     s->charset = &charset_utf8;
 
     atexit(term_exit);
-    
-//    struct sigaction sig;
-//    sig.sa_handler = &handle_sigwinch;
-//    sigemptyset(&sig.sa_mask);
-//    sig.sa_flags = 0; // SA_RESTART;
-//    sigaction(SIGWINCH, &sig, NULL);
 
     fcntl(0, F_SETFL, O_NONBLOCK);
     // If stdout is to a pty, make sure we aren't in nonblocking mode.
@@ -263,7 +253,8 @@ void tty_resize(int sig)
     ts->line_updated = realloc(ts->line_updated, s->height);
     
     memset(ts->old_screen, 0, size);
-    memset(ts->screen, 0x22, size);
+    // memset(ts->screen, 0x22, size);
+    memset(ts->screen, 0, size);
     memset(ts->line_updated, 1, s->height);
 
     s->clip_x1 = 0;
@@ -305,7 +296,7 @@ static void tty_read_handler(void *opaque)
         return;
     
     // charset handling
-    if (s->charset == &charset_utf8) {        
+    if (s->charset == &charset_utf8) {
         if (ts->utf8_state == 0) {
             const char *p;
             p = (const char *)ts->buf;
@@ -496,7 +487,7 @@ static void term_text_metrics(QEditScreen *s, QEFont *font,
         
 static void term_draw_text(QEditScreen *s, QEFont *font, 
                            int x, int y, const unsigned int *str, int len,
-                           QEColor color)
+                           QEColor color, enum TextStyle tstyle)
 {
     TTYState *ts = s->private;
     TTYChar *ptr;
@@ -541,10 +532,14 @@ static void term_draw_text(QEditScreen *s, QEFont *font,
     for (; len > 0; len--) {
         cc = *str++;
         w = term_glyph_width(s, cc);
-        // XXX: would need to put spacs for wide chars
+        // XXX: would need to put spaces for wide chars
         if (x + w > s->clip_x2) 
             break;
         ptr->fgcolor = fgcolor;
+        if (tstyle != TS_NONE) {
+            LOG("Setting style: %d", tstyle);
+            ptr->text_style = tstyle;
+        }
         ptr->ch = cc;
         ptr++;
         n = w - 1;
@@ -567,7 +562,7 @@ static void term_flush(QEditScreen *s)
 {
     TTYState *ts = s->private;
     TTYChar *ptr, *optr;
-    int x, y, bgcolor, fgcolor;
+    int x, y, bgcolor, fgcolor, style;
     char buf[5] = {0};
     
     // unsigned int cc;
@@ -575,6 +570,7 @@ static void term_flush(QEditScreen *s)
 
     bgcolor = -1;
     fgcolor = -1;
+    style = 0;
     
     for(y=0; y < s->height; y++) {
         if (ts->line_updated[y]) {
@@ -596,13 +592,17 @@ static void term_flush(QEditScreen *s)
                     cc = ptr->ch;
                     
                     if (cc != 0xffff) {
-                        // output attributes
-                        if (((fgcolor != ptr->fgcolor && cc != ' ') ||
+                        
+                        // output attributes  && cc != ' '
+                        if (((fgcolor != ptr->fgcolor) ||
                              (bgcolor != ptr->bgcolor))) {
+                            LOG("Color: %d %d %d", ptr->fgcolor, ptr->bgcolor, ptr->text_style);
+
                             fgcolor = ptr->fgcolor;
                             bgcolor = ptr->bgcolor;
-						    printf(ESC_SET_ATTRIBUTE_MODE_2, 
-								   30 + fgcolor, 40 + bgcolor);
+                            style = ptr->text_style;
+                            printf(ESC_SET_ATTRIBUTE_MODE_3,
+                                style, 30 + fgcolor, 40 + bgcolor);
                         }
                         
                         // do not display escape codes or invalid codes
@@ -615,7 +615,9 @@ static void term_flush(QEditScreen *s)
                         }
                         // write the text to the screen
                         printf("%s", buf);
-                    }
+                    } /* else {
+                        printf(ESC_SET_ATTRIBUTE_MODE_1, 0);
+                    } */
                     
                     // update old screen data
                     *optr++ = *ptr++;

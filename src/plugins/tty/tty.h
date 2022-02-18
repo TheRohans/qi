@@ -101,19 +101,20 @@ the cursor will move to the home position, at the upper left of the screen. */
 ///////////////////////////////
 /* Sets multiple display attribute settings. The following lists standard attributes: */
 #define ESC_SET_ATTRIBUTE_MODE_3   "\033[%d;%d;%dm"
-#define ESC_SET_ATTRIBUTE_MODE_2   "\033[;%d;%dm"
+#define ESC_SET_ATTRIBUTE_MODE_2   "\033[%d;%dm"
 #define ESC_SET_ATTRIBUTE_MODE_1   "\033[%dm"
+
 /*
-0	Reset (default)
-1	Bright (bold)
-2	Dim (faint)
-3   *Italic
-4	Underscore (underline)
-5	Blink (slow)
-6   *Blink (fast)
-7	Reverse (negative)
-8	Hidden (conceal)
-9   *Strike Through
+0  Reset (default)
+1  Bright (bold)
+2  Dim (faint)
+3  *Italic
+4  Underscore (underline)
+5  Blink (slow)
+6  *Blink (fast)
+7  Reverse (negative)
+8  Hidden (conceal)
+9  *Strike Through
 
 ----Foreground Colours
 30	Black
