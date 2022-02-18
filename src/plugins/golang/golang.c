@@ -48,65 +48,6 @@ static int get_keyword(char *buf, int buf_size, unsigned int **pp)
     return q - buf;
 }
 
-/**
- * Look at the last line, and try to copy the indent
- * level of that line to the current line.
- */
-void do_go_indent(EditState *s)
-{
-    int line_num, col_num, offset;
-
-    // Find start of line
-    eb_get_pos(s->b, &line_num, &col_num, s->offset);
-    LOG("Current line: %d:%d", line_num, col_num);
-    if((line_num - 1) <= 0) return;
-    
-    LOG("Current offset: %d", s->offset);
-    int current_start_offset = s->offset;
-    
-    // Find the start of the last line
-    int last_line_pos = eb_goto_pos(s->b, line_num - 1, 0);
-    s->offset = last_line_pos;
-    
-    LOG("Last line offset: %d", s->offset);
-    
-    // find the number of spaces on the last line and assume that
-    // the number of whitespaces is the indent level
-    int pos = 0;
-    int next_char;
-    // (we are still focused on the last line)
-    int offset1 = s->offset;
-    for (;;) {
-        int ch = eb_nextc(s->b, offset1, &next_char);
-        if (ch != ' ' && ch != '\t')
-            break;
-        offset1 = next_char;
-        pos++;
-    }
-    
-    // move back to the start of the last line
-    // since eb_nextc might have moved us
-    s->offset = last_line_pos;
-    
-    // now get the previous lines indent as a string
-    char *indent = calloc(sizeof(char), (pos + 1));
-    eb_get_substr(s->b, indent, last_line_pos, pos+1);
-    
-    LOG("%d >%s<", pos, indent);
-    
-    // Now move back to the position we want to move
-    // to and add in the indent whitespace
-    s->offset = current_start_offset;
-    if(pos > 0) {
-        // make sure this is a null term string
-        indent[pos] = '\0';
-        eb_insert(s->b, s->offset, indent, pos);
-    }
-    s->offset = current_start_offset + pos;
-    
-    free(indent);
-}
-
 void go_colorize_line(unsigned int *buf, int len, 
     int *colorize_state_ptr, int state_only)
 {
@@ -254,7 +195,7 @@ void do_go_electric(EditState *s, int key)
         return;
     }
     
-	do_go_indent(s);
+	do_indent_lastline(s);
 }
 
 static int go_mode_probe(ModeProbeData *p)

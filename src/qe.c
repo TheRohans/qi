@@ -371,6 +371,65 @@ void do_word_right(EditState *s, int dir)
 ////////////////////////////////////////////////////////////////////////
 
 /**
+ * Look at the last line, and try to copy the indent
+ * level of that line to the current line.
+ */
+void do_indent_lastline(EditState *s)
+{
+    int line_num, col_num, offset;
+
+    // Find start of line
+    eb_get_pos(s->b, &line_num, &col_num, s->offset);
+    LOG("Current line: %d:%d", line_num, col_num);
+    if((line_num - 1) <= 0) return;
+    
+    LOG("Current offset: %d", s->offset);
+    int current_start_offset = s->offset;
+    
+    // Find the start of the last line
+    int last_line_pos = eb_goto_pos(s->b, line_num - 1, 0);
+    s->offset = last_line_pos;
+    
+    LOG("Last line offset: %d", s->offset);
+    
+    // find the number of spaces on the last line and assume that
+    // the number of whitespaces is the indent level
+    int pos = 0;
+    int next_char;
+    // (we are still focused on the last line)
+    int offset1 = s->offset;
+    for (;;) {
+        int ch = eb_nextc(s->b, offset1, &next_char);
+        if (ch != ' ' && ch != '\t')
+            break;
+        offset1 = next_char;
+        pos++;
+    }
+    
+    // move back to the start of the last line
+    // since eb_nextc might have moved us
+    s->offset = last_line_pos;
+    
+    // now get the previous lines indent as a string
+    char *indent = calloc(sizeof(char), (pos + 1));
+    eb_get_substr(s->b, indent, last_line_pos, pos+1);
+    
+    LOG("%d >%s<", pos, indent);
+    
+    // Now move back to the position we want to move
+    // to and add in the indent whitespace
+    s->offset = current_start_offset;
+    if(pos > 0) {
+        // make sure this is a null term string
+        indent[pos] = '\0';
+        eb_insert(s->b, s->offset, indent, pos);
+    }
+    s->offset = current_start_offset + pos;
+    
+    free(indent);
+}
+
+/**
  * Run a system command. Similar to vims "!". The cmd
  * parameter is the command with each flag set as an 
  * array element. Also must be NULL terminated. Example:
@@ -392,10 +451,6 @@ void run_system_cmd(EditState *s, const char **cmd)
         return;
     }
 
-//    argv[0] = "gofmt";
-//    argv[1] = "-w";
-//    argv[2] = s->b->filename;
-//    argv[3] = NULL;
 	
 //    argv[0] = "clang-format";
 //    argv[1] = "-i";
@@ -2267,6 +2322,7 @@ static void flush_line(DisplayState *s,
             s->eod = 1;
         }
     }
+
     s->y += line_height;
     s->line_num++;
 }
