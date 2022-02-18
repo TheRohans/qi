@@ -197,7 +197,7 @@ static int python_mode_probe(ModeProbeData *p)
     //currently, only use the file extension
     r = extension(p->filename);
     if (*r) {
-        if (strfind("|py|", r + 1, 1))
+        if (strfind("|py|py3|pyc|pyd|oog|pym|pyo|pyw|rpy|", r + 1, 1))
             return 100;
     }
     return 0;
@@ -220,9 +220,20 @@ void do_python_electric(EditState *s, int key)
     do_indent_lastline(s);
 }
 
+void do_pythonfmt(EditState *s) 
+{
+	const char *argv[4];
+	// XXX: configure option? Scripting option?
+    argv[0] = "black";
+    argv[1] = "-q";
+    argv[2] = s->b->filename;
+    argv[3] = NULL;
+	run_system_cmd(s, argv);
+}
+
 static CmdDef python_commands[] = {
     CMDV( KEY_RET, KEY_NONE, "python-electric-newline", do_python_electric, '\n', "*v")
-
+    CMD0( KEY_CTRLX('y'), KEY_NONE, "python-fmt", do_pythonfmt)
     CMD_DEF_END,
 };
 
