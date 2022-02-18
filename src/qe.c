@@ -480,6 +480,7 @@ void run_system_cmd(EditState *s, const char **cmd)
         // if(WIFEXITED(status) != 0) {
         if(WEXITSTATUS(status) != 0) {
             LOG("child exited with = %d", WEXITSTATUS(status));
+            do_refresh(s);
             put_status(s, "Running %s failed. Installed? On your PATH?", cmd[0]);
             // TODO: if you do not have the app installed you can lose key 
             // bindings in the editor when this code hits.
@@ -491,9 +492,9 @@ void run_system_cmd(EditState *s, const char **cmd)
         } else {
             LOG("%s", "child process finished");
             do_revert_buffer(s);
-            put_status(s, "Done");
+            do_refresh(s);
+            put_status(s, "Done.");
         }
-        do_refresh(s);
     } else {
         // Error
         LOG("%s", "Could not fork process");

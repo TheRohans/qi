@@ -179,25 +179,6 @@ the_end:
     *colorize_state_ptr = state;
 }
 
-void do_go_electric(EditState *s, int key)
-{
-	do_char(s, key);
-    
-    if(key == '{') {
-        do_char(s, '}');
-        do_left_right(s, -1);
-        return;
-    }
-     
-    if(key == '(') {
-        do_char(s, ')');
-        do_left_right(s, -1);
-        return;
-    }
-    
-	do_indent_lastline(s);
-}
-
 static int go_mode_probe(ModeProbeData *p)
 {
     const char *r;
@@ -234,13 +215,12 @@ void do_gofmt(EditState *s)
 }
 
 static CmdDef go_commands[] = {
-    CMD0( KEY_META(';'), KEY_NONE, "c-comment", do_c_comment)
-    CMD0( KEY_CTRLX(';'), KEY_NONE, "c-comment-region", do_c_comment_region)
+    CMD0( KEY_META(';'), KEY_NONE, "go-comment", do_c_comment)
+    CMD0( KEY_CTRLX(';'), KEY_NONE, "go-comment-region", do_c_comment_region)
     
-	CMDV( '{', KEY_NONE, "c-electric-obrace", do_go_electric, '{', "*v")
-	CMDV( '(', KEY_NONE, "c-electric-paren", do_go_electric, '(', "*v")
-	
-    CMDV( KEY_RET, KEY_NONE, "go-electric-newline", do_go_electric, '\n', "*v")
+	CMDV( '{', KEY_NONE, "go-electric-obrace", do_c_electric, '{', "*v")
+	CMDV( '(', KEY_NONE, "go-electric-paren", do_c_electric, '(', "*v")
+    CMDV( KEY_RET, KEY_NONE, "go-electric-newline", do_c_electric, '\n', "*v")
     
     CMD0( KEY_CTRLX('y'), KEY_NONE, "go-fmt", do_gofmt)
     
