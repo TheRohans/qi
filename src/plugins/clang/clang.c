@@ -315,256 +315,16 @@ void do_c_comment_region(EditState *s)
     do_eol(s);
 }
 
-void do_c_indent(EditState *s)
-{
-    int offset, offset1, offset2, offsetl, c, pos, size, line_num, col_num;
-    int i, eoi_found, len, pos1, lpos, style, line_num1, state;
-    unsigned int buf[MAX_BUF_SIZE], *p;
-    // TODO: This stack seems to be used, but I need to walk
-    // through it more to be sure
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
-    unsigned char stack[MAX_STACK_SIZE];
-#pragma GCC diagnostic pop
-    char buf1[64], *q;
-    int stack_ptr;
-
-    //find start of line
-    eb_get_pos(s->b, &line_num, &col_num, s->offset);
-    line_num1 = line_num;
-    offset = s->offset;
-    offset = eb_goto_bol(s->b, offset);
-    // now find previous lines and compute indent
-    pos = 0;
-    lpos = -1; //position of the last instruction start
-    offsetl = offset;
-    eoi_found = 0;
-    stack_ptr = 0;
-    state = INDENT_NORM;
-    for (;;) {
-        if (offsetl == 0)
-            break;
-        line_num--;
-        eb_prevc(s->b, offsetl, &offsetl);
-        offsetl = eb_goto_bol(s->b, offsetl);
-        len = get_colorized_line(s, buf, MAX_BUF_SIZE - 1, offsetl, line_num);
-        // store indent position 
-        pos1 = find_indent1(s, buf);
-        p = buf + len;
-        while (p > buf) {
-            p--;
-            c = *p;
-            // skip strings or comments
-            style = c >> STYLE_SHIFT;
-            if (style == QE_STYLE_COMMENT ||
-                style == QE_STYLE_STRING ||
-                style == QE_STYLE_PREPROCESS)
-                continue;
-            c = c & CHAR_MASK;
-            if (state == INDENT_FIND_EQ) {
-                // special case to search '=' or ; before { to know if
-                //  we are in data definition 
-                if (c == '=') {
-                    //data definition case
-                    pos = lpos;
-                    goto end_parse;
-                } else if (c == ';') {
-                    // normal instruction case
-                    goto check_instr;
-                }
-            } else {
-                switch (c) {
-                case '}':
-                    if (stack_ptr >= MAX_STACK_SIZE)
-                        return;
-                    stack[stack_ptr++] = c;
-                    goto check_instr;
-                case '{':
-                    if (stack_ptr == 0) {
-                        if (lpos == -1) {
-                            pos = pos1 + s->indent_size;
-                            eoi_found = 1;
-                            goto end_parse;
-                        } else {
-                            state = INDENT_FIND_EQ;
-                        }
-                    } else {
-                        /* XXX: syntax check ? */
-                        stack_ptr--;
-                        goto check_instr;
-                    }
-                    break;
-                case ')':
-                case ']':
-                    if (stack_ptr >= MAX_STACK_SIZE)
-                        return;
-                    stack[stack_ptr++] = c;
-                    break;
-                case '(':
-                case '[':
-                    if (stack_ptr == 0) {
-                        pos = find_pos(s, buf, p - buf) + 1;
-                        goto end_parse;
-                    } else {
-                        /* XXX: syntax check ? */
-                        stack_ptr--;
-                    }
-                    break;
-                case ' ':
-                case '\t':
-                case '\n':
-                    break;
-                case ';':
-                    // level test needed for 'for(;;)'
-                    if (stack_ptr == 0) {
-                        // ; { or } are found before an instruction 
-check_instr:
-                        if (lpos >= 0) {
-                            // start of instruction already found 
-                            pos = lpos;
-                            if (!eoi_found)
-                                pos += s->indent_size;
-                            goto end_parse;
-                        }
-                        eoi_found = 1;
-                    }
-                    break;
-                case ':':
-                    //* a label line is ignored 
-                    // XXX: incorrect 
-                    goto prev_line;
-                default:
-                    if (stack_ptr == 0) {
-                        if ((c >> STYLE_SHIFT) == QE_STYLE_KEYWORD) {
-                            unsigned int *p1, *p2;
-                            // special case for if/for/while
-                            p1 = p;
-                            while (p > buf && 
-                                   (p[-1] >> STYLE_SHIFT) == QE_STYLE_KEYWORD)
-                                p--;
-                            p2 = p;
-                            q = buf1;
-                            while (q < buf1 + sizeof(buf1) - 1 && p2 <= p1) {
-                                *q++ = *p2++ & CHAR_MASK;
-                            }
-                            *q = '\0';
-
-                            if (!eoi_found && 
-                                (!strcmp(buf1, "if") ||
-                                 !strcmp(buf1, "for") ||
-                                 !strcmp(buf1, "while"))) {
-                                pos = pos1 + s->indent_size;
-                                goto end_parse;
-                            }
-                        }
-                        lpos = pos1;
-                    }
-                    break;
-                }
-            }
-        }
-prev_line: ;
-    }
-
-end_parse:
-    // compute special cases which depend on the chars on the current line
-    len = get_colorized_line(s, buf, MAX_BUF_SIZE - 1, offset, line_num1);
-
-    if (stack_ptr == 0) {
-        if (!pos && lpos >= 0) {
-            //start of instruction already found 
-            pos = lpos;
-            if (!eoi_found)
-                pos += s->indent_size;
-        }
-    }
-
-    for (i = 0; i < len; i++) {
-        c = buf[i]; 
-        style = c >> STYLE_SHIFT;
-        // if preprocess, no indent 
-        if (style == QE_STYLE_PREPROCESS) {
-            pos = 0;
-            break;
-        }
-        // NOTE: strings & comments are correctly ignored there 
-        if (c == '}' || c == ':') {
-            pos -= s->indent_size;
-            if (pos < 0)
-                pos = 0;
-            break;
-        }
-        if (c == '{' && pos == s->indent_size && !eoi_found) {
-            pos = 0;
-            break;
-        }
-    }
-    
-    // the number of needed spaces is in 'pos'
-
-    // suppress leading spaces
-    offset1 = offset;
-    for (;;) {
-        c = eb_nextc(s->b, offset1, &offset2);
-        if (c != ' ' && c != '\t')
-            break;
-        offset1 = offset2;
-    }
-    size = offset1 - offset;
-    if (size > 0) {
-        eb_delete(s->b, offset, size);
-        s->offset -= size;
-        if (s->offset < offset)
-            s->offset = offset;
-    }
-    // insert needed spaces
-    insert_spaces(s, &offset, pos);
-    s->offset = offset;
-}
-    
-void do_c_indent_region(EditState *s)
-{
-    int col_num, p1, p2, tmp;
-
-    /* we do it with lines to avoid offset variations during indenting */
-    eb_get_pos(s->b, &p1, &col_num, s->offset);
-    eb_get_pos(s->b, &p2, &col_num, s->b->mark);
-
-    if (p1 > p2) {
-        tmp = p1;
-        p1 = p2;
-        p2 = tmp;
-    }
-
-    for (;p1 <= p2; p1++) {
-         s->offset = eb_goto_pos(s->b, p1, 0);
-        do_c_indent(s);
-    }
-}
-
 void do_c_electric(EditState *s, int key)
 {
 	do_char(s, key);
-    
     if(key == '{') {
         do_char(s, '}');
         do_left_right(s, -1);
         return;
     }
-    
-	//if(key != '\n') { // && key != '}') {
-	//	do_return(s);
-	//}
-    
-	do_c_indent(s);
-	
-	// if its a close brace go past it and add a newline
-	// if(key == '}') {
-	//	do_left_right(s, 1);
-		//do_return(s);
-		//one more indent in case we are in a block in a block
-		//do_c_indent(s);
-	//}
+	// do_c_indent(s);
+    do_indent_lastline(s);
 }
 
 static int c_mode_probe(ModeProbeData *p)
@@ -574,7 +334,7 @@ static int c_mode_probe(ModeProbeData *p)
     //currently, only use the file extension
     r = extension(p->filename);
     if (*r) {
-        if (strfind("|c|e|h|js|ts|json|cs|jav|java|cxx|cpp|tf|", r + 1, 1))
+        if (strfind("|c|h|cxx|cpp|e|js|ts|jsx|tsx|json|cs|jav|java|tf|", r + 1, 1))
             return 100;
     }
     return 0;
@@ -591,24 +351,30 @@ int c_mode_init(EditState *s, ModeSavedData *saved_data)
     return ret;
 }
 
+void do_clangfmt(EditState *s) 
+{
+	const char *argv[4];
+	
+	// XXX: configure option? Scripting option?
+    argv[0] = "clang-format";
+    argv[1] = "-i";
+    argv[2] = s->b->filename;
+    argv[3] = NULL;
+
+	run_system_cmd(s, argv);
+}
+
 /* specific C commands */
 static CmdDef c_commands[] = {
-    CMD_( KEY_CTRL('i'), KEY_NONE, "c-indent-command", do_c_indent, "*")
-    
     CMD0( KEY_META(';'), KEY_NONE, "c-comment", do_c_comment)
     CMD0( KEY_CTRLX(';'), KEY_NONE, "c-comment-region", do_c_comment_region)
     
-    CMD_( KEY_NONE, KEY_NONE, "c-indent-region", do_c_indent_region, "*")
-    
-    /* CG: should use 'k' intrinsic argument */
-	// CMDV( ';', KEY_NONE, "c-electric-semi&comma", do_c_electric, ';', "*v")
-	// CMDV( ':', KEY_NONE, "c-electric-colon", do_c_electric, ':', "*v")
-    
 	CMDV( '{', KEY_NONE, "c-electric-obrace", do_c_electric, '{', "*v")
 	// CMDV( '}', KEY_NONE, "c-electric-cbrace", do_c_electric, '}', "*v")
-	
+
     CMDV( KEY_RET, KEY_NONE, "c-electric-newline", do_c_electric, '\n', "*v")
-    
+   
+    CMD0( KEY_CTRLX('y'), KEY_NONE, "clang-fmt", do_clangfmt)
     CMD_DEF_END,
 };
 
