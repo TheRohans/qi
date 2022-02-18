@@ -18,10 +18,30 @@
  */
 #include "qe.h"
 
-static const char python_keywords[] = "|and|del|for|is|raise|assert|elif|from|lambda|return|break|else|global|not|try|class|except|if|or|while|continue|exec|import|pass|yield|def|finally|in|print";
+static const char python_keywords[] = 
+"|and|del|for|is|raise|assert|elif|from|lambda|return|"
+"break|else|global|not|try|class|except|if|or|while|"
+"continue|exec|import|pass|yield|def|finally|in|print";
 
 static const char python_types[] = 
 "|char|double|float|int|long|unsigned|short|signed|void|var|function|";
+
+
+/* colorization states */
+enum {
+    PYTHON_COMMENT = 1,
+    PYTHON_STRING,
+    PYTHON_STRING_Q,
+    PYTHON_PREPROCESS,
+};
+
+#define MAX_BUF_SIZE    512
+#define MAX_STACK_SIZE  64
+
+enum {
+    INDENT_NORM,
+    INDENT_FIND_EQ,
+};
 
 static int get_python_keyword(char *buf, int buf_size, unsigned int **pp)
 {
@@ -49,14 +69,6 @@ static int get_python_keyword(char *buf, int buf_size, unsigned int **pp)
     return q - buf;
 }
 
-/* colorization states */
-enum {
-    PYTHON_COMMENT = 1,
-    PYTHON_STRING,
-    PYTHON_STRING_Q,
-    PYTHON_PREPROCESS,
-};
-
 void python_colorize_line(unsigned int *buf, int len, 
                      int *colorize_state_ptr, int state_only)
 {
@@ -77,8 +89,6 @@ void python_colorize_line(unsigned int *buf, int len,
     case PYTHON_STRING:
     case PYTHON_STRING_Q:
         goto parse_string;
-    case PYTHON_PREPROCESS:
-        goto parse_preprocessor;
     default:
         break;
     }
@@ -89,39 +99,14 @@ void python_colorize_line(unsigned int *buf, int len,
         switch (c) {
         case '\n':
             goto the_end;
-        //case '/':
-        //    p++;
-        //    if (*p == '*') {
-        //        // normal comment
-        //        p++;
-        //        state = PYTHON_COMMENT;
-        //    parse_comment:
-        //        while (*p != '\n') {
-        //            if (p[0] == '*' && p[1] == '/') {
-        //                p += 2;
-        //                state = 0;
-        //                break;
-        //            } else {
-        //                p++;
-        //            }
-        //        }
-        //        set_color(p_start, p - p_start, QE_STYLE_COMMENT);
-        //    } else if (*p == '/') {
-        //        // line comment
-        //        while (*p != '\n') 
-        //            p++;
-        //        set_color(p_start, p - p_start, QE_STYLE_COMMENT);
-        //    }
-        //    break;
         case '#':
-            // preprocessor
-        parse_preprocessor:
             p = buf + len;
             set_color(p_start, p - p_start, QE_STYLE_COMMENT);
-            if (p > buf && (p[-1] & CHAR_MASK) == '\\') 
-                state = QE_STYLE_COMMENT;
-            else
-                state = 0;
+            state = QE_STYLE_COMMENT;
+            //if (p > buf && (p[-1] & CHAR_MASK) == '\\') 
+            //    state = QE_STYLE_COMMENT;
+            //else
+            //    state = QE_STYLE_DEFAULT;
             goto the_end;
         case '\'':
             state = PYTHON_STRING_Q;
@@ -129,9 +114,9 @@ void python_colorize_line(unsigned int *buf, int len,
         case '\"':
             // strings/chars
             state = PYTHON_STRING;
-        string:
+string:
             p++;
-        parse_string:
+parse_string:
             while (*p != '\n') {
                 if (*p == '\\') {
                     p++;
@@ -141,7 +126,7 @@ void python_colorize_line(unsigned int *buf, int len,
                 } else if ((*p == '\'' && state == PYTHON_STRING_Q) ||
                            (*p == '\"' && state == PYTHON_STRING)) {
                     p++;
-                    state = 0;
+                    state = QE_STYLE_DEFAULT;
                     break;
                 } else {
                     p++;
@@ -153,6 +138,10 @@ void python_colorize_line(unsigned int *buf, int len,
             p++;
             // exit type declaration 
             type_decl = 0;
+            break;
+        case '\t':
+            p++;
+            set_color(p_start, p - p_start, QE_STYLE_HIGHLIGHT);
             break;
         default:
             if ((c >= 'a' && c <= 'z') ||
@@ -197,326 +186,9 @@ void python_colorize_line(unsigned int *buf, int len,
             break;
         }
     }
- the_end:
+the_end:
     *colorize_state_ptr = state;
 }
-
-#define MAX_BUF_SIZE    512
-#define MAX_STACK_SIZE  64
-
-/* gives the position of the first non while space character in
-   buf. TABs are counted correctly */
-/* static int find_indent1(EditState *s, unsigned int *buf)
-{
-    unsigned int *p;
-    int pos, c;
-
-    p = buf;
-    pos = 0;
-    for (;;) {
-        c = *p++ & CHAR_MASK;
-        if (c == '\t')
-            pos += s->tab_size - (pos % s->tab_size);
-        else if (c == ' ')
-            pos++;
-        else
-            break;
-    }
-    return pos;
-} */
-
-/* static int find_pos(EditState *s, unsigned int *buf, int size)
-{
-    int pos, c, i;
-
-    pos = 0;
-    for (i = 0; i < size; i++) {
-        c = buf[i] & CHAR_MASK;
-        if (c == '\t')
-            pos += s->tab_size - (pos % s->tab_size);
-        else
-            pos++;
-    }
-    return pos;
-} */
-
-enum {
-    INDENT_NORM,
-    INDENT_FIND_EQ,
-};
-
-/* insert n spaces at *offset_ptr. Update offset_ptr to point just
-   after. Tabs are inserted if s->indent_tabs_mode is true. */
-/* static void python_insert_spaces(EditState *s, int *offset_ptr, int i)
-{
-    int offset, size;
-    char buf1[64];
-
-    offset = *offset_ptr;
-
-    // insert tabs
-    if (s->indent_tabs_mode) {
-        while (i >= s->tab_size) {
-            buf1[0] = '\t';
-            eb_insert(s->b, offset, buf1, 1);
-            offset++;
-            i -= s->tab_size;
-        }
-    }
-       
-    // insert needed spaces
-    while (i > 0) {
-        size = i;
-        if (size > (int)sizeof(buf1))
-            size = (int)sizeof(buf1);
-        memset(buf1, ' ', size);
-        eb_insert(s->b, offset, buf1, size);
-        i -= size;
-        offset += size;
-    }
-    *offset_ptr = offset;
-} */
-
-/* void do_python_indent(EditState *s)
-{
-    int offset, offset1, offset2, offsetl, c, pos, size, line_num, col_num;
-    int i, eoi_found, len, pos1, lpos, style, line_num1, state;
-    unsigned int buf[MAX_BUF_SIZE], *p;
-    unsigned char stack[MAX_STACK_SIZE];
-    char buf1[64], *q;
-    int stack_ptr;
-
-    //find start of line
-    eb_get_pos(s->b, &line_num, &col_num, s->offset);
-    line_num1 = line_num;
-    offset = s->offset;
-    offset = eb_goto_bol(s->b, offset);
-    // now find previous lines and compute indent
-    pos = 0;
-    lpos = -1; //position of the last instruction start
-    offsetl = offset;
-    eoi_found = 0;
-    stack_ptr = 0;
-    state = INDENT_NORM;
-	
-	
-    for (;;) {
-        if (offsetl == 0)
-            break;
-        line_num--;
-        eb_prevc(s->b, offsetl, &offsetl);
-        offsetl = eb_goto_bol(s->b, offsetl);
-        len = get_colorized_line(s, buf, MAX_BUF_SIZE - 1, offsetl, line_num);
-        // store indent position 
-        pos1 = find_indent1(s, buf);
-        p = buf + len;
-        while (p > buf) {
-            p--;
-            c = *p;
-            // skip strings or comments
-            style = c >> STYLE_SHIFT;
-            if (style == QE_STYLE_COMMENT ||
-                style == QE_STYLE_STRING ||
-                style == QE_STYLE_PREPROCESS)
-                continue;
-            c = c & CHAR_MASK;
-            if (state == INDENT_FIND_EQ) {
-                // special case to search '=' or ; before { to know if
-                //  we are in data definition 
-                if (c == '=') {
-                    //data definition case
-                    pos = lpos;
-                    goto end_parse;
-                } else if (c == ';') {
-                    // normal instruction case
-                    goto check_instr;
-                }
-            } else {
-                switch (c) {
-                case '}':
-                    if (stack_ptr >= MAX_STACK_SIZE)
-                        return;
-                    stack[stack_ptr++] = c;
-                    goto check_instr;
-                case '{':
-                    if (stack_ptr == 0) {
-                        if (lpos == -1) {
-                            pos = pos1 + s->indent_size;
-                            eoi_found = 1;
-                            goto end_parse;
-                        } else {
-                            state = INDENT_FIND_EQ;
-                        }
-                    } else {
-                        // XXX: syntax check ?
-                        stack_ptr--;
-                        goto check_instr;
-                    }
-                    break;
-                case ')':
-                case ']':
-                    if (stack_ptr >= MAX_STACK_SIZE)
-                        return;
-                    stack[stack_ptr++] = c;
-                    break;
-                case '(':
-                case '[':
-                    if (stack_ptr == 0) {
-                        pos = find_pos(s, buf, p - buf) + 1;
-                        goto end_parse;
-                    } else {
-                        // XXX: syntax check ?
-                        stack_ptr--;
-                    }
-                    break;
-                case ' ':
-                case '\t':
-                case '\n':
-                    break;
-                case ';':
-                    // level test needed for 'for(;;)'
-                    if (stack_ptr == 0) {
-                        // ; { or } are found before an instruction 
-                    check_instr:
-                        if (lpos >= 0) {
-                            // start of instruction already found 
-                            pos = lpos;
-                            if (!eoi_found)
-                                pos += s->indent_size;
-                            goto end_parse;
-                        }
-                        eoi_found = 1;
-                    }
-                    break;
-                case ':':
-                    // a label line is ignored 
-                    // XXX: incorrect 
-                    goto prev_line;
-                default:
-                    if (stack_ptr == 0) {
-                        if ((c >> STYLE_SHIFT) == QE_STYLE_KEYWORD) {
-                            unsigned int *p1, *p2;
-                            // special case for if/for/while
-                            p1 = p;
-                            while (p > buf && 
-                                   (p[-1] >> STYLE_SHIFT) == QE_STYLE_KEYWORD)
-                                p--;
-                            p2 = p;
-                            q = buf1;
-                            while (q < buf1 + sizeof(buf1) - 1 && p2 <= p1) {
-                                *q++ = *p2++ & CHAR_MASK;
-                            }
-                            *q = '\0';
-
-                            if (!eoi_found && 
-                                (!strcmp(buf1, "if") ||
-                                 !strcmp(buf1, "for") ||
-                                 !strcmp(buf1, "while"))) {
-                                pos = pos1 + s->indent_size;
-                                goto end_parse;
-                            }
-                        }
-                        lpos = pos1;
-                    }
-                    break;
-                }
-            }
-        }
-    prev_line: ;
-    }
- end_parse:
-    // compute special cases which depend on the chars on the current line
-    len = get_colorized_line(s, buf, MAX_BUF_SIZE - 1, offset, line_num1);
-
-    if (stack_ptr == 0) {
-        if (!pos && lpos >= 0) {
-            //start of instruction already found 
-            pos = lpos;
-            if (!eoi_found)
-                pos += s->indent_size;
-        }
-    }
-
-    for (i = 0; i < len; i++) {
-        c = buf[i]; 
-        style = c >> STYLE_SHIFT;
-        // if preprocess, no indent 
-        if (style == QE_STYLE_PREPROCESS) {
-            pos = 0;
-            break;
-        }
-        // NOTE: strings & comments are correctly ignored there 
-        if (c == '}' || c == ':') {
-            pos -= s->indent_size;
-            if (pos < 0)
-                pos = 0;
-            break;
-        }
-        if (c == '{' && pos == s->indent_size && !eoi_found) {
-            pos = 0;
-            break;
-        }
-    }
-    
-    // the number of needed spaces is in 'pos'
-
-    // suppress leading spaces
-    offset1 = offset;
-    for (;;) {
-        c = eb_nextc(s->b, offset1, &offset2);
-        if (c != ' ' && c != '\t')
-            break;
-        offset1 = offset2;
-    }
-    size = offset1 - offset;
-    if (size > 0) {
-        eb_delete(s->b, offset, size);
-        s->offset -= size;
-        if (s->offset < offset)
-            s->offset = offset;
-    }
-    // insert needed spaces
-    insert_spaces(s, &offset, pos);
-    s->offset = offset;
-} */
-    
-//void do_python_indent_region(EditState *s)
-//{
-//    int col_num, p1, p2, tmp;
-//
-//    /* we do it with lines to avoid offset variations during indenting */
-//    eb_get_pos(s->b, &p1, &col_num, s->offset);
-//    eb_get_pos(s->b, &p2, &col_num, s->b->mark);
-//
-//    if (p1 > p2) {
-//        tmp = p1;
-//        p1 = p2;
-//        p2 = tmp;
-//    }
-//
-//    for (;p1 <= p2; p1++) {
-//         s->offset = eb_goto_pos(s->b, p1, 0);
-//        do_python_indent(s);
-//    }
-//}
-
-//void do_python_electric(EditState *s, int key)
-//{
-//	do_char(s, key);
-//	if(key != '\n' && key != '}') {
-//		do_return(s);
-//	} 
-//	do_python_indent(s);
-//	
-//	//if its a close brace go past it and add a newline
-//	if(key == '}') {
-//		do_left_right(s, 1);
-//		//do_return(s);
-//		//one more indent in case we are in a block in a block
-//		//yo dawg, I hear you like blocks
-//		//do_python_indent(s);
-//	}
-//}
 
 static int python_mode_probe(ModeProbeData *p)
 {
@@ -542,14 +214,15 @@ int python_mode_init(EditState *s, ModeSavedData *saved_data)
     return ret;
 }
 
+void do_python_electric(EditState *s, int key)
+{
+    do_char(s, key);
+    do_indent_lastline(s);
+}
+
 static CmdDef python_commands[] = {
-    /* CMD_( KEY_CTRL('i'), KEY_NONE, "c-indent-command", do_python_indent, "*")
-    CMD_( KEY_NONE, KEY_NONE, "c-indent-region", do_python_indent_region, "*")
-	//CMDV( ';', KEY_NONE, "c-electric-semi&comma", do_c_electric, ';', "*v")
-	CMDV( ':', KEY_NONE, "c-electric-colon", do_c_electric, ':', "*v")
-	CMDV( '{', KEY_NONE, "c-electric-obrace", do_c_electric, '{', "*v")
-	CMDV( '}', KEY_NONE, "c-electric-cbrace", do_c_electric, '}', "*v")
-	CMDV( KEY_RET, KEY_NONE, "c-electric-newline", do_c_electric, '\n', "*v") */
+    CMDV( KEY_RET, KEY_NONE, "python-electric-newline", do_python_electric, '\n', "*v")
+
     CMD_DEF_END,
 };
 
