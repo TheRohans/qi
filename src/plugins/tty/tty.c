@@ -615,9 +615,9 @@ static void term_flush(QEditScreen *s)
                         }
                         // write the text to the screen
                         printf("%s", buf);
-                    } /* else {
-                        printf(ESC_SET_ATTRIBUTE_MODE_1, 0);
-                    } */
+                    } //else {
+                    //    printf(ESC_SET_ATTRIBUTE_MODE_1, 0);
+                    //}
                     
                     // update old screen data
                     *optr++ = *ptr++;

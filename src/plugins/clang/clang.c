@@ -333,7 +333,7 @@ void do_c_electric(EditState *s, int key)
     // XXX: this is cheating. If you take this redraw out
     // the end of the line can paint a funny colour.
     // this fixes it, but this is kind of a hammer.
-    do_refresh(s);
+    // do_refresh(s);
 }
 
 static int c_mode_probe(ModeProbeData *p)
