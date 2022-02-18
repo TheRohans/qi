@@ -493,6 +493,7 @@ void run_system_cmd(EditState *s, const char **cmd)
             do_revert_buffer(s);
             put_status(s, "Done");
         }
+        do_refresh(s);
     } else {
         // Error
         LOG("%s", "Could not fork process");
