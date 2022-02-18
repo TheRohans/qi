@@ -98,6 +98,7 @@ void python_colorize_line(unsigned int *buf, int len,
         c = *p;
         switch (c) {
         case '\n':
+            set_color(p_start, p - p_start, QE_STYLE_DEFAULT);
             goto the_end;
         case '#':
             p = buf + len;
