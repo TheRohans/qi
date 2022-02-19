@@ -1220,8 +1220,8 @@ int eb_get_substr(EditBuffer *b, char *buf, int offset_start, int buf_size)
     if (len > buf_size - 1)
         len = buf_size - 1;
     
-    LOG("offset: %d", offset_start);
-    QASSERT(offset_start >= 0 && offset_start <= len);
+    // make sure the offset start is within the buffer
+    QASSERT(offset_start >= 0 && offset_start <= b->total_size);
  
     eb_read(b, offset_start, buf, len);
     buf[len] = '\0';
