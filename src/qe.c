@@ -443,9 +443,6 @@ void do_indent_lastline(EditState *s)
 void run_system_cmd(EditState *s, const char **cmd)
 {
 #ifndef CONFIG_TINY
-#ifdef CONFIG_BETA
-//	const char *argv[4];
-
     if (cmd == 0) {
         put_status(s, "Run aborted");
         return;
@@ -470,7 +467,7 @@ void run_system_cmd(EditState *s, const char **cmd)
         // parent process
         int status;
         if(wait(&status) == -1) {
-            LOG("%s", "Could not wait for child process");
+            // LOG("%s", "Could not wait for child process");
 	        put_status(s, "Run failed, couldn't wait for child");
             return;
         }
@@ -479,7 +476,7 @@ void run_system_cmd(EditState *s, const char **cmd)
         // we don't have the app installed.
         // if(WIFEXITED(status) != 0) {
         if(WEXITSTATUS(status) != 0) {
-            LOG("child exited with = %d", WEXITSTATUS(status));
+            // LOG("child exited with = %d", WEXITSTATUS(status));
             do_refresh(s);
             put_status(s, "Running %s failed. Installed? On your PATH?", cmd[0]);
             // TODO: if you do not have the app installed you can lose key 
@@ -490,17 +487,16 @@ void run_system_cmd(EditState *s, const char **cmd)
             // the child's stdout error? If the app exists, everything is fine
             // it's only on file not found :-/
         } else {
-            LOG("%s", "child process finished");
+            // LOG("%s", "child process finished");
             do_revert_buffer(s);
             do_refresh(s);
             put_status(s, "Done.");
         }
     } else {
         // Error
-        LOG("%s", "Could not fork process");
+        // LOG("%s", "Could not fork process");
         put_status(s, "Run failed, couldn't fork process");
     }
-#endif // end beta
 #endif // end not tiny
 }
 
