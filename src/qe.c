@@ -414,7 +414,7 @@ void do_indent_lastline(EditState *s)
     char *indent = calloc(sizeof(char), (pos + 1));
     eb_get_substr(s->b, indent, last_line_pos, pos+1);
     
-    LOG("%d >%s<", pos, indent);
+    //LOG("%d >%s<", pos, indent);
     
     // Now move back to the position we want to move
     // to and add in the indent whitespace
