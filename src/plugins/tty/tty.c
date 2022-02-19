@@ -537,7 +537,7 @@ static void term_draw_text(QEditScreen *s, QEFont *font,
             break;
         ptr->fgcolor = fgcolor;
         if (tstyle != TS_NONE) {
-            LOG("Setting style: %d", tstyle);
+            // LOG("Setting style: %d", tstyle);
             ptr->text_style = tstyle;
         }
         ptr->ch = cc;
@@ -596,8 +596,7 @@ static void term_flush(QEditScreen *s)
                         // output attributes  && cc != ' '
                         if (((fgcolor != ptr->fgcolor) ||
                              (bgcolor != ptr->bgcolor))) {
-                            LOG("Color: %d %d %d", ptr->fgcolor, ptr->bgcolor, ptr->text_style);
-
+                            // LOG("Color: %d %d %d", ptr->fgcolor, ptr->bgcolor, ptr->text_style);
                             fgcolor = ptr->fgcolor;
                             bgcolor = ptr->bgcolor;
                             style = ptr->text_style;
