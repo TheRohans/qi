@@ -615,7 +615,7 @@ static void term_flush(QEditScreen *s)
                         }
                         // write the text to the screen
                         printf("%s", buf);
-                    } //else {
+                    } // else if (cc == '\n') {
                     //    printf(ESC_SET_ATTRIBUTE_MODE_1, 0);
                     //}
                     
