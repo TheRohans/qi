@@ -380,17 +380,17 @@ void do_indent_lastline(EditState *s)
 
     // Find start of line
     eb_get_pos(s->b, &line_num, &col_num, s->offset);
-    LOG("Current line: %d:%d", line_num, col_num);
+    //LOG("Current line: %d:%d", line_num, col_num);
     if((line_num - 1) <= 0) return;
     
-    LOG("Current offset: %d", s->offset);
+    //LOG("Current offset: %d", s->offset);
     int current_start_offset = s->offset;
     
     // Find the start of the last line
     int last_line_pos = eb_goto_pos(s->b, line_num - 1, 0);
     s->offset = last_line_pos;
     
-    LOG("Last line offset: %d", s->offset);
+    //LOG("Last line offset: %d", s->offset);
     
     // find the number of spaces on the last line and assume that
     // the number of whitespaces is the indent level
