@@ -376,7 +376,7 @@ void do_word_right(EditState *s, int dir)
  */
 void do_indent_lastline(EditState *s)
 {
-    int line_num, col_num, offset;
+    int line_num, col_num;
 
     // Find start of line
     eb_get_pos(s->b, &line_num, &col_num, s->offset);
