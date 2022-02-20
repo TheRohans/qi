@@ -2,31 +2,38 @@
 <html>
 <head>
     <meta charset="utf-8">
+    <meta stuff="123">
 	<script type="text/javascript">
-    $(document).ready(function(){
-		for(var x=0; x<10; x++) {
-			console.log(x);
-		}
-    });
-    function testing() {
-        const stuff = "12345";
-        let things = "3333";
-    }
+    	$(document).ready(function(){
+			for(var x=0; x<10; x++) {
+				console.log(x);
+				console.warn("blarg!");
+			}
+	    });
+    
+	    function testing() {
+    	    const stuff = "12345";
+        	let things = "3333";
+	    }
 	</script>
 
 	<style type="text/css">
-    :root {
-        --white: #fff
-    }
- 	.thing {
-		color: red;
-		background: url(blarg.gif) var(--white);
-    }
+	    :root {
+    	    --white: #fff
+	    }
+	 	.thing {
+			color: red;
+			background: url(blarg.gif) var(--white);
+	    }
 	</style>
 </head>
+
 <body>
     <!-- this is a comment -->
 	<h1>This is a thing</h1>
+	<div>
+		<div></div>
+	</div>
     <!--
         TODO: to do this right, we'll need to do a stack
         of types being coloured.  Have to wait for now.

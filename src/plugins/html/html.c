@@ -234,8 +234,8 @@ int html_mode_init(EditState *s, ModeSavedData *saved_data)
 
 //specific PHP commands
 static CmdDef html_commands[] = {
-    CMD_( KEY_CTRL('i'), KEY_NONE, "html-indent-command", do_c_indent, "*")
-    CMD_( KEY_NONE, KEY_NONE, "html-indent-region", do_c_indent_region, "*")
+    // CMD_( KEY_CTRL('i'), KEY_NONE, "html-indent-command", do_c_indent, "*")
+    // CMD_( KEY_NONE, KEY_NONE, "html-indent-region", do_c_indent_region, "*")
 	//CMDV( ':', KEY_NONE, "html-electric-colon", do_c_electric, ':', "*v")
 	CMDV( '{', KEY_NONE, "html-electric-obrace", do_c_electric, '{', "*v")
 	CMDV( '}', KEY_NONE, "html-electric-cbrace", do_c_electric, '}', "*v")

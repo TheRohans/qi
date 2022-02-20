@@ -14,6 +14,9 @@
 
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <sys/types.h> // for wait
+#include <sys/wait.h>  // for wait
+    
 #include <errno.h>
 #include <inttypes.h>
 
@@ -569,11 +572,15 @@ void eb_offset_callback(EditBuffer *b,
                         int size);
 void eb_printf(EditBuffer *b, const char *fmt, ...);
 void eb_line_pad(EditBuffer *b, int n);
+
+// TODO: These are not utf8
 int eb_get_str(EditBuffer *b, char *buf, int buf_size);
+int eb_get_substr(EditBuffer *b, char *buf, int offset_start, int buf_size);
 int eb_get_line(EditBuffer *b, unsigned int *buf, int buf_size,
                 int *offset_ptr);
 int eb_get_strline(EditBuffer *b, char *buf, int buf_size,
                    int *offset_ptr);
+// 
 int eb_goto_bol(EditBuffer *b, int offset);
 int eb_is_empty_line(EditBuffer *b, int offset);
 int eb_next_line(EditBuffer *b, int offset);
@@ -828,7 +835,7 @@ extern unsigned int tty_colors[]; /* from tty.c */
 
 enum QEStyle {
 #define STYLE_DEF(constant, name, fg_color, bg_color, \
-                  font_style, font_size) \
+                  font_style, font_size, text_style) \
                   constant,
 
 #include "qestyles.h"
@@ -843,6 +850,7 @@ typedef struct QEStyleDef {
     QEColor fg_color, bg_color; 
     short font_style;
     short font_size;
+    short text_style;
 } QEStyleDef;
 
 extern QEStyleDef qe_styles[QE_STYLE_NB];
@@ -1169,6 +1177,11 @@ void do_eof(EditState *s);
 void do_bol(EditState *s);
 void do_eol(EditState *s);
 void do_word_right(EditState *s, int dir);
+
+/* ///////////////////////////////////////////////////////////////////////// */
+void do_indent_lastline(EditState *s);
+void run_system_cmd(EditState *s, const char **cmd);
+/* ///////////////////////////////////////////////////////////////////////// */
 
 /* ///////////////////////////////////////////////////////////////////////// */
 /* hex.c */

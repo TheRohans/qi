@@ -370,6 +370,150 @@ void do_word_right(EditState *s, int dir)
 }
 ////////////////////////////////////////////////////////////////////////
 
+/**
+ * Look at the last line, and try to copy the indent
+ * level of that line to the current line.
+ */
+void do_indent_lastline(EditState *s)
+{
+    int line_num, col_num;
+
+    // Find start of line
+    eb_get_pos(s->b, &line_num, &col_num, s->offset);
+    //LOG("Current line: %d:%d", line_num, col_num);
+    if((line_num - 1) <= 0) return;
+    
+    //LOG("Current offset: %d", s->offset);
+    int current_start_offset = s->offset;
+    
+    // Find the start of the last line
+    int last_line_pos = eb_goto_pos(s->b, line_num - 1, 0);
+    s->offset = last_line_pos;
+    
+    //LOG("Last line offset: %d", s->offset);
+    
+    // find the number of spaces on the last line and assume that
+    // the number of whitespaces is the indent level
+    int pos = 0;
+    int next_char;
+    // (we are still focused on the last line)
+    int offset1 = s->offset;
+    for (;;) {
+        int ch = eb_nextc(s->b, offset1, &next_char);
+        if (ch != ' ' && ch != '\t')
+            break;
+        offset1 = next_char;
+        pos++;
+    }
+    
+    // move back to the start of the last line
+    // since eb_nextc might have moved us
+    s->offset = last_line_pos;
+    
+    // now get the previous lines indent as a string
+    char *indent = calloc(sizeof(char), (pos + 1));
+    eb_get_substr(s->b, indent, last_line_pos, pos+1);
+    
+    //LOG("%d >%s<", pos, indent);
+    
+    // Now move back to the position we want to move
+    // to and add in the indent whitespace
+    s->offset = current_start_offset;
+    if(pos > 0) {
+        // make sure this is a null term string
+        indent[pos] = '\0';
+        eb_insert(s->b, s->offset, indent, pos);
+    }
+    s->offset = current_start_offset + pos;
+    
+    free(indent);
+}
+
+/**
+ * Run a system command. Similar to vims "!". The cmd
+ * parameter is the command with each flag set as an 
+ * array element. Also must be NULL terminated. Example:
+ *  argv[0] = "aspell";
+ *  argv[1] = "-c";
+ *  argv[2] = s->b->filename;
+ *  argv[3] = NULL;
+ * This is not exposed to the user yet, and should not 
+ * be in the TINY build.
+ */
+void run_system_cmd(EditState *s, const char **cmd)
+{
+#ifndef CONFIG_TINY
+    if (cmd == 0) {
+        put_status(s, "Run aborted");
+        return;
+    }
+
+    save_buffer(s->b);
+
+//	argv[0] = "terraform";
+//	argv[1] = "fmt";
+//	argv[2] = "-list=false";
+//  argv[3] = s->b->filename;
+//  argv[4] = NULL;
+
+    pid_t pid = fork();
+    if (pid == 0) {
+        // child process
+        setsid();
+        execvp(cmd[0], (char *const*)cmd);
+        // set the exit status of the program we just ran
+        exit(errno);
+    } else if (pid > 0) {
+        // parent process
+        int status;
+        if(wait(&status) == -1) {
+            // LOG("%s", "Could not wait for child process");
+	        put_status(s, "Run failed, couldn't wait for child");
+            return;
+        }
+        // if the exit status of the child proces was 0 refresh
+        // the buffer, if not then something went wrong. Assume
+        // we don't have the app installed.
+        // if(WIFEXITED(status) != 0) {
+        if(WEXITSTATUS(status) != 0) {
+            // LOG("child exited with = %d", WEXITSTATUS(status));
+            do_refresh(s);
+            put_status(s, "Running %s failed. Installed? On your PATH?", cmd[0]);
+            // TODO: if you do not have the app installed you can lose key 
+            // bindings in the editor when this code hits.
+            // I am not sure why. If you get a readonly error, it's fine,
+            // but if not installed. Boom. I think it probably has
+            // something to do with basic_commands getting clobbered by
+            // the child's stdout error? If the app exists, everything is fine
+            // it's only on file not found :-/
+        } else {
+            // LOG("%s", "child process finished");
+            do_revert_buffer(s);
+            do_refresh(s);
+            put_status(s, "Done.");
+        }
+    } else {
+        // Error
+        // LOG("%s", "Could not fork process");
+        put_status(s, "Run failed, couldn't fork process");
+    }
+#endif // end not tiny
+}
+
+void do_spell_check(EditState *s) 
+{
+	const char *argv[4];
+	
+	// TODO: configure option? Scripting option?
+    argv[0] = "aspell";
+    argv[1] = "-c";
+    argv[2] = s->b->filename;
+    argv[3] = NULL;
+
+	run_system_cmd(s, argv);
+}
+
+////////////////////////////////////////////////////////////////////////
 void text_move_bol(EditState *s)
 {
     int c, offset1;
@@ -1101,7 +1245,6 @@ void do_char(EditState *s, int key)
 void text_write_char(EditState *s, int key)
 {
     int cur_ch, len, cur_len, offset1, ret, insert;
-	// 
 
     char buf[MAX_CHAR_BYTES];
 
@@ -1784,6 +1927,8 @@ static void apply_style(QEStyleDef *style, int style_index)
 		style->font_style = s->font_style;
 	if (s->font_size != 0)
 		style->font_size = s->font_size;
+    if (s->text_style != TS_NONE)
+		style->text_style = s->text_style;
 
     // for selection, we need a special handling because 
 	// only color is changed 
@@ -1791,7 +1936,7 @@ static void apply_style(QEStyleDef *style, int style_index)
     //    s = &qe_styles[QE_STYLE_SELECTION];
     //    style->fg_color = s->fg_color;
     //    style->bg_color = s->bg_color;
-    //}
+    // }
 }
 
 void get_style(EditState *e, QEStyleDef *style, int style_index)
@@ -2042,6 +2187,9 @@ static void flush_line(DisplayState *s,
                                default_style.bg_color);
             }
             x += x_start;
+            
+            ////////////////////////////////
+            // Draw fragments with background colors to the screen buffer
             for (i = 0; i < nb_fragments; i++) {
                 frag = &fragments[i];
                 get_style(e, &style, frag->style);
@@ -2049,6 +2197,8 @@ static void flush_line(DisplayState *s,
                                style.bg_color);
                 x += frag->width;
             }
+            ////////////////////////////////
+
             x1 = e->xleft + s->width + s->eol_width;
             if (x < x1) {
                 fill_rectangle(screen, x, y, x1 - x, line_height, 
@@ -2068,22 +2218,27 @@ static void flush_line(DisplayState *s,
                                        default_style.font_size);
                     markbuf[0] = '/';
                     draw_text(screen, font, x, y + font->ascent, 
-                              markbuf, 1, default_style.fg_color);
+                              markbuf, 1, default_style.fg_color, 
+                              default_style.text_style);
                     release_font(screen, font);
                 }
             }
             x += x_start;
+
+            ////////////////////////////////
+            // Draw fragments foreground colors to the screen buffer
             for (i = 0; i < nb_fragments; i++) {
                 frag = &fragments[i];
                 get_style(e, &style, frag->style);
-                font = select_font(screen, 
-                                   style.font_style, style.font_size);
+                font = select_font(screen, style.font_style, style.font_size);
                 draw_text(screen, font, x, y + baseline, 
                           s->line_chars + frag->line_index,
-                          frag->len, style.fg_color);
+                          frag->len, style.fg_color, style.text_style);
                 x += frag->width;
                 release_font(screen, font);
             }
+            ////////////////////////////////
+
             x1 = e->xleft + s->width + s->eol_width;
             if (x < x1) {
                 // LTR eol mark 
@@ -2097,7 +2252,8 @@ static void flush_line(DisplayState *s,
                     markbuf[0] = '\\';
                     draw_text(screen, font, 
                               e->xleft + s->width, y + font->ascent,
-                              markbuf, 1, default_style.fg_color);
+                              markbuf, 1, default_style.fg_color, 
+                              default_style.text_style);
                     release_font(screen, font);
                 }
             }
@@ -2155,6 +2311,7 @@ static void flush_line(DisplayState *s,
             s->eod = 1;
         }
     }
+
     s->y += line_height;
     s->line_num++;
 }
@@ -3590,7 +3747,7 @@ void print_at_byte(QEditScreen *screen,
                    style.bg_color);
     font = select_font(screen, style.font_style, style.font_size);
     draw_text(screen, font, x, y + font->ascent,
-              ubuf, len, style.fg_color);
+              ubuf, len, style.fg_color, style.text_style);
     release_font(screen, font);
 }
 
@@ -3771,9 +3928,11 @@ EditState *edit_new(EditBuffer *b,
     s->x2 = x1 + width;
     s->y2 = y1 + height;
     s->flags = flags;
+    
     compute_client_area(s);
     s->next_window = qs->first_window;
     qs->first_window = s;
+    
     if (!qs->active_window)
         qs->active_window = s;
     switch_to_buffer(s, b);
@@ -6479,8 +6638,9 @@ static void dummy_dpy_text_metrics(QEditScreen *s, QEFont *font,
         
 static void dummy_dpy_draw_text(QEditScreen *s, QEFont *font, 
                                 int x, int y, const unsigned int *str, int len,
-                                QEColor color)
+                                QEColor color, enum TextStyle tstyle)
 {
+
 }
 
 static void dummy_dpy_set_clip(QEditScreen *s,
@@ -6517,13 +6677,8 @@ static inline void init_all_modules(void)
 	//Warning: these need to start in this order! Segfault otherwise
 	hex_init();
 	list_init();
-	tty_init();
-// RR: working on fmt style code
-#ifdef CONFIG_BETA
-	runner_init();
-#endif
-    
-#ifndef CONFIG_TINY
+	tty_init();  
+#ifndef CONFIG_TINY		
 	//If they are not building the tiny version, init some the
 	//extra cool plugins
 	unihex_init();
@@ -6537,6 +6692,7 @@ static inline void init_all_modules(void)
     css_init();
     python_init();
     config_init();
+    go_init();
 	//example_init();
 #endif
 }

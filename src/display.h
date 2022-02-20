@@ -25,6 +25,20 @@
 #define QE_FAMILY_FALLBACK_SHIFT  16
 #define QE_FAMILY_FALLBACK_MASK   0xff0000
 
+enum TextStyle {
+  TS_RESET = 0,     // 0  Reset (default)
+  TS_BRIGHT = 1,    // 1  Bright (bold)
+  TS_DIM = 2,       // 2  Dim (faint)
+  TS_ITALIC = 3,    // 3  *Italic
+  TS_UNDERSCORE = 4,// 4  Underscore (underline)
+  TS_BLINK_S = 5,   // 5  Blink (slow)
+  TS_BLINK_F = 6,   // 6  *Blink (fast)
+  TS_REVERSE = 7,   // 7  Reverse (negative)
+  TS_HIDDEN = 8,    // 8  Hidden (conceal)
+  TS_STRIKE = 9,    // 9  *Strike Through
+  TS_NONE = 100
+};
+
 typedef struct QEFont {
     int refcount;
     int ascent;
@@ -64,7 +78,7 @@ typedef struct QEDisplay {
                              const unsigned int *str, int len);
     void (*dpy_draw_text)(QEditScreen *s, QEFont *font,
                           int x, int y, const unsigned int *str, int len,
-                          QEColor color);
+                          QEColor color, enum TextStyle tstyle);
     void (*dpy_set_clip)(QEditScreen *s,
                          int x, int y, int w, int h);
     void (*dpy_selection_activate)(QEditScreen *s);
@@ -92,9 +106,9 @@ struct QEditScreen {
 
 static inline void draw_text(QEditScreen *s, QEFont *font,
                              int x, int y, const unsigned int *str, int len,
-                             QEColor color)
+                             QEColor color, enum TextStyle tstyle)
 {
-    s->dpy.dpy_draw_text(s, font, x, y, str, len, color);
+    s->dpy.dpy_draw_text(s, font, x, y, str, len, color, tstyle);
 }
 
 static inline QEFont *open_font(QEditScreen *s, 
