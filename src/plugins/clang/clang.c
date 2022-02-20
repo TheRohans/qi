@@ -212,82 +212,10 @@ void c_colorize_line(unsigned int *buf, int len,
 #define MAX_BUF_SIZE    512
 #define MAX_STACK_SIZE  64
 
-/**
- * gives the position of the first non while space character in
- * buf. TABs are counted correctly 
- */
-static int find_indent1(EditState *s, unsigned int *buf)
-{
-    unsigned int *p;
-    int pos, c;
-
-    p = buf;
-    pos = 0;
-    for (;;) {
-        c = *p++ & CHAR_MASK;
-        if (c == '\t')
-            pos += s->tab_size - (pos % s->tab_size);
-        else if (c == ' ')
-            pos++;
-        else
-            break;
-    }
-    return pos;
-}
-
-static int find_pos(EditState *s, unsigned int *buf, int size)
-{
-    int pos, c, i;
-
-    pos = 0;
-    for (i = 0; i < size; i++) {
-        c = buf[i] & CHAR_MASK;
-        if (c == '\t')
-            pos += s->tab_size - (pos % s->tab_size);
-        else
-            pos++;
-    }
-    return pos;
-}
-
 enum {
     INDENT_NORM,
     INDENT_FIND_EQ,
 };
-
-/**
- * insert n spaces at *offset_ptr. Update offset_ptr to point just
- * after. Tabs are inserted if s->indent_tabs_mode is true. 
- */
-static void insert_spaces(EditState *s, int *offset_ptr, int i)
-{
-    int offset, size;
-    char buf1[64];
-
-    offset = *offset_ptr;
-
-    /* insert tabs */
-    if (s->indent_tabs_mode) {
-        while (i >= s->tab_size) {
-            buf1[0] = '\t';
-            eb_insert(s->b, offset, buf1, 1);
-            offset++;
-            i -= s->tab_size;
-        }
-    }
-      
-    /* insert needed spaces */
-    while (i > 0) {
-        size = i;
-        if (size > (int)sizeof(buf1))
-            size = (int)sizeof(buf1);
-        memset(buf1, ' ', size);
-        eb_insert(s->b, offset, buf1, size);
-        i -= size;
-        offset += size;
-    }
-    *offset_ptr = offset;
-}
 
 void do_c_comment(EditState *s)
 {
