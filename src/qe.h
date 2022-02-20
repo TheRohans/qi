@@ -14,6 +14,9 @@
 
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <sys/types.h> // for wait
+#include <sys/wait.h>  // for wait
+    
 #include <errno.h>
 #include <inttypes.h>
 
