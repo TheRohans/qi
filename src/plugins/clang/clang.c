@@ -307,7 +307,7 @@ static CmdDef c_commands[] = {
     CMD0( KEY_CTRLX(';'), KEY_NONE, "c-comment-region", do_c_comment_region)
     
 	CMDV( '{', KEY_NONE, "c-electric-obrace", do_c_electric, '{', "*v")
-	CMDV( '(', KEY_NONE, "c-electric-paren", do_c_electric, '(', "*v")
+	// CMDV( '(', KEY_NONE, "c-electric-paren", do_c_electric, '(', "*v")
     CMDV( KEY_RET, KEY_NONE, "c-electric-newline", do_c_electric, '\n', "*v")
    
     CMD0( KEY_CTRLX('y'), KEY_NONE, "c-fmt", do_clangfmt)
