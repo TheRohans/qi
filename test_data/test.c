@@ -1,5 +1,7 @@
 #include <stdio.h>
-
+/**
+ * This is a mulitline comment
+ */
 void main(void) {
   int x = 1;
   char *thing;
