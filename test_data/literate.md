@@ -1,5 +1,6 @@
 ---
-author: rob
+author: other people
+description: testing literate programming idea
 ---
 # Bubble Sort in C
 
@@ -74,3 +75,4 @@ bool is_sorted(int *xs, int n)
     return true;
 }
 ```
+
