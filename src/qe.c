@@ -6693,6 +6693,7 @@ static inline void init_all_modules(void)
     python_init();
     config_init();
     go_init();
+    ts_init();
 	//example_init();
 #endif
 }

@@ -17,10 +17,8 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-/*
-   Requires c for javascript coloring, and css for css coloring
- */
 #include "qe.h"
+// Requires ts for javascript coloring, and css for css coloring
 #include "plugincore.h"
 
 /* colorization states */
@@ -29,9 +27,8 @@ enum {
     HTML_COMMENT, 
     HTML_TAG_SCRIPT,
     HTML_TAG_STYLE,
-    HTML_STYLE,
-    HTML_SCRIPT = 0x10, //special mode for inside a script, colored with c mode 
-	// HTML_PHP = 0x20,
+    HTML_STYLE,         // mode for inside a style, colored with css mode 
+    HTML_SCRIPT = 0x10, // mode for inside a script, colored with ts mode 
 };
 
 void html_colorize_line(unsigned int *buf, int len, 
@@ -44,11 +41,9 @@ void html_colorize_line(unsigned int *buf, int len,
     p = buf;
     p_start = p;
 
-    /* if already in a state, go directly in the code parsing it */
+    // if already in a state, go directly in the code parsing it
     if (state & HTML_SCRIPT)
         goto parse_script;
-	// else if (state & HTML_PHP) // TODO: use this for gotmpl?
-	//	goto parse_php;
 	
     switch (state) {
     case HTML_COMMENT:
@@ -73,7 +68,7 @@ void html_colorize_line(unsigned int *buf, int len,
                 p += 3;
                 state = HTML_COMMENT;
                 // wait until end of comment
-            parse_comment:
+parse_comment:
                 while (*p != '\n') {
                     if (p[0] == '-' && p[1] == '-' && p[2] == '>') {
                         p += 3;
@@ -90,28 +85,19 @@ void html_colorize_line(unsigned int *buf, int len,
                     state = HTML_TAG_SCRIPT;
                 } else if (ustristart(p, "STYLE", (const unsigned int **)&p)) {
                     state = HTML_TAG_STYLE;
-				/* } else if (ustristart(p, "?PHP", (const unsigned int **)&p) || 
-					       ustristart(p, "?=", (const unsigned int **)&p)) {
-					state = HTML_PHP; */
 				} else {
                     state = HTML_TAG;
                 }
-            parse_tag:
+parse_tag:
                 //set_color(p_start, p - p_start, QE_STYLE_TAG);
-                
                 while (*p != '\n') {
                     //if we hit the end of the tag (php ends at a space)
-                    // if ( (state != HTML_PHP && *p == '>') || (state == HTML_PHP && *p != ' ') ) {
                     if (*p == '>') {
                         p++;
                         if (state == HTML_TAG_SCRIPT)
                             state = HTML_SCRIPT;
                         else if (state == HTML_TAG_STYLE)
                             state = HTML_STYLE;
-                        // else if (state == HTML_PHP)
-                            //we don't want to include the "<?php "
-                            // ----------------------------------^
-                            //p--;
                         else
                             state = 0;
                         break;
@@ -123,13 +109,13 @@ void html_colorize_line(unsigned int *buf, int len,
                 set_color(p_start, p - p_start, QE_STYLE_TAG);
                 
                 if (state == HTML_SCRIPT) {
-                    //javascript coloring
+                    // javascript coloring
                     p_start = p;
-                parse_script:
+parse_script:
                     for (;;) {
                         if (*p == '\n') {
                             state &= ~HTML_SCRIPT;
-                            c_colorize_line(p_start, p - p_start, &state, state_only);
+                            ts_colorize_line(p_start, p - p_start, &state, state_only);
                             state |= HTML_SCRIPT;
                             break;
                         } else if (ustristart(p, "</SCRIPT", (const unsigned int **)&p1)) {
@@ -138,7 +124,7 @@ void html_colorize_line(unsigned int *buf, int len,
                             if (*p1 == '>')
                                 p1++;
                             state &= ~HTML_SCRIPT;
-                            c_colorize_line(p_start, p - p_start, &state, state_only);
+                            ts_colorize_line(p_start, p - p_start, &state, state_only);
                             state |= HTML_SCRIPT;
                             set_color(p, p1 - p, QE_STYLE_TAG);
                             p = p1;
@@ -148,39 +134,12 @@ void html_colorize_line(unsigned int *buf, int len,
                             p++;
                         }
                     }
-				} /* else if(state == HTML_PHP) {
-                    //php coloring
-                    p_start = p;
-				parse_php:
-	                for (;;) {
-	                    if (*p == '\n') {
-	                        state &= ~HTML_PHP;
-	                        php_colorize_line(p_start, p - p_start, &state, state_only);
-	                        state |= HTML_PHP;
-	                        break;
-	                    } else if (ustristart(p, "?>", (const unsigned int **)&p1)) {
-	                        //while (*p1 != '\n' && *p1 != '>') 
-	                        //    p1++;
-	                        //if (*p1 == '>')
-	                        //    p1++;
-	                        state &= ~HTML_PHP;
-	                        c_colorize_line(p_start, p - p_start, &state, state_only);
-	                        state |= HTML_PHP;
-	                        //set_color(p, p1 - p, QE_STYLE_TAG);
-	                        //p = p1;
-	                        state = 0;
-	                        break;
-	                    } else {
-	                        p++;
-	                    }
-	                }
-                } */ else if (state == HTML_STYLE) {
+				} else if (state == HTML_STYLE) {
                     //stylesheet coloring
                     p_start = p;
-                parse_style:
+parse_style:
                     for (;;) {
                         if (*p == '\n') {
-                            //set_color(p_start, p - p_start, QE_STYLE_CSS);
                             css_colorize_line(p_start, p - p_start, &state, state_only);
                             break;
                         } else if (ustristart(p, "</STYLE", (const unsigned int **)&p1)) {
@@ -204,22 +163,19 @@ void html_colorize_line(unsigned int *buf, int len,
             p++;
         }
     }
- the_end:
+the_end:
     *colorize_state_ptr = state;
 }
 
 int html_mode_probe(ModeProbeData *p)
 {
     const char *r;
-
-    //currently, only use the file extension
     r = extension(p->filename);
     if (*r) {
         if (strfind("|html|xhtml|htm|", r + 1, 1))
             return 100;
     }
     return 0;
-
 }
 
 int html_mode_init(EditState *s, ModeSavedData *saved_data)
@@ -236,9 +192,10 @@ int html_mode_init(EditState *s, ModeSavedData *saved_data)
 static CmdDef html_commands[] = {
     // CMD_( KEY_CTRL('i'), KEY_NONE, "html-indent-command", do_c_indent, "*")
     // CMD_( KEY_NONE, KEY_NONE, "html-indent-region", do_c_indent_region, "*")
-	//CMDV( ':', KEY_NONE, "html-electric-colon", do_c_electric, ':', "*v")
-	CMDV( '{', KEY_NONE, "html-electric-obrace", do_c_electric, '{', "*v")
-	CMDV( '}', KEY_NONE, "html-electric-cbrace", do_c_electric, '}', "*v")
+	// CMDV( ':', KEY_NONE, "html-electric-colon", do_c_electric, ':', "*v")
+	// CMDV( '{', KEY_NONE, "html-electric-obrace", do_c_electric, '{', "*v")
+	// CMDV( '}', KEY_NONE, "html-electric-cbrace", do_c_electric, '}', "*v")
+	
 	CMDV( KEY_RET, KEY_NONE, "html-electric-newline", do_c_electric, '\n', "*v")
     CMD_DEF_END,
 };
@@ -249,12 +206,11 @@ static ModeDef html_mode;
 int html_init(void)
 {
     memcpy(&html_mode, &text_mode, sizeof(ModeDef));
-    html_mode.name = "html";
+    html_mode.name = "HTML";
     html_mode.mode_probe = html_mode_probe;
     html_mode.mode_init = html_mode_init;
 
     qe_register_mode(&html_mode);
-    qe_register_cmd_table(html_commands, "html");
+    qe_register_cmd_table(html_commands, "HTML");
     return 0;
 }
-
