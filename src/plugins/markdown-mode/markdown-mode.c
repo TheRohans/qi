@@ -9,6 +9,14 @@
 
 static ModeDef markdown_mode;
 
+enum ParseState {
+	IN_LINK = 1,
+	OUT_LINK,
+	IN_CODE_BLOCK,
+	OUT_CODE_BLOCK,
+};
+
+// int in_state = 0;
 static void markdown_colorize_line(unsigned int *buf, int len, 
                                 int *colorize_state_ptr, int state_only)
 {
@@ -22,21 +30,63 @@ static void markdown_colorize_line(unsigned int *buf, int len,
     for (;;) {
         p_start = p;
         c = *p;
+        
         switch (c) {
-        case '\n':
+        case '\n': {
             goto the_end;
-        case '=':
-            p++;
-            short eqdash = 0;
-            while (*p != '\n') {
-                p++;
-                eqdash++;
-                if(*p != '=') break;
+        } break;
+        
+        case '`': {
+        	p++;
+        	int tick_count = 1;
+        	
+        	while(*p == '`') { 
+            	p++;
+				tick_count++;
             }
-            if(eqdash > 1) {
-                set_color(p_start, p - p_start, QE_STYLE_COMMENT);
-            }
-            break;
+        	
+        	if(tick_count == 3 && state != IN_CODE_BLOCK) {
+        		state = IN_CODE_BLOCK;
+        	} else if(tick_count == 3 && state == IN_CODE_BLOCK) {
+	        	state = OUT_CODE_BLOCK;
+        	}
+
+	        if(state == IN_CODE_BLOCK) {
+	        	// if we are in a triple ` eat all the rest of the
+	        	// chars up until the end of the line
+	        	while (*p != '\n') p++;
+        	}
+        	
+        	// inline code block
+        	if(tick_count == 1) {
+    		    state = OUT_CODE_BLOCK;
+        		while (*p != '\n') {
+		       		p++;
+        			if(*p == '`') {
+        				p++;
+	      				break;
+        			}
+        		}
+        	}
+        	            
+            set_color(p_start, p - p_start, QE_STYLE_COMMENT);
+        } break;
+        
+        case '(': {
+        	p++;
+        	if(state == IN_LINK) {
+    	    	while (*p != '\n') {
+        	        p++;
+            	    if(*p == ')') { 
+                	    p++;
+                    	break;
+	                }
+    	        }
+    	        state = OUT_LINK;
+	 	        set_color(p_start, p - p_start, QE_STYLE_COMMENT);
+ 	        }
+        } break;
+        
         case '#':
             p++;
             while (*p != '\n') {
@@ -52,7 +102,7 @@ static void markdown_colorize_line(unsigned int *buf, int len,
                 dash++;
                 if(*p != '-') break;
             }
-            if(dash >= 3) {
+            if(dash == 2) {
                 set_color(p_start, p - p_start, QE_STYLE_HIGHLIGHT);
             }
             break;
@@ -62,41 +112,57 @@ static void markdown_colorize_line(unsigned int *buf, int len,
                 p++;
                 if(*p == ']') { 
                     p++;
+                    state = IN_LINK;
                     break;
                 }
             }
             set_color(p_start, p - p_start, QE_STYLE_TYPE);
             break;
-        case '_':
-            //p++;
+        case '_': {
+            p++;           
+            int two = 0;
+            if(*p == '_') two = 1;
             while (*p != '\n') {
                 p++;
                 if(*p == '_') { 
                     p++;
+                    if(two) p++;
                     break;
                 }
             }
             set_color(p_start, p - p_start, QE_STYLE_KEYWORD);
-            break;
-        case '*':
-            while (*p != '\n') {
-                p++;
-                if( (*p == ' ' || *p == '\n') && *(p-1) == '*') {
-                    break;
-                }
-                if(*p == '*') { 
-                    p++;
-                    break;
-                }
-            }
-            set_color(p_start, p - p_start, QE_STYLE_KEYWORD);
-            break;
-        default:
-            p++;
             break;
         }
+        case '*': {
+        	p++;
+     	    int two = 0;
+            if(*p == '*') two = 1;
+        
+            while (*p != '\n') {
+                p++;
+                if(*p == '*') { 
+                    p++;
+                    if(two) p++;
+                    break;
+                }
+            }
+            set_color(p_start, p - p_start, QE_STYLE_KEYWORD);
+            break;
+        }
+        default:
+     	    if(state == IN_CODE_BLOCK) {
+	        	// if we are in a triple ` eat all the rest of the
+	        	// chars up until the end of the line
+	        	while (*p != '\n') p++;
+        		set_color(p_start, p - p_start, QE_STYLE_COMMENT);
+        	} else {
+	        	p++;
+                break;
+        	}
+        }
     }
- the_end:
+
+the_end:
     *colorize_state_ptr = state;
 }
 
