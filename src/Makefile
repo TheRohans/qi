@@ -22,7 +22,7 @@ CFLAGS:=-Wall
 # CFLAGS:=-std=c99 -Wall -Wpedantic -pedantic -D_XOPEN_SOURCE=700
 
 ifdef CONFIG_DEBUG
-CFLAGS+= -Og -g 
+CFLAGS+= -O0 -g 
 else 
 CFLAGS+= -Os
 endif 

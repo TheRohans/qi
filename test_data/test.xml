@@ -1,0 +1,13 @@
+<something>
+    <!-- 
+        valid comment 
+    -->
+    <my_made_up_thing />
+    <something thing="stuff" stuff="thing">
+        <blarg><![CDATA[
+            data data data
+            I like data.
+        ]]></blarg>
+    </something>
+    <p>Here is some txt here too</p>
+</something>

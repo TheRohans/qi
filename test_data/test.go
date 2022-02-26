@@ -5,11 +5,16 @@ import (
 	"time"
 )
 
+/* 
+ * Multiline comment 
+ */
+
 type person struct {
 	name string
 	age  int
 }
 
+// Single line comment
 type response2 struct {
 	Page   int      `json:"page"`
 	Fruits []string `json:"fruits"`

@@ -1,9 +1,12 @@
 <!doctype html>
-<html>
+<html lang="en=us">
 <head>
     <meta charset="utf-8">
     <meta stuff="123">
+    
 	<script type="text/javascript">
+		const $x = 1234;
+
     	$(document).ready(function(){
 			for(var x=0; x<10; x++) {
 				console.log(x);
@@ -32,21 +35,15 @@
     <!-- this is a comment -->
 	<h1>This is a thing</h1>
 	<div>
-		<div></div>
+		<div>stuff and things</div>
 	</div>
     <!--
         TODO: to do this right, we'll need to do a stack
         of types being coloured.  Have to wait for now.
     -->
-	<p id="bad" data-thing="<?= $stuff ?>" class="thing">
+	<p id="bad" class="thing">
 		This is some stuff here.
 	</p>
-	<?php
-        foreach($z as $q) {
-			echo $q;
-            echo $p
-		}
-    ?>
-    <p>And I think <?= $thing ?> is another one too</p>
+    <p>And I think is another one too</p>
 </body>
 </html>

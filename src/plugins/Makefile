@@ -48,7 +48,8 @@ extra:
 # Makefile, yaml, ini, etc
 	make -C config-mode all
 # 
-	make -C golang all	
+	make -C golang all
+	make -C tslang all
 	
 # ar rcs libplugins.a *.o
 	ar -cvq libplugins.a *.o
@@ -73,6 +74,7 @@ clean:
 	make -C css-mode clean
 	make -C python-mode clean
 	make -C golang clean
+	make -C tslang clean
 	
 	rm -f $(LOAD_PATH)/libplugincore.a
 	rm -f $(LOAD_PATH)/libplugins.a
