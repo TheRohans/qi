@@ -91,7 +91,7 @@ parse_comment:
 parse_tag:
                 //set_color(p_start, p - p_start, QE_STYLE_TAG);
                 while (*p != '\n') {
-                    //if we hit the end of the tag (php ends at a space)
+                    //if we hit the end of the tag
                     if (*p == '>') {
                         p++;
                         if (state == HTML_TAG_SCRIPT)
