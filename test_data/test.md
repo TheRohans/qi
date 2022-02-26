@@ -1,4 +1,6 @@
 ---
+author: rob
+date: 2022-02-02
 front_matter: 🥾🐛气!
 ---
 
@@ -10,7 +12,7 @@ some **bold text** here
 
 some *italicized text* here
 
-> blockquote contain text that is supposed to be from somewhere else
+> blockquote contain text __that__ is supposed to be from somewhere else
 
 1. First item
 2. Second item
@@ -29,6 +31,7 @@ Here is a simple link: [title](https://www.example.com) right here.
 Here is an embeded image: ![alt text](image.jpg) right here.
 
 ---
+
 **Extended Syntax**
 
 Fenced Code Block:
@@ -37,8 +40,10 @@ Fenced Code Block:
 function stuff() {
 	// to things with stuff
 	let x = 1;
-}
+} 
 ```
+
+Here is (and I really mean this) some text.
 
 Here is a strike through: ~~The world is flat.~~ right here.
 
@@ -53,7 +58,10 @@ I need to highlight these ==very important words==.
 | Header | Title |
 | Paragraph | Text | 
 
-This is some *text with stuff* and **stuff** and __other things__ like _that with things_ with more words here that will do other things and stuff.  Oh and [a link here](http://www.yadda.com?x=3&z=1) is a hyperlink.  And [this][3] is another one. and [a footnote][^1]
+This is some *text with stuff* and **stuff** and __other things__ like 
+_that with things_ with more words here that will do other things and 
+stuff. Oh and [a link here](http://www.yadda.com?x=3&z=1) is a hyperlink. 
+And [this][3] is another one. and [a footnote][^1]
 
 
 [3]: http://this.com
