@@ -560,13 +560,16 @@ static void term_set_clip(QEditScreen *s,
 
 static void term_flush(QEditScreen *s)
 {
+	// printf("%s", ESC_SEQ_SELECT_UTF8);
+
     TTYState *ts = s->private;
     TTYChar *ptr, *optr;
     int x, y, bgcolor, fgcolor, style;
+    // Can only handle max 5 wide utf8 chars
     char buf[5] = {0};
     
     // unsigned int cc;
-    unsigned short cc;
+    unsigned int cc;
 
     bgcolor = -1;
     fgcolor = -1;
@@ -605,15 +608,17 @@ static void term_flush(QEditScreen *s)
                         }
                         
                         // do not display escape codes or invalid codes
-                        if (cc < 32 || (cc >= 128 && cc < 128 + 32)) {
-                            buf[0] = '.';
-                            buf[1] = '\0';
-                        } else {
-							unicode_to_charset((char *)buf, cc, s->charset);
-                            // to_utf8(buf, cc);
-                        }
+//                        if (cc < 32 || (cc >= 128 && cc < 128 + 32)) {
+//                            buf[0] = '.';
+//                            buf[1] = '\0';
+//                        } else {
+//							unicode_to_charset((char *)buf, cc, s->charset);
+//                          // to_utf8(buf, cc);
+//                        }
                         // write the text to the screen
-                        printf("%s", buf);
+                        // printf("%c", buf);
+                        printf("%lc", cc);
+                        // printf("%0xd", cc);
                     } // else if (cc == '\n') {
                     //    printf(ESC_SET_ATTRIBUTE_MODE_1, 0);
                     //}

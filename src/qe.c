@@ -22,6 +22,7 @@
 #include "qe.h"
 #include "qfribidi.h"
 #include "plugins/plugincore.h"
+#include <locale.h>
 
 /* each history list */
 typedef struct HistoryEntry {
@@ -1246,12 +1247,14 @@ void text_write_char(EditState *s, int key)
 {
     int cur_ch, len, cur_len, offset1, ret, insert;
 
-    char buf[MAX_CHAR_BYTES];
+    int buf[MAX_CHAR_BYTES];
 
     cur_ch = eb_nextc(s->b, s->offset, &offset1);
     cur_len = offset1 - s->offset;
     
     len = unicode_to_charset(buf, key, s->b->charset);
+    // to_utf8(buf, key);
+    // len = codepoint_len(key);
     
     insert = (s->insert || cur_ch == '\n');
         
@@ -6819,6 +6822,8 @@ void qe_init(void *opaque)
 
 int main(int argc, char **argv)
 {
+	setlocale(LC_ALL, "en_US.UTF-8");
+	
     QEArgs args;
 
     args.argc = argc;
