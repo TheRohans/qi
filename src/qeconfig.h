@@ -48,6 +48,7 @@ CmdDef basic_commands[] = {
     CMD1( KEY_META('i'), KEY_NONE, "insert-integral", do_char, 0x222b)           // ∫
     CMD1( KEY_META('a'), KEY_NONE, "insert-angle", do_char, 0x2220)              // ∠
     CMD1( KEY_META('o'), KEY_NONE, "insert-omega", do_char, 0x2126)              // Ω
+    CMD1( KEY_META('p'), KEY_NONE, "insert-pi", do_char, 0x03c0)                 // π
     CMD1( KEY_META('+'), KEY_NONE, "insert-sigma", do_char, 0x2211)              // ∑
     CMD1( KEY_META('8'), KEY_NONE, "insert-infinity", do_char, 0x221e)           // ∞
     CMD1( KEY_META('('), KEY_NONE, "insert-epsilon-l", do_char, 0x03f5)          // ϵ
