@@ -301,15 +301,11 @@ int unicode_to_charset(char *buf, unsigned int c, QECharset *charset)
     // to_utf8(buf, c);
 	// return 1;
 	
-	char *q;
-
-    q = (char *)charset->encode_func(charset, (unsigned char*)buf, c);
-	
+    char *q = (char *)charset->encode_func(charset, (unsigned char*)buf, c);
     if (!q) {
         q = buf;
-        *q++ ='?';
+        *q++ = '?';
     }
     *q = '\0';
-	
     return q - buf;
 }

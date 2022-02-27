@@ -202,6 +202,7 @@ static void eb_insert_lowlevel(EditBuffer *b, int offset,
         len = MAX_PAGE_SIZE - offset;
         if (len > size)
             len = size;
+        
         /* number of bytes to put in next pages */
         len_out = p->size + len - MAX_PAGE_SIZE;
         page_index = p - b->page_table;
@@ -210,6 +211,7 @@ static void eb_insert_lowlevel(EditBuffer *b, int offset,
                        p->data + p->size - len_out, len_out);
         else
             len_out = 0;
+
         /* now we can insert in current page */
         if (len > 0) {
             p = b->page_table + page_index;
@@ -225,6 +227,7 @@ static void eb_insert_lowlevel(EditBuffer *b, int offset,
     } else {
         page_index = -1;
     }
+    
     /* insert the remaining data in the next pages */
     if (size > 0)
         eb_insert1(b, page_index + 1, buf, size);
