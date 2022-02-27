@@ -41,6 +41,37 @@ CmdDef basic_commands[] = {
 	
     CMD_( KEY_CTRL('y'), KEY_NONE, "yank", do_yank, "*")
     CMD_( KEY_META('y'), KEY_NONE, "yank-pop", do_yank_pop, "*")
+
+    ////////////////////////////////////////    
+    // Maths
+    CMD1( KEY_META('s'), KEY_NONE, "insert-sqrt", do_char, 0x221a)               // √
+    CMD1( KEY_META('i'), KEY_NONE, "insert-integral", do_char, 0x222b)           // ∫
+    CMD1( KEY_META('a'), KEY_NONE, "insert-angle", do_char, 0x2220)              // ∠
+    CMD1( KEY_META('o'), KEY_NONE, "insert-omega", do_char, 0x2126)              // Ω
+    CMD1( KEY_META('+'), KEY_NONE, "insert-sigma", do_char, 0x2211)              // ∑
+    CMD1( KEY_META('8'), KEY_NONE, "insert-infinity", do_char, 0x221e)           // ∞
+    CMD1( KEY_META('('), KEY_NONE, "insert-epsilon-l", do_char, 0x03f5)          // ϵ
+    CMD1( KEY_META(')'), KEY_NONE, "insert-epsilon-r", do_char, 0x03f6)          // ϶
+    CMD1( KEY_META('t'), KEY_NONE, "insert-theta", do_char, 0x03f4)              // ϴ
+    CMD1( KEY_META('/'), KEY_NONE, "insert-div", do_char, 0x00F7)                // ÷
+    CMD1( KEY_META('*'), KEY_NONE, "insert-mul", do_char, 0x00D7)                // ×
+    
+    CMD1( KEY_META('1'), KEY_NONE, "insert-ceil-l", do_char, 0x2308)             // ⌈
+    CMD1( KEY_META('2'), KEY_NONE, "insert-ceil-r", do_char, 0x2309)             // ⌉
+    CMD1( KEY_META('3'), KEY_NONE, "insert-floor-l", do_char, 0x230a)            // ⌊
+    CMD1( KEY_META('4'), KEY_NONE, "insert-floor-r", do_char, 0x230b)            // ⌋
+   
+    // XXX: Doing this messes up the cursor position becuase we are not taking
+    // combined char into account when doing length
+    CMD1( KEY_META('h'), KEY_NONE, "insert-vector-arrow", do_char, 0x20D7)       // x⃗
+   
+    // XXX: can not meta with arrow keys
+    CMD1( KEY_META(KEY_UP), KEY_NONE, "insert-up-arrow", do_char, 0x2b61)        // ⭡
+    CMD1( KEY_META(KEY_DOWN), KEY_NONE, "insert-down-arrow", do_char, 0x2b63)    // ⭣
+    CMD1( KEY_META(KEY_LEFT), KEY_NONE, "insert-left-arrow", do_char, 0x2b60)    // ⭠
+    CMD1( KEY_META(KEY_RIGHT), KEY_NONE, "insert-right-arrow", do_char, 0x2b62)  // ⭢
+    /* Unused: ep\|jk;:'"cnm,.?1234567890!@#$^&*_-= */
+    ////////////////////////////////////////
     
 	// do_tab will not change read only buffer
     CMD0( KEY_CTRL('i'), KEY_NONE, "tabulate", do_tab)
@@ -84,8 +115,7 @@ CmdDef basic_commands[] = {
 	CMD0( KEY_META('{'), KEY_NONE, "backward-paragraph", do_backward_paragraph)
     CMD0( KEY_META('}'), KEY_NONE, "forward-paragraph", do_forward_paragraph)
 	
-    CMD0( KEY_CTRLX(KEY_CTRL('x')), KEY_NONE, "exchange-point-and-mark", 
-		 do_exchange_point_and_mark)
+    CMD0( KEY_CTRLX(KEY_CTRL('x')), KEY_NONE, "exchange-point-and-mark", do_exchange_point_and_mark)
 	
     CMDV( KEY_META('l'), KEY_NONE, "downcase-word", do_changecase_word, 0, "*v")
     CMDV( KEY_META('u'), KEY_NONE, "upcase-word", do_changecase_word, 1, "*v")
