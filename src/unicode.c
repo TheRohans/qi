@@ -110,3 +110,4 @@ rune to_rune(const char chr[4])
  
 	return codep;
 }
+

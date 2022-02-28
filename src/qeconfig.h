@@ -1,3 +1,5 @@
+#include "unicode.h"
+
 /**
  * default qi configuration 
  */
@@ -44,43 +46,43 @@ CmdDef basic_commands[] = {
 
     ////////////////////////////////////////    
     // Maths
-    CMD1( KEY_META('s'), KEY_NONE, "math-sqrt", do_char,              0x221a)// √
-    CMD1( KEY_META('S'), KEY_NONE, "math-cube-root", do_char,         0x221b)// ∛
-    CMD1( KEY_META('i'), KEY_NONE, "math-integral", do_char,          0x222b)// ∫
-    CMD1( KEY_META('a'), KEY_NONE, "math-angle", do_char,             0x2220)// ∠
-    CMD1( KEY_META('o'), KEY_NONE, "math-omega", do_char,             0x2126)// Ω
-    CMD1( KEY_META('p'), KEY_NONE, "math-pi", do_char,                0x03c0)// π
-    CMD1( KEY_META('+'), KEY_NONE, "math-sigma", do_char,             0x2211)// ∑
-    CMD1( KEY_META('8'), KEY_NONE, "math-infinity", do_char,          0x221e)// ∞
-    CMD1( KEY_META('('), KEY_NONE, "math-epsilon-l", do_char,         0x03f5)// ϵ
-    CMD1( KEY_META(')'), KEY_NONE, "math-epsilon-r", do_char,         0x03f6)// ϶
-    CMD1( KEY_META('t'), KEY_NONE, "math-theta", do_char,             0x03f4)// ϴ
-    CMD1( KEY_META('T'), KEY_NONE, "math-therefore", do_char,         0x2234)// ∴
-    CMD1( KEY_META('/'), KEY_NONE, "math-div", do_char,               0x00F7)// ÷
-    CMD1( KEY_NONE,      KEY_NONE, "math-mul", do_char,               0x00D7)// ⨯
-    CMD1( KEY_NONE,      KEY_NONE, "math-degree", do_char,            0x00B0)// °
-    CMD1( KEY_META('*'), KEY_NONE, "math-dot", do_char,               0x2219)// ∙
+    CMD1( KEY_META('s'), KEY_NONE, "math-sqrt", do_char,              L'√')
+    CMD1( KEY_META('S'), KEY_NONE, "math-cube-root", do_char,         L'∛')
+    CMD1( KEY_META('i'), KEY_NONE, "math-integral", do_char,          L'∫')
+    CMD1( KEY_META('a'), KEY_NONE, "math-angle", do_char,             L'∠')
+    CMD1( KEY_META('o'), KEY_NONE, "math-omega", do_char,             L'Ω')
+    CMD1( KEY_META('p'), KEY_NONE, "math-pi", do_char,                L'π')
+    CMD1( KEY_META('+'), KEY_NONE, "math-sigma", do_char,             L'∑')
+    CMD1( KEY_META('8'), KEY_NONE, "math-infinity", do_char,          L'∞')
+    CMD1( KEY_META('('), KEY_NONE, "math-epsilon-l", do_char,         L'ϵ')
+    CMD1( KEY_META(')'), KEY_NONE, "math-epsilon-r", do_char,         L'϶')
+    CMD1( KEY_META('t'), KEY_NONE, "math-theta", do_char,             L'ϴ')
+    CMD1( KEY_META('T'), KEY_NONE, "math-therefore", do_char,         L'∴')
+    CMD1( KEY_META('/'), KEY_NONE, "math-div", do_char,               L'÷')
+    CMD1( KEY_NONE,      KEY_NONE, "math-cross", do_char,             L'⨯')
+    CMD1( KEY_NONE,      KEY_NONE, "math-degree", do_char,            L'°')
+    CMD1( KEY_META('*'), KEY_NONE, "math-dot", do_char,               L'∙')
     
-    CMD1( KEY_META('1'), KEY_NONE, "math-sub-1", do_char,             0x2081)// ₁ 
-    CMD1( KEY_META('2'), KEY_NONE, "math-sup-2", do_char,             0x00B2)// ² 
-    CMD1( KEY_META('3'), KEY_NONE, "math-sup-3", do_char,             0x00B3)// ³ 
-    CMD1( KEY_META('4'), KEY_NONE, "math-sup-n", do_char,             0x207f)// ⁿ
+    CMD1( KEY_META('1'), KEY_NONE, "math-sub-1", do_char,             L'₁')
+    CMD1( KEY_META('2'), KEY_NONE, "math-sup-2", do_char,             L'²')
+    CMD1( KEY_META('3'), KEY_NONE, "math-sup-3", do_char,             L'³')
+    CMD1( KEY_META('4'), KEY_NONE, "math-sup-n", do_char,             L'ⁿ')
     
-    CMD1( KEY_META('!'), KEY_NONE, "math-ceil-l", do_char,            0x2308)// ⌈
-    CMD1( KEY_META('@'), KEY_NONE, "math-ceil-r", do_char,            0x2309)// ⌉
-    CMD1( KEY_META('#'), KEY_NONE, "math-floor-l", do_char,           0x230a)// ⌊
-    CMD1( KEY_META('$'), KEY_NONE, "math-floor-r", do_char,           0x230b)// ⌋
+    CMD1( KEY_META('!'), KEY_NONE, "math-ceil-l", do_char,            L'⌈')
+    CMD1( KEY_META('@'), KEY_NONE, "math-ceil-r", do_char,            L'⌉')
+    CMD1( KEY_META('#'), KEY_NONE, "math-floor-l", do_char,           L'⌊')
+    CMD1( KEY_META('$'), KEY_NONE, "math-floor-r", do_char,           L'⌋')
     
-    CMD1( KEY_META('_'), KEY_NONE, "math-horz-bar", do_char,          0x2015)// ―
+    CMD1( KEY_META('_'), KEY_NONE, "math-horz-bar", do_char,          L'―')
     
     // XXX: Doing this messes up the cursor position becuase we are not taking
     // combined char into account when doing length
     CMD1( KEY_META('h'), KEY_NONE, "math-vector-arrow", do_char,      0x20D7)// x⃗
     // XXX: can not meta with arrow keys
-    CMD1( KEY_META(KEY_UP), KEY_NONE, "math-up-arrow", do_char,       0x2b61)// ⭡
-    CMD1( KEY_META(KEY_DOWN), KEY_NONE, "math-down-arrow", do_char,   0x2b63)// ⭣
-    CMD1( KEY_META(KEY_LEFT), KEY_NONE, "math-left-arrow", do_char,   0x2b60)// ⭠
-    CMD1( KEY_META(KEY_RIGHT), KEY_NONE, "math-right-arrow", do_char, 0x2b62)// ⭢
+    CMD1( KEY_META(KEY_UP), KEY_NONE, "math-up-arrow", do_char,       L'⭡')
+    CMD1( KEY_META(KEY_DOWN), KEY_NONE, "math-down-arrow", do_char,   L'⭣')
+    CMD1( KEY_META(KEY_LEFT), KEY_NONE, "math-left-arrow", do_char,   L'⭠')
+    CMD1( KEY_META(KEY_RIGHT), KEY_NONE, "math-right-arrow", do_char, L'⭢')
     // Unused: ep\|jk;:'"cnm,.?1234567890^&-= 
     ////////////////////////////////////////
     
