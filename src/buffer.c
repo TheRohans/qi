@@ -74,6 +74,7 @@ static void update_page(Page *p)
 
 /**
  * Read or write in the buffer. We must have 0 <= offset < b->total_size 
+ * this is dealing with bytes only
  */
 static int eb_rw(EditBuffer *b, int offset, u8 *buf, int size1, int do_write)
 {
@@ -95,12 +96,14 @@ static int eb_rw(EditBuffer *b, int offset, u8 *buf, int size1, int do_write)
         len = p->size - offset;
         if (len > size)
             len = size;
+            
         if (do_write) {
             update_page(p);
             memcpy(p->data + offset, buf, len);
         } else {
             memcpy(buf, p->data + offset, len);
         }
+        
         buf += len;
         size -= len;
         offset += len;
@@ -748,31 +751,39 @@ void eb_set_charset(EditBuffer *b, QECharset *charset)
     charset_decode_init(&b->charset_state, charset);
 }
 
-/* XXX: change API to go faster */
+/* */
 int eb_nextc(EditBuffer *b, int offset, int *next_ptr)
 {
-    u8 buf[MAX_CHAR_BYTES], *p;
-    int ch;
+    u8 buf[MAX_CHAR_BYTES] = {0};
 
+    // XXX: rune?
+    unsigned int ch;
+
+	// if we're going past the EOF return new line
     if (offset >= b->total_size) {
         offset = b->total_size;
         ch = '\n';
     } else {
+
+		// read the first byte
         eb_read(b, offset, buf, 1);
-        
-        /* we use directly the charset conversion table to go faster */
-        ch = b->charset_state.table[buf[0]];
         offset++;
-        if (ch == ESCAPE_CHAR) {
-            eb_read(b, offset, buf + 1, MAX_CHAR_BYTES - 1);
-            p = buf;
-            ch = b->charset_state.decode_func(&b->charset_state, 
-                                              (const u8 **)&p);
-            offset += (p - buf) - 1;
-        }
+                
+        // look at the bits of the first byte to
+        // find the length, then read that number
+        // to...
+    	int len = utf8_len(buf[0]);
+    	for(int cp = 1; cp < len; cp++) {
+			eb_read(b, offset, buf+cp, 1);
+    		offset++;
+    	}
+    	// create valid utf8 codepoint (rune)
+		ch = to_rune(&buf);
     }
+    
     if (next_ptr)
         *next_ptr = offset;
+    
     return ch;
 }
 

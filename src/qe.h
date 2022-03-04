@@ -20,6 +20,7 @@
 #include <errno.h>
 #include <inttypes.h>
 
+#include "unicode.h"
 #include "config.h"
 
 #include "cutils.h"
@@ -920,8 +921,8 @@ void unget_key(int key);
  * command definitions 
  */
 typedef struct CmdDef {
-    unsigned short key;       //!< normal key
-    unsigned short alt_key;   //!< alternate key
+    rune key;       //!< normal key
+    rune alt_key;   //!< alternate key
     const char *name;
     union {
         void *func;

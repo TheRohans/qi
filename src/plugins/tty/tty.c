@@ -30,7 +30,7 @@
 #include <sys/time.h>
 
 #include "qe.h"
-
+#include "unicode.h"
 #include "tty.h"
 
 /////////////////////////////////////////////////////
@@ -38,7 +38,7 @@
 typedef struct TTYChar {
     // Unicode needs 4 bytes
     // unsigned int ch;
-    unsigned int ch;
+    rune ch;
     unsigned char bgcolor;
     unsigned char fgcolor;
     unsigned char text_style;
@@ -289,25 +289,25 @@ static void tty_read_handler(void *opaque)
 {
     QEditScreen *s = opaque;
     TTYState *ts = s->private;
-    int ch = 0;
+    unsigned int ch = 0;
     QEEvent ev1, *ev = &ev1;
 
-    if (read(0, ts->buf + ts->utf8_index, 1) != 1)
+    // This is only reading one byte, so things work fine for ascii
+    // and you can see the first byte of a UTF8 char, but since
+    // it's not reading any of the continue bytes
+    if (read(0, ts->buf, 1) != 1)
         return;
     
-    // charset handling
-    if (s->charset == &charset_utf8) {
-        if (ts->utf8_state == 0) {
-            const char *p;
-            p = (const char *)ts->buf;
-            ch = utf8_decode(&p);
-            // ch = to_rune(ch);
-        } else {
-            ts->utf8_state = utf8_length[ts->buf[0]] - 1;
-            ts->utf8_index = 0;
-            return;
-        }
+    // inspect the first char and read more bytes if needed
+    int len = utf8_len(ts->buf[0]);
+    for(int cp = 1; cp < len; cp++) {
+	    int err = read(0, ts->buf+cp, 1);
+	    if(err != 1) {
+			LOG("%s", "could not read continuation byte")
+			return;
+	    }
     }
+    ch = to_rune(ts->buf);
         
     switch(ts->input_state) {
     case IS_NORM:
@@ -560,8 +560,6 @@ static void term_set_clip(QEditScreen *s,
 
 static void term_flush(QEditScreen *s)
 {
-	// printf("%s", ESC_SEQ_SELECT_UTF8);
-
     TTYState *ts = s->private;
     TTYChar *ptr, *optr;
     int x, y, bgcolor, fgcolor, style;
@@ -589,9 +587,7 @@ static void term_flush(QEditScreen *s)
 				
                 for(x=0; x < s->width; x++) {
                     // get the current char at the current
-                    // screen position. **note** currently this
-                    // can only be a short which is not big
-                    // enough for utf8
+                    // screen position.
                     cc = ptr->ch;
                     
                     if (cc != 0xffff) {
@@ -599,7 +595,6 @@ static void term_flush(QEditScreen *s)
                         // output attributes  && cc != ' '
                         if (((fgcolor != ptr->fgcolor) ||
                              (bgcolor != ptr->bgcolor))) {
-                            // LOG("Color: %d %d %d", ptr->fgcolor, ptr->bgcolor, ptr->text_style);
                             fgcolor = ptr->fgcolor;
                             bgcolor = ptr->bgcolor;
                             style = ptr->text_style;
@@ -608,20 +603,15 @@ static void term_flush(QEditScreen *s)
                         }
                         
                         // do not display escape codes or invalid codes
-//                        if (cc < 32 || (cc >= 128 && cc < 128 + 32)) {
-//                            buf[0] = '.';
-//                            buf[1] = '\0';
-//                        } else {
-//							unicode_to_charset((char *)buf, cc, s->charset);
-//                          // to_utf8(buf, cc);
-//                        }
+                        if (cc < 32 || (cc >= 128 && cc < 128 + 32)) {
+                            buf[0] = '.';
+                            buf[1] = '\0';
+                        } else {
+                        	to_utf8(buf, cc);
+                        }
                         // write the text to the screen
-                        // printf("%c", buf);
-                        printf("%lc", cc);
-                        // printf("%0xd", cc);
-                    } // else if (cc == '\n') {
-                    //    printf(ESC_SET_ATTRIBUTE_MODE_1, 0);
-                    //}
+                        printf("%s", buf);
+                    }
                     
                     // update old screen data
                     *optr++ = *ptr++;

@@ -1245,70 +1245,29 @@ void do_char(EditState *s, int key)
 
 void text_write_char(EditState *s, int key)
 {
-    int cur_ch, len, cur_len, offset1, ret, insert;
+    int offset1, ret;
 
-    int buf[MAX_CHAR_BYTES];
+    char buf[MAX_CHAR_BYTES] = {0};
 
-    cur_ch = eb_nextc(s->b, s->offset, &offset1);
-    cur_len = offset1 - s->offset;
+    int cur_ch = eb_nextc(s->b, s->offset, &offset1);
+    int cur_len = offset1 - s->offset;
+       
+    // convert the given key into a utf8 string we
+    // can print
+    to_utf8(buf, key);
+	// look at the first byte to see how long the
+	// string of bytes is
+    int len = utf8_len(buf[0]);
     
-    len = unicode_to_charset(buf, key, s->b->charset);
-    // to_utf8(buf, key);
-    // len = codepoint_len(key);
-    
-    insert = (s->insert || cur_ch == '\n');
-        
+    int insert = (s->insert || cur_ch == '\n');
+	// insert as in, not overwrite mode
     if (insert) {
-        const InputMethod *m;
-        int match_len, offset, i, offset1;
-            
-        // use compose system only if insert mode
-        if (s->compose_len == 0) 
-            s->compose_start_offset = s->offset;
+    	// Old Inputmethod code was here.
+  		// relying on OS do that. Might change later
 
         // insert char 
         eb_insert(s->b, s->offset, buf, len);
         s->offset += len;
-
-        s->compose_buf[s->compose_len++] = key;
-        m = s->input_method;
-        for (;;) {
-            if (!m) {
-                s->compose_len = 0;
-                break;
-            }
-            ret = m->input_match(&match_len, m->data, s->compose_buf, 
-                                 s->compose_len);
-            if (ret == INPUTMETHOD_NOMATCH) {
-                // no match : reset compose state 
-                s->compose_len = 0;
-                break;
-            } else if (ret == INPUTMETHOD_MORECHARS) {
-                // more chars expected: do nothing and insert current key
-                break;
-            } else {
-                // match : delete matched chars
-                key = ret;
-                offset = s->compose_start_offset;
-                offset1 = s->offset; // save offset so that we are not disturb
-                                     // when it moves in eb_delete()
-                for (i = 0; i < match_len; i++)
-                    eb_nextc(s->b, offset, &offset);
-                eb_delete(s->b, s->compose_start_offset, 
-                          offset - s->compose_start_offset);
-                s->compose_len -= match_len;
-                umemmove(s->compose_buf, s->compose_buf + match_len,
-                         s->compose_len);
-                // then insert match 
-                len = unicode_to_charset(buf, key, s->b->charset);
-                eb_insert(s->b, s->compose_start_offset, buf, len);
-                s->offset = offset1 + len - (offset - s->compose_start_offset);
-                s->compose_start_offset += len;
-                // if some compose chars are left, we iterate
-                if (s->compose_len == 0)
-                    break;
-            }
-        }
     } else {
         if (cur_len == len) {
             eb_write(s->b, s->offset, buf, len);
@@ -3208,8 +3167,10 @@ typedef struct ExecCmdState {
     int argval;
     const char *ptype;
     void *args[MAX_CMD_ARGS];
-    unsigned char args_type[MAX_CMD_ARGS];
-    char default_input[512]; //!< default input if none given
+    // unsigned char args_type[MAX_CMD_ARGS];
+    // char default_input[512]; //!< default input if none given
+    unsigned int args_type[MAX_CMD_ARGS];
+    unsigned int default_input[512]; //!< default input if none given
 } ExecCmdState;
 
 static void arg_edit_cb(void *opaque, char *str);
@@ -6822,7 +6783,7 @@ void qe_init(void *opaque)
 
 int main(int argc, char **argv)
 {
-	setlocale(LC_ALL, "en_US.UTF-8");
+	setlocale(LC_ALL, "en_GB.UTF-8");
 	
     QEArgs args;
 
