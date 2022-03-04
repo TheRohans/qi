@@ -1245,7 +1245,7 @@ void do_char(EditState *s, int key)
 
 void text_write_char(EditState *s, int key)
 {
-    int offset1, ret;
+    int offset1;
 
     char buf[MAX_CHAR_BYTES] = {0};
 
@@ -1278,29 +1278,6 @@ void text_write_char(EditState *s, int key)
         s->offset += len;
     }
 }
-
-/*
- * XXX: may be better to move it into qe_key_process() 
- */
-//static void quote_key(void *opaque, int key)
-//{
-//    // CG: should pass s as opaque 
-//    QEmacsState *qs = &qe_state;
-//    EditState *s;
-//
-//    s = qs->active_window;
-//    if (!s)
-//        return;
-//
-//    // CG: why not insert special keys as well? 
-//    if (!KEY_SPECIAL(key) ||
-//        (key >= 0 && key <= 31)) {
-//        do_char(s, key);
-//        edit_display(qs);
-//        dpy_flush(&global_screen);
-//    }
-//    qe_ungrab_keys();
-//}
 
 void do_insert(EditState *s)
 {
@@ -3167,10 +3144,8 @@ typedef struct ExecCmdState {
     int argval;
     const char *ptype;
     void *args[MAX_CMD_ARGS];
-    // unsigned char args_type[MAX_CMD_ARGS];
-    // char default_input[512]; //!< default input if none given
-    unsigned int args_type[MAX_CMD_ARGS];
-    unsigned int default_input[512]; //!< default input if none given
+    unsigned char args_type[MAX_CMD_ARGS];
+    char default_input[512]; //!< default input if none given
 } ExecCmdState;
 
 static void arg_edit_cb(void *opaque, char *str);
