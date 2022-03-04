@@ -9,10 +9,11 @@ typedef uint32_t rune;
 
 #define L(c) (rune)c
 
-/* len of associated utf-8 char (lengths are in bytes) */
 int codepoint_len(const rune cp);
 
 void to_utf8(char *buff, const rune cp);
+
+int utf8_len(const char ch);
 
 rune to_rune(const char chr[4]);
  

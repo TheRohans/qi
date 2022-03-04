@@ -754,7 +754,7 @@ void eb_set_charset(EditBuffer *b, QECharset *charset)
 /* */
 int eb_nextc(EditBuffer *b, int offset, int *next_ptr)
 {
-    u8 buf[MAX_CHAR_BYTES] = {0};
+    const char buf[MAX_CHAR_BYTES] = {0};
 
     // XXX: rune?
     unsigned int ch;
@@ -766,7 +766,7 @@ int eb_nextc(EditBuffer *b, int offset, int *next_ptr)
     } else {
 
 		// read the first byte
-        eb_read(b, offset, buf, 1);
+        eb_read(b, offset, (void *)buf, 1);
         offset++;
                 
         // look at the bits of the first byte to
@@ -774,11 +774,11 @@ int eb_nextc(EditBuffer *b, int offset, int *next_ptr)
         // to...
     	int len = utf8_len(buf[0]);
     	for(int cp = 1; cp < len; cp++) {
-			eb_read(b, offset, buf+cp, 1);
+			eb_read(b, offset, (void *)(buf+cp), 1);
     		offset++;
     	}
     	// create valid utf8 codepoint (rune)
-		ch = to_rune(&buf);
+		ch = to_rune((const char *)&buf);
     }
     
     if (next_ptr)
