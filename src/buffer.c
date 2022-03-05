@@ -862,6 +862,7 @@ static void get_pos(u8 *buf, int size, int *line_ptr, int *col_ptr,
     /* now compute number of chars (XXX: potential problem if out of
        block, but for UTF8 it works) */
     col = 0;
+    
     while (lp < p1) {
         ch = s->table[*lp];
         if (ch == ESCAPE_CHAR) {
@@ -873,6 +874,7 @@ static void get_pos(u8 *buf, int size, int *line_ptr, int *col_ptr,
         }
         col++;
     }
+    
     *line_ptr = line;
     *col_ptr = col;
 }
@@ -972,8 +974,8 @@ static int get_chars(u8 *buf, int size, QECharset *charset)
     int nb_chars, c;
     u8 *buf_end, *buf_ptr;
 
-    if (charset != &charset_utf8)
-        return size;
+    // if (charset != &charset_utf8)
+    //    return size;
 
     nb_chars = 0;
     buf_ptr = buf;
@@ -991,8 +993,8 @@ static int goto_char(u8 *buf, int pos, QECharset *charset)
     int nb_chars, c;
     u8 *buf_ptr;
 
-    if (charset != &charset_utf8)
-        return pos;
+    // if (charset != &charset_utf8)
+    //    return pos;
 
     nb_chars = 0;
     buf_ptr = buf;
@@ -1017,11 +1019,11 @@ int eb_goto_char(EditBuffer *b, int pos)
     int offset;
     Page *p, *p_end;
 
-    if (b->charset != &charset_utf8) {
-        offset = pos;
-        if (offset > b->total_size)
-            offset = b->total_size;
-    } else {
+    // if (b->charset != &charset_utf8) {
+    //    offset = pos;
+    //    if (offset > b->total_size)
+    //        offset = b->total_size;
+    //} else {
         offset = 0;
         p = b->page_table;
         p_end = b->page_table + b->nb_pages;
@@ -1039,7 +1041,7 @@ int eb_goto_char(EditBuffer *b, int pos)
                 p++;
             }
         }
-    }
+    //}
     return offset;
 }
 
