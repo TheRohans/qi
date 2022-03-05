@@ -814,7 +814,8 @@ int eb_prevc(EditBuffer *b, int offset, int *prev_ptr)
         while ((*q >= 0x80 && *q < 0xc0) && offset >= 0) {
         	if (offset == 0 || q == buf) {
             	// error : take only previous char
-                offset += buf - 1 - q;
+            	int pchar = buf - 1 - q;
+                offset += (pchar >= 0) ? pchar : 0;
                 ch = buf[sizeof(buf) - 1];
                 goto the_end;
             }
