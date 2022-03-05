@@ -52,7 +52,7 @@ TARGETLIBS:=
 TARGETS+=qi$(EXE)
 
 # qfribidi.o == CONFIG_UNICODE_JOIN
-_OBJS=qe.o charset.o buffer.o input.o unicode.o unicode_join.o display.o \
+_OBJS=qe.o buffer.o input.o unicode.o display.o \
 util.o cutils.o qstack.o qfribidi.o unix.o
 
 OBJS = $(patsubst %,$(LOAD_PATH)/%,$(_OBJS))

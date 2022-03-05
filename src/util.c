@@ -494,8 +494,8 @@ static int strtokey1(const char **pp)
         /* control */
         key = KEY_CTRL(p[2]);
     } else {
-        key = utf8_decode(&p);
-        // key = to_rune(&p);
+        // key = utf8_decode(&p);
+        key = to_rune(p);
     }
     *pp = p1;
 
@@ -565,11 +565,10 @@ void keytostr(char *buf, int buf_size, int key)
         buf[0] = key;
         buf[1] = '\0';
     } else {
-        char *q;
-        q = utf8_encode(buf1, key);
-        *q = '\0';
-        // TODO: maybe...
-        // to_utf8(buf1, key);
+        // char *q;
+        // q = utf8_encode(buf1, key);
+		to_utf8(buf1, key);
+        // *q = '\0';
         pstrcpy(buf, buf_size, buf1);
     }
 }

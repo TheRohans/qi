@@ -18,23 +18,29 @@ Qi's goal is to be my perfect editor. It attempts to combine the things I
 like about _emacs_ with the speed and system integration of _vi_. Qi focuses
 on the following goals:
 
-- Speed and large file editing
-- Only terminal editor (no x11, etc)
+- Small foot print (~350K full feature, ~100K tiny build)
+- Speed 
+- Large file editing
+- Terminal editor (no x11, etc)
 - Emacs bindings and usage emulation (chords, minibuffer, modes, etc)
 - Compiles to a single, self contained binary
-- Cross platform (unix based system)
-- Multi-language (human) support - with a focus on English and Chinese.
+- Cross platform (posix based systems)
+- Multi-language (human) support - with a focus on English, French and Chinese.
 - Multi-language (computer) support
 	- C
+	- Golang
+	- Makefile
 	- Markdown
 	- HTML (XML)
-	- Golang
-	- YAML
+	- Typescript
+	- Python
+	- YAML / Terraform
 	- Lua
-- Default encoding UTF-8
+- UTF-8 encoding
 - Hex editing
 
-Qi was forked from QEmacs 3.2 with a lot of features stripped out.
+Qi was originally forked from QEmacs 3.2. Qi has been heavily modified from
+QEmacs, and it is not backwards compatible with QEmacs.
 
 ## Demo
 
@@ -51,7 +57,7 @@ Qi should build on any POSIX system. It is currently being run daily on:
 - M1 Macs
 - Raspberry Pi 1
 
-### Quick Start (User)
+### Quick Start
 
 ```shell
 ./configure
@@ -59,9 +65,10 @@ make dist
 sudo make install
 ```
 
-If you leave off the `make install` step, you should have a `qi` binary in the `dist` directory.
+If you leave off the `make install` step, you should have a `qi` binary in
+the `dist` directory.
 
-### Slower Start (User)
+### Slower Start
 
 You can see the possible options by typing 
 
@@ -69,11 +76,17 @@ You can see the possible options by typing
 ./configure --help
 ```
 
-If you `--enable-tiny` you will get a very small build with almost all of qi's extra features not included. For example, there will be no syntax highlighting, no file browser, and no beta features. Depending on your system, the size of the editor should be down to the 150k range.
+If you `--enable-tiny` you will get a very small build with almost all of
+qi's extra features not included. For example, there will be no syntax
+highlighting, no file browser, and no beta features. Depending on your
+system, the size of the editor should be down in the 100K range.
 
-`--prefix` can be used to install qi somewhere that doesn't require admin access, and `--cc` can be used to specify a different compiler.
+`--prefix` can be used to install qi somewhere that doesn't require admin
+access, and `--cc` can be used to specify a different compiler.
 
-Do you feel lucky? Well, `--enable-beta` might be for you. This will turn on features that are currently under development which could be cool or could crash everything.
+Do you feel lucky? Well, `--enable-beta` might be for you. This will turn on
+features that are currently under development which could be cool or could
+crash everything.
 
 Example of custom build:
 
@@ -85,15 +98,17 @@ make install
 
 ### Quick Start (Developer)
 
-Using `--enable-debug` will build qi with debugging symbols enabled, and it also activates a macro that does some logging (see [the manual](doc/manual.md#developers-guide) for more information).
+Using `--enable-debug` will build qi with debugging symbols enabled, and it
+also activates a macro that does some logging (see [the manual](doc/manual.md#developers-guide) 
+for more information).
 
 ## Licensing
 
 QEmacs was released under the GNU Lesser General Public License v2 (read the
 accompanying LICENSE file) so Qi is as well.
 
-- Qi is copyright 2013 [The Rohans][rohans]
-- QEmacs is copyright 2002 Fabrice Bellard.
+- Qi is Copyright 2013 [The Rohans][rohans]
+- QEmacs is Copyright 2002 Fabrice Bellard.
 
 [qi]: http://en.wikipedia.org/wiki/Qi
 [rohans]: http://therohans.com

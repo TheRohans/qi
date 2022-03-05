@@ -22,6 +22,7 @@
 #include "qe.h"
 #include "qfribidi.h"
 #include "plugins/plugincore.h"
+#include <locale.h>
 
 /* each history list */
 typedef struct HistoryEntry {
@@ -767,7 +768,10 @@ static int eb_changecase(EditBuffer *b, int offset, int up)
         else
             ch = tolower(ch);
     }
-    len = unicode_to_charset(buf, ch, b->charset);
+
+    to_utf8(buf, ch);
+    len = utf8_len(buf[0]);
+
     if (len == (offset1 - offset)) {
         eb_write(b, offset, buf, len);
     } else {
@@ -1244,68 +1248,29 @@ void do_char(EditState *s, int key)
 
 void text_write_char(EditState *s, int key)
 {
-    int cur_ch, len, cur_len, offset1, ret, insert;
+    int offset1;
 
-    char buf[MAX_CHAR_BYTES];
+    char buf[MAX_CHAR_BYTES] = {0};
 
-    cur_ch = eb_nextc(s->b, s->offset, &offset1);
-    cur_len = offset1 - s->offset;
+    int cur_ch = eb_nextc(s->b, s->offset, &offset1);
+    int cur_len = offset1 - s->offset;
+       
+    // convert the given key into a utf8 string we
+    // can print
+    to_utf8(buf, key);
+	// look at the first byte to see how long the
+	// string of bytes is
+    int len = utf8_len(buf[0]);
     
-    len = unicode_to_charset(buf, key, s->b->charset);
-    
-    insert = (s->insert || cur_ch == '\n');
-        
+    int insert = (s->insert || cur_ch == '\n');
+	// insert as in, not overwrite mode
     if (insert) {
-        const InputMethod *m;
-        int match_len, offset, i, offset1;
-            
-        // use compose system only if insert mode
-        if (s->compose_len == 0) 
-            s->compose_start_offset = s->offset;
+    	// Old Inputmethod code was here.
+  		// relying on OS do that. Might change later
 
         // insert char 
         eb_insert(s->b, s->offset, buf, len);
         s->offset += len;
-
-        s->compose_buf[s->compose_len++] = key;
-        m = s->input_method;
-        for (;;) {
-            if (!m) {
-                s->compose_len = 0;
-                break;
-            }
-            ret = m->input_match(&match_len, m->data, s->compose_buf, 
-                                 s->compose_len);
-            if (ret == INPUTMETHOD_NOMATCH) {
-                // no match : reset compose state 
-                s->compose_len = 0;
-                break;
-            } else if (ret == INPUTMETHOD_MORECHARS) {
-                // more chars expected: do nothing and insert current key
-                break;
-            } else {
-                // match : delete matched chars
-                key = ret;
-                offset = s->compose_start_offset;
-                offset1 = s->offset; // save offset so that we are not disturb
-                                     // when it moves in eb_delete()
-                for (i = 0; i < match_len; i++)
-                    eb_nextc(s->b, offset, &offset);
-                eb_delete(s->b, s->compose_start_offset, 
-                          offset - s->compose_start_offset);
-                s->compose_len -= match_len;
-                umemmove(s->compose_buf, s->compose_buf + match_len,
-                         s->compose_len);
-                // then insert match 
-                len = unicode_to_charset(buf, key, s->b->charset);
-                eb_insert(s->b, s->compose_start_offset, buf, len);
-                s->offset = offset1 + len - (offset - s->compose_start_offset);
-                s->compose_start_offset += len;
-                // if some compose chars are left, we iterate
-                if (s->compose_len == 0)
-                    break;
-            }
-        }
     } else {
         if (cur_len == len) {
             eb_write(s->b, s->offset, buf, len);
@@ -1316,29 +1281,6 @@ void text_write_char(EditState *s, int key)
         s->offset += len;
     }
 }
-
-/*
- * XXX: may be better to move it into qe_key_process() 
- */
-//static void quote_key(void *opaque, int key)
-//{
-//    // CG: should pass s as opaque 
-//    QEmacsState *qs = &qe_state;
-//    EditState *s;
-//
-//    s = qs->active_window;
-//    if (!s)
-//        return;
-//
-//    // CG: why not insert special keys as well? 
-//    if (!KEY_SPECIAL(key) ||
-//        (key >= 0 && key <= 31)) {
-//        do_char(s, key);
-//        edit_display(qs);
-//        dpy_flush(&global_screen);
-//    }
-//    qe_ungrab_keys();
-//}
 
 void do_insert(EditState *s)
 {
@@ -1663,30 +1605,6 @@ static void do_cmd_set_mode(EditState *s, const char *name)
         do_set_mode(s, m, NULL);
 }
 
-void charset_completion(StringArray *cs, const char *charset_str)
-{
-    QECharset *p;
-    int len;
-
-    len = strlen(charset_str);
-    for (p = first_charset; p != NULL; p = p->next) {
-        if (!strncmp(p->name, charset_str, len))
-            add_string(cs, p->name);
-    }
-}
-
-QECharset *read_charset(EditState *s, const char *charset_str)
-{
-    QECharset *charset;
-    
-    charset = find_charset(charset_str);
-    if (!charset) {
-        put_status(s, "Unknown charset '%s'", charset_str);
-        return NULL;
-    }
-    return charset;
-}
-
 void do_toggle_line_numbers(EditState *s)
 {
     s->line_numbers = !s->line_numbers;
@@ -1734,7 +1652,8 @@ void do_count_lines(EditState *s)
                total_lines, line_num + 1, abs(line_num - mark_line));
 }
 
-void do_what_cursor_position(EditState *s)
+// TODO: This seems really useful, just need to fix the utf8 stuff
+/* void do_what_cursor_position(EditState *s)
 {
     char buf[128];
     int line_num, col_num;
@@ -1756,13 +1675,13 @@ void do_what_cursor_position(EditState *s)
         }
         pos += snprintf(buf + pos, sizeof(buf) - pos, "(%#3o %d 0x%2x)  ",
                         c, c, c);
-        /* CG: should display buffer bytes if non ascii */
+        // CG: should display buffer bytes if non ascii
     }    
     eb_get_pos(s->b, &line_num, &col_num, s->offset);
     put_status(s, "%spoint=%d column=%d mark=%d size=%d region=%d",
                buf, s->offset, col_num, s->b->mark, s->b->total_size,
                abs(s->offset - s->b->mark));
-}
+} */
 
 void do_set_tab_width(EditState *s, int tab_width)
 {
@@ -1842,7 +1761,7 @@ void text_mode_line(EditState *s, char *buf, int buf_size)
 
     eb_get_pos(s->b, &line_num, &col_num, s->offset);
     q += sprintf(q, "L%d--C%d--%s", 
-                 line_num + 1, col_num, s->b->charset->name);
+                 line_num + 1, col_num, "utf-8");
     if (s->bidir) {
         q += sprintf(q, "--%s", s->cur_rtl ? "RTL" : "LTR");
     }
@@ -2369,6 +2288,7 @@ static void flush_fragment(DisplayState *s)
         s->line_offsets[j][1] = -1;
         j++;
     }
+    
     for (i = 0; i < s->fragment_index; i++) {
         int offset1, offset2;
         j = s->line_index + char_to_glyph_pos[i];
@@ -2913,9 +2833,8 @@ int text_display(EditState *s, DisplayState *ds, int offset)
                 display_printf(ds, offset0, offset, "^%c", '@' + c);
             } else if (c >= 0x10000) {
                 // currently, we cannot display these chars
+                // TODO: why not? this might be wrong
                 display_printf(ds, offset0, offset, "\\U%08x", c);
-            } else if (c >= 256 && s->screen->charset != &charset_utf8) {
-                display_printf(ds, offset0, offset, "\\u%04x", c);
             } else {
                 if (char_index < colored_nb_chars)
                     c = colored_chars[char_index];
@@ -3726,13 +3645,15 @@ void print_at_byte(QEditScreen *screen,
                    int x, int y, int width, int height,
                    const char *str, int style_index)
 {
-    unsigned int ubuf[256];
-    int len;
+    unsigned int ubuf[256] = {0};
     QEStyleDef style;
     QEFont *font;
     CSSRect rect;
-
-    len = utf8_to_unicode(ubuf, sizeof(ubuf) / sizeof(ubuf[0]), str);
+	
+	// copy the ascii string into a utf8 string
+	// and find the new length
+    int len = str_to_utf8(str, ubuf, 256);
+    
     get_style(NULL, &style, style_index);
 
     /* clip rectangle */
@@ -3743,11 +3664,13 @@ void print_at_byte(QEditScreen *screen,
     set_clip_rectangle(screen, &rect);
 
     /* start rectangle */
-    fill_rectangle(screen, x, y, width, height, 
-                   style.bg_color);
+    fill_rectangle(screen, x, y, width, height, style.bg_color);
+    
     font = select_font(screen, style.font_style, style.font_size);
-    draw_text(screen, font, x, y + font->ascent,
-              ubuf, len, style.fg_color, style.text_style);
+    
+    draw_text(screen, font, x, y + font->ascent, 
+    	ubuf, len, style.fg_color, style.text_style);
+    	
     release_font(screen, font);
 }
 
@@ -4724,7 +4647,6 @@ static void do_load1(EditState *s, const char *filename1,
     int mode, buf_size;
     ModeDef *selected_mode;
     EditBuffer *b;
-    EditBufferDataType *bdt;
     FILE *f;
     struct stat st;
 
@@ -4792,11 +4714,6 @@ fail1:
     selected_mode = probe_mode(s, mode, buf, buf_size);
     if (!selected_mode)
         goto fail1;
-    bdt = selected_mode->data_type;
-
-    // autodetect buffer charset (could move it to raw buffer loader)
-    if (bdt == &raw_data_type) 
-        eb_set_charset(b, detect_charset(buf, buf_size));
 
     // now we can set the mode
     do_set_mode_file(s, selected_mode, NULL, f);
@@ -5127,7 +5044,7 @@ void usprintf(char **pp, const char *fmt, ...)
     va_start(ap, fmt);
     len = vsprintf(q, fmt, ap);
     q += len;
-    *pp = q; ;
+    *pp = q;
     va_end(ap);
 }
 
@@ -5157,8 +5074,10 @@ typedef struct ISearchState {
 static void isearch_display(ISearchState *is)
 {
     EditState *s = is->s;
-    char ubuf[256], *uq;
-    u8 buf[2*SEARCH_LENGTH], *q; /* XXX: incorrect size */
+    char ubuf[256] = {0};
+    char *uq;
+    u8 buf[2*SEARCH_LENGTH] = {0}; /* XXX: incorrect size */
+    u8 *q;
     int i, len, hex_nibble, h;
     unsigned int v;
     int search_offset;
@@ -5182,7 +5101,10 @@ static void isearch_display(ISearchState *is)
                         hex_nibble ^= 1;
                     }
                 } else {
-                    q += unicode_to_charset((char *)q, v, s->b->charset);
+                	to_utf8((char *)q, v);
+					int len = utf8_len(buf[0]);
+					q += len;
+                    // q += unicode_to_charset((char *)q, v, s->b->charset);
                 }
             }
         } else {
@@ -5203,7 +5125,7 @@ static void isearch_display(ISearchState *is)
             s->offset = is->found_offset + len;
     }
             
-    /* display search string */
+    // display search string
     uq = ubuf;
     if (is->found_offset < 0 && len > 0)
         usprintf(&uq, "Failing ");
@@ -5221,15 +5143,22 @@ static void isearch_display(ISearchState *is)
     if (is->dir < 0)
         usprintf(&uq, " backward");
     usprintf(&uq, ": ");
+    
+    // Make the search term printable
+    // TODO: this seems overly complex.
+    char tmp[5] = {0};
     for (i = 0; i < is->pos; i++) {
-        v = is->search_string[i];
+       	v = is->search_string[i];
         if (!(v & FOUND_TAG)) {
-            uq = utf8_encode(uq, v);
+        	to_utf8(tmp, v);
+        	// int l = utf8_len(tmp[0]);
+            usprintf(&uq, tmp);
+        	// uq = utf8_encode(uq, v);
         }
     }
     *uq = '\0';
 
-        /* display text */
+    // display text
     center_cursor(s);
     edit_display(s->qe_state);
 
@@ -6593,8 +6522,6 @@ extern QEDisplay dummy_dpy;
 static int dummy_dpy_init(QEditScreen *s, int w, int h)
 {
     memcpy(&s->dpy, &dummy_dpy, sizeof(QEDisplay));
-    s->charset = &charset_utf8; // &charset_8859_1;
-    
     return 0;
 }
 
@@ -6694,6 +6621,7 @@ static inline void init_all_modules(void)
     config_init();
     go_init();
     ts_init();
+    maths_init();
 	//example_init();
 #endif
 }
@@ -6725,9 +6653,7 @@ void qe_init(void *opaque)
     set_user_option(NULL);
 
     eb_init();
-    charset_init();
     init_input_methods();
-    load_ligatures();
 
     // init basic modules
     qe_register_mode(&text_mode);
@@ -6735,8 +6661,6 @@ void qe_init(void *opaque)
     qe_register_cmd_line_options(cmd_options);
 
     register_completion("command", command_completion);
-    register_completion("charset", charset_completion);
-    register_completion("style", style_completion);
     register_completion("file", file_completion);
     register_completion("buffer", buffer_completion);
     
@@ -6819,6 +6743,8 @@ void qe_init(void *opaque)
 
 int main(int argc, char **argv)
 {
+	setlocale(LC_ALL, "en_GB.UTF-8");
+	
     QEArgs args;
 
     args.argc = argc;

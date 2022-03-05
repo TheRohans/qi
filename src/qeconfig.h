@@ -1,3 +1,5 @@
+#include "unicode.h"
+
 /**
  * default qi configuration 
  */
@@ -41,7 +43,7 @@ CmdDef basic_commands[] = {
 	
     CMD_( KEY_CTRL('y'), KEY_NONE, "yank", do_yank, "*")
     CMD_( KEY_META('y'), KEY_NONE, "yank-pop", do_yank_pop, "*")
-    
+
 	// do_tab will not change read only buffer
     CMD0( KEY_CTRL('i'), KEY_NONE, "tabulate", do_tab)
     
@@ -84,8 +86,7 @@ CmdDef basic_commands[] = {
 	CMD0( KEY_META('{'), KEY_NONE, "backward-paragraph", do_backward_paragraph)
     CMD0( KEY_META('}'), KEY_NONE, "forward-paragraph", do_forward_paragraph)
 	
-    CMD0( KEY_CTRLX(KEY_CTRL('x')), KEY_NONE, "exchange-point-and-mark", 
-		 do_exchange_point_and_mark)
+    CMD0( KEY_CTRLX(KEY_CTRL('x')), KEY_NONE, "exchange-point-and-mark", do_exchange_point_and_mark)
 	
     CMDV( KEY_META('l'), KEY_NONE, "downcase-word", do_changecase_word, 0, "*v")
     CMDV( KEY_META('u'), KEY_NONE, "upcase-word", do_changecase_word, 1, "*v")
@@ -144,7 +145,7 @@ CmdDef basic_commands[] = {
     CMD_( KEY_NONE, KEY_NONE, "set-mode", do_cmd_set_mode, "s{Set mode: }[mode]")
     CMD0( KEY_CTRLX('h'), KEY_NONE, "mark-whole-buffer", do_mark_whole_buffer)
     CMD0( KEY_CTRLX('l'), KEY_NONE, "count-lines", do_count_lines)
-    CMD0( KEY_CTRLX('='), KEY_NONE, "what-cursor-position", do_what_cursor_position)
+    // CMD0( KEY_CTRLX('='), KEY_NONE, "what-cursor-position", do_what_cursor_position)
     
     // tab & indent
     CMD_( KEY_NONE, KEY_NONE, "set-tab-width", do_set_tab_width, "i{Tab width: }")

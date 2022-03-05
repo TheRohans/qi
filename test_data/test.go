@@ -5,10 +5,9 @@ import (
 	"time"
 )
 
-/* 
- * Multiline comment 
+/*
+ * Multiline comment
  */
-
 type person struct {
 	name string
 	age  int

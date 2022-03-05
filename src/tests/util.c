@@ -1,7 +1,5 @@
 #include "../r2_unit.h"
 // ###################
-// TODO: this dependency is a bit wacky
-#include "../charset.c" // needed for utf8_decode
 #include "../cutils.c"  // needed for pstrcpy
 // ###################
 #include "../util.c"

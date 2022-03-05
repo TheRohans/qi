@@ -74,6 +74,7 @@ static void update_page(Page *p)
 
 /**
  * Read or write in the buffer. We must have 0 <= offset < b->total_size 
+ * this is dealing with bytes only
  */
 static int eb_rw(EditBuffer *b, int offset, u8 *buf, int size1, int do_write)
 {
@@ -95,12 +96,14 @@ static int eb_rw(EditBuffer *b, int offset, u8 *buf, int size1, int do_write)
         len = p->size - offset;
         if (len > size)
             len = size;
+            
         if (do_write) {
             update_page(p);
             memcpy(p->data + offset, buf, len);
         } else {
             memcpy(buf, p->data + offset, len);
         }
+        
         buf += len;
         size -= len;
         offset += len;
@@ -459,7 +462,8 @@ EditBuffer *eb_new(const char *name, int flags)
     b->next = qs->first_buffer;
     qs->first_buffer = b;
 
-    eb_set_charset(b, &charset_utf8);
+	// TODO: remove after move to unicode.c
+    // eb_set_charset(b, &charset_utf8);
     
     /* add mark move callback */
     eb_add_callback(b, eb_offset_callback, &b->mark);
@@ -739,49 +743,59 @@ void do_undo(EditState *s)
 /************************************************************/
 /* line related functions */
 
-void eb_set_charset(EditBuffer *b, QECharset *charset)
+// TODO: remove this after all the encode / decode bugs are
+// fixed i.e. moved to the new unicode.c
+/* void eb_set_charset(EditBuffer *b, QECharset *charset)
 {
     if (b->charset) {
         charset_decode_close(&b->charset_state);
     }
     b->charset = charset;
     charset_decode_init(&b->charset_state, charset);
-}
+} */
 
-/* XXX: change API to go faster */
+/* */
 int eb_nextc(EditBuffer *b, int offset, int *next_ptr)
 {
-    u8 buf[MAX_CHAR_BYTES], *p;
-    int ch;
+    const char buf[MAX_CHAR_BYTES] = {0};
 
+    // XXX: rune?
+    unsigned int ch;
+
+	// if we're going past the EOF return new line
     if (offset >= b->total_size) {
         offset = b->total_size;
         ch = '\n';
     } else {
-        eb_read(b, offset, buf, 1);
-        
-        /* we use directly the charset conversion table to go faster */
-        ch = b->charset_state.table[buf[0]];
+
+		// read the first byte
+        eb_read(b, offset, (void *)buf, 1);
         offset++;
-        if (ch == ESCAPE_CHAR) {
-            eb_read(b, offset, buf + 1, MAX_CHAR_BYTES - 1);
-            p = buf;
-            ch = b->charset_state.decode_func(&b->charset_state, 
-                                              (const u8 **)&p);
-            offset += (p - buf) - 1;
-        }
+                
+        // look at the bits of the first byte to
+        // find the length, then read that number
+        // to...
+    	int len = utf8_len(buf[0]);
+    	for(int cp = 1; cp < len; cp++) {
+			eb_read(b, offset, (void *)(buf+cp), 1);
+    		offset++;
+    	}
+    	// create valid utf8 codepoint (rune)
+		ch = to_rune((const char *)&buf);
     }
+    
     if (next_ptr)
         *next_ptr = offset;
+    
     return ch;
 }
 
 /* XXX: only UTF8 charset is supported */
-/* XXX: suppress that */
 int eb_prevc(EditBuffer *b, int offset, int *prev_ptr)
 {
-    int ch;
-    u8 buf[MAX_CHAR_BYTES], *q;
+    int ch = 0;
+    u8 buf[MAX_CHAR_BYTES] = {0}; 
+    u8 *q; // pointer to the end of the buffer
 
     if (offset <= 0) {
         offset = 0;
@@ -792,27 +806,32 @@ int eb_prevc(EditBuffer *b, int offset, int *prev_ptr)
         offset--;
         q = buf + sizeof(buf) - 1;
         eb_read(b, offset, q, 1);
-		
-        // if (b->charset == &charset_utf8) {
-            while (*q >= 0x80 && *q < 0xc0) {
-                if (offset == 0 || q == buf) {
-                    // error : take only previous char
-                    offset += buf - 1 - q;
-                    ch = buf[sizeof(buf) - 1];
-                    goto the_end;
-                }
-                offset--;
-                q--;
-                eb_read(b, offset, q, 1);
+        
+		// since we are reading backwards, we have to see
+		// if we are looking at a continuation bit and
+		// keep moving backwards until we find a char with
+		// the bit set to be a utf8 start set                
+        while ((*q >= 0x80 && *q < 0xc0) && offset >= 0) {
+        	if (offset == 0 || q == buf) {
+            	// error : take only previous char
+            	int pchar = buf - 1 - q;
+                offset += (pchar >= 0) ? pchar : 0;
+                ch = buf[sizeof(buf) - 1];
+                goto the_end;
             }
-			
-            ch = utf8_decode((const char **)(void *)&q);
-			// this makes C+a not work because comparing to 
-			// newline returns false.
-			// ch = to_rune((const char **)(void *)&q);
-        // } else {
-        //    ch = *q;
-        //}
+            offset--;
+            q--;
+            eb_read(b, offset, q, 1);
+        }
+        
+        // offset should be rewound to the start of the
+        // utf8 char, so try to read it now
+        int len = utf8_len(q[0]);
+    	for(int cp = 1; cp < len; cp++) {
+			eb_read(b, offset+cp, (void *)(q+cp), 1);
+    	}
+    	// create valid utf8 codepoint (rune)
+		ch = to_rune((const char *)q);
     }
 the_end:
     if (prev_ptr)
@@ -821,8 +840,7 @@ the_end:
 }
 
 /* return the number of lines and column position for a buffer */
-static void get_pos(u8 *buf, int size, int *line_ptr, int *col_ptr, 
-                    CharsetDecodeState *s)
+static void get_pos(u8 *buf, int size, int *line_ptr, int *col_ptr)
 {
     u8 *p, *p1, *lp;
     int line, len, col, ch;
@@ -844,17 +862,20 @@ static void get_pos(u8 *buf, int size, int *line_ptr, int *col_ptr,
     /* now compute number of chars (XXX: potential problem if out of
        block, but for UTF8 it works) */
     col = 0;
+    
     while (lp < p1) {
-        ch = s->table[*lp];
+        ch = lp[0]; // cs->table[*lp];
         if (ch == ESCAPE_CHAR) {
             /* XXX: utf8 only is handled */
-            len = utf8_length[*lp];
+            // len = utf8_length[*lp];
+            len = utf8_len(lp[0]);
             lp += len;
         } else {
             lp++;
         }
         col++;
     }
+    
     *line_ptr = line;
     *col_ptr = col;
 }
@@ -873,8 +894,7 @@ int eb_goto_pos(EditBuffer *b, int line1, int col1)
     while (p < p_end) {
         if (!(p->flags & PG_VALID_POS)) {
             p->flags |= PG_VALID_POS;
-            get_pos(p->data, p->size, &p->nb_lines, &p->col, 
-                    &b->charset_state);
+            get_pos(p->data, p->size, &p->nb_lines, &p->col);
         }
         line2 = line + p->nb_lines;
         if (p->nb_lines)
@@ -925,8 +945,7 @@ int eb_get_pos(EditBuffer *b, int *line_ptr, int *col_ptr, int offset)
             break;
         if (!(p->flags & PG_VALID_POS)) {
             p->flags |= PG_VALID_POS;
-            get_pos(p->data, p->size, &p->nb_lines, &p->col, 
-                    &b->charset_state);
+            get_pos(p->data, p->size, &p->nb_lines, &p->col);
         }
         line += p->nb_lines;
         if (p->nb_lines)
@@ -935,7 +954,7 @@ int eb_get_pos(EditBuffer *b, int *line_ptr, int *col_ptr, int offset)
         offset -= p->size;
         p++;
     }
-    get_pos(p->data, offset, &line1, &col1, &b->charset_state);
+    get_pos(p->data, offset, &line1, &col1);
     line += line1;
     if (line1)
         col = 0;
@@ -949,14 +968,11 @@ the_end:
 /************************************************************/
 /* char offset computation */
 
-static int get_chars(u8 *buf, int size, QECharset *charset)
+static int get_chars(u8 *buf, int size)
 {
     int nb_chars, c;
     u8 *buf_end, *buf_ptr;
-
-    if (charset != &charset_utf8)
-        return size;
-
+    
     nb_chars = 0;
     buf_ptr = buf;
     buf_end = buf + size;
@@ -968,13 +984,10 @@ static int get_chars(u8 *buf, int size, QECharset *charset)
     return nb_chars;
 }
 
-static int goto_char(u8 *buf, int pos, QECharset *charset)
+static int goto_char(u8 *buf, int pos)
 {
     int nb_chars, c;
     u8 *buf_ptr;
-
-    if (charset != &charset_utf8)
-        return pos;
 
     nb_chars = 0;
     buf_ptr = buf;
@@ -999,28 +1012,22 @@ int eb_goto_char(EditBuffer *b, int pos)
     int offset;
     Page *p, *p_end;
 
-    if (b->charset != &charset_utf8) {
-        offset = pos;
-        if (offset > b->total_size)
-            offset = b->total_size;
-    } else {
-        offset = 0;
-        p = b->page_table;
-        p_end = b->page_table + b->nb_pages;
-        while (p < p_end) {
-            if (!(p->flags & PG_VALID_CHAR)) {
-                p->flags |= PG_VALID_CHAR;
-                p->nb_chars = get_chars(p->data, p->size, b->charset);
-            }
-            if (pos < p->nb_chars) {
-                offset += goto_char(p->data, pos, b->charset);
-                break;
-            } else {
-                pos -= p->nb_chars;
-                offset += p->size;
-                p++;
-            }
-        }
+    offset = 0;
+    p = b->page_table;
+    p_end = b->page_table + b->nb_pages;
+    while (p < p_end) {
+ 	   if (!(p->flags & PG_VALID_CHAR)) {
+    	   p->flags |= PG_VALID_CHAR;
+           p->nb_chars = get_chars(p->data, p->size);
+       }
+      if (pos < p->nb_chars) {
+           offset += goto_char(p->data, pos);
+           break;
+      } else {
+           pos -= p->nb_chars;
+           offset += p->size;
+           p++;
+      }
     }
     return offset;
 }
@@ -1034,31 +1041,25 @@ int eb_get_char_offset(EditBuffer *b, int offset)
     int pos;
     Page *p, *p_end;
 
-    /* if no decoding function in charset, it means it is 8 bit only */
-    if (b->charset_state.decode_func == NULL) {
-        pos = offset;
-        if (pos > b->total_size)
-            pos = b->total_size;
-    } else {
-        p = b->page_table;
-        p_end = p + b->nb_pages;
-        pos = 0;
-        for (;;) {
-            if (p >= p_end)
-                goto the_end;
-            if (offset < p->size)
-                break;
-            if (!(p->flags & PG_VALID_CHAR)) {
-                p->nb_chars = get_chars(p->data, p->size, b->charset);
-                p->flags |= PG_VALID_CHAR;
-            }
-            pos += p->nb_chars;
-            offset -= p->size;
-            p++;
+    p = b->page_table;
+    p_end = p + b->nb_pages;
+    pos = 0;
+    for (;;) {
+        if (p >= p_end)
+            goto the_end;
+        if (offset < p->size)
+            break;
+        if (!(p->flags & PG_VALID_CHAR)) {
+            p->nb_chars = get_chars(p->data, p->size);
+            p->flags |= PG_VALID_CHAR;
         }
-        pos += get_chars(p->data, offset, b->charset);
-    the_end: ;
+        pos += p->nb_chars;
+        offset -= p->size;
+        p++;
     }
+    pos += get_chars(p->data, offset);
+the_end: ;
+
     return pos;
 }
 

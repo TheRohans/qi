@@ -93,8 +93,6 @@ typedef struct QEDisplay {
 struct QEditScreen {
     struct QEDisplay dpy;
     int width, height;
-    QECharset *charset; /* the charset of the TTY, XXX: suppress that,
-                          use a system in fonts instead */
     int media;          /* media type (see CSS_MEDIA_xxx) */
     int bitmap_format;  /* supported bitmap format */
     int video_format;   /* supported video format */

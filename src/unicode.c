@@ -110,3 +110,67 @@ rune to_rune(const char chr[4])
  
 	return codep;
 }
+
+/**
+ * Given an array of chars, create a utf8 array of runes.
+ * In other words, given an array of bytes that might have
+ * utf8 chars in it, return an array of integers that can
+ * be used for display.
+ *
+ * Returns the new array length as it might be different from
+ * the initial src_size.
+ */
+int str_to_utf8(const char *str, rune *dest, int src_size)
+{
+    char tmp[5] = {0};
+    int srci = 0;
+    int len = 0;
+    for(int i = 0; i < src_size; i++) {
+    	if(str[srci] == 0) break;
+    	
+    	// look at the first char to see if it's
+    	// more than one byte
+    	int plen = utf8_len(str[srci]);
+    	if(plen > 1) {
+    		// turn multibyte into a single int
+    		for(int c = 0; c < plen; c++) {
+    			tmp[c] = str[srci+c];
+    		}
+			rune r = to_rune(tmp);
+			dest[len] = r;
+			len++;
+    	} else {
+    		// one byte
+	    	dest[len] = str[srci];
+   	    	len++;
+    	}
+   	    // move the source pointer based on 
+		// the number of utf8 bytes.
+    	srci += plen;
+    }
+    
+    return len;
+}
+
+/**
+ * Used when flushing a fragment to the display.
+ * TODO: understand this better - might not be needed
+ * (from old unicode_join.c file)
+ */
+int unicode_to_glyphs(unsigned int *dst, unsigned int *char_to_glyph_pos,
+                      int dst_size, unsigned int *src, int src_size, int reverse)
+{
+    int len, i;
+
+    len = src_size;
+    if (len > dst_size)
+        len = dst_size;
+    memcpy(dst, src, len * sizeof(unsigned int));
+    if (char_to_glyph_pos) {
+        for (i = 0; i < len; i++)
+            char_to_glyph_pos[i] = i;
+    }
+    return len;
+}
+
+
