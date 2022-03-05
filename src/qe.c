@@ -6681,7 +6681,7 @@ void qe_init(void *opaque)
     set_user_option(NULL);
 
     eb_init();
-    charset_init();
+    // charset_init();
     init_input_methods();
     load_ligatures();
 

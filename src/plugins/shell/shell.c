@@ -1040,7 +1040,7 @@ EditBuffer *new_shell_buffer(const char *name, const char *path,
     if (!b)
         return NULL;
     set_buffer_name(b, name); /* ensure that the name is unique */
-    eb_set_charset(b, &charset_vt100);
+    // eb_set_charset(b, &charset_vt100);
 
     s = malloc(sizeof(ShellState));
     if (!s) {

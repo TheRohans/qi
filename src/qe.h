@@ -548,7 +548,10 @@ void eb_free(EditBuffer *b);
 EditBuffer *eb_find(const char *name);
 EditBuffer *eb_find_file(const char *filename);
 
+// TODO: remove after move to unicode.c
 void eb_set_charset(EditBuffer *b, QECharset *charset);
+///////
+
 int eb_nextc(EditBuffer *b, int offset, int *next_ptr);
 int eb_prevc(EditBuffer *b, int offset, int *prev_ptr);
 int eb_goto_pos(EditBuffer *b, int line1, int col1);

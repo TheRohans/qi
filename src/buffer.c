@@ -462,6 +462,7 @@ EditBuffer *eb_new(const char *name, int flags)
     b->next = qs->first_buffer;
     qs->first_buffer = b;
 
+	// TODO: remove after move to unicode.c
     eb_set_charset(b, &charset_utf8);
     
     /* add mark move callback */
@@ -742,6 +743,8 @@ void do_undo(EditState *s)
 /************************************************************/
 /* line related functions */
 
+// TODO: remove this after all the encode / decode bugs are
+// fixed i.e. moved to the new unicode.c
 void eb_set_charset(EditBuffer *b, QECharset *charset)
 {
     if (b->charset) {
@@ -788,11 +791,11 @@ int eb_nextc(EditBuffer *b, int offset, int *next_ptr)
 }
 
 /* XXX: only UTF8 charset is supported */
-/* XXX: suppress that */
 int eb_prevc(EditBuffer *b, int offset, int *prev_ptr)
 {
-    int ch;
-    u8 buf[MAX_CHAR_BYTES], *q;
+    int ch = 0;
+    u8 buf[MAX_CHAR_BYTES] = {0}; 
+    u8 *q; // pointer to the end of the buffer
 
     if (offset <= 0) {
         offset = 0;
@@ -803,27 +806,31 @@ int eb_prevc(EditBuffer *b, int offset, int *prev_ptr)
         offset--;
         q = buf + sizeof(buf) - 1;
         eb_read(b, offset, q, 1);
-		
-        // if (b->charset == &charset_utf8) {
-            while (*q >= 0x80 && *q < 0xc0) {
-                if (offset == 0 || q == buf) {
-                    // error : take only previous char
-                    offset += buf - 1 - q;
-                    ch = buf[sizeof(buf) - 1];
-                    goto the_end;
-                }
-                offset--;
-                q--;
-                eb_read(b, offset, q, 1);
+        
+		// since we are reading backwards, we have to see
+		// if we are looking at a continuation bit and
+		// keep moving backwards until we find a char with
+		// the bit set to be a utf8 start set                
+        while ((*q >= 0x80 && *q < 0xc0) && offset >= 0) {
+        	if (offset == 0 || q == buf) {
+            	// error : take only previous char
+                offset += buf - 1 - q;
+                ch = buf[sizeof(buf) - 1];
+                goto the_end;
             }
-			
-            ch = utf8_decode((const char **)(void *)&q);
-			// this makes C+a not work because comparing to 
-			// newline returns false.
-			// ch = to_rune((const char **)(void *)&q);
-        // } else {
-        //    ch = *q;
-        //}
+            offset--;
+            q--;
+            eb_read(b, offset, q, 1);
+        }
+        
+        // offset should be rewound to the start of the
+        // utf8 char, so try to read it now
+        int len = utf8_len(q[0]);
+    	for(int cp = 1; cp < len; cp++) {
+			eb_read(b, offset+cp, (void *)(q+cp), 1);
+    	}
+    	// create valid utf8 codepoint (rune)
+		ch = to_rune((const char *)q);
     }
 the_end:
     if (prev_ptr)
