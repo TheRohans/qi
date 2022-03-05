@@ -152,3 +152,25 @@ int str_to_utf8(const char *str, rune *dest, int src_size)
     return len;
 }
 
+/**
+ * Used when flushing a fragment to the display.
+ * TODO: understand this better - might not be needed
+ * (from old unicode_join.c file)
+ */
+int unicode_to_glyphs(unsigned int *dst, unsigned int *char_to_glyph_pos,
+                      int dst_size, unsigned int *src, int src_size, int reverse)
+{
+    int len, i;
+
+    len = src_size;
+    if (len > dst_size)
+        len = dst_size;
+    memcpy(dst, src, len * sizeof(unsigned int));
+    if (char_to_glyph_pos) {
+        for (i = 0; i < len; i++)
+            char_to_glyph_pos[i] = i;
+    }
+    return len;
+}
+
+

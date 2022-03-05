@@ -183,98 +183,6 @@ typedef struct CmdOptionDef {
 
 void qe_register_cmd_line_options(CmdOptionDef *table);
 
-/* ///////////////////////////////////////////////////////////////////////// */
-/* charset.c */
-
-/**
- * maximum number of bytes for a character in all the supported charsets 
- */
-#define MAX_CHAR_BYTES 6
-
-struct CharsetDecodeState;
-
-typedef struct QECharset {
-    const char *name;
-    const char **aliases;
-    void (*decode_init)(struct CharsetDecodeState *);
-    int (*decode_func)(struct CharsetDecodeState *,
-                       const unsigned char **);
-    /* return NULL if cannot encode. Currently no state since speed is
-       not critical yet */
-    unsigned char *(*encode_func)(struct QECharset *, unsigned char *, int); 
-    u8 table_alloc; /* true if CharsetDecodeState.table must be malloced */
-    /* private data for some charsets */
-    u8 min_char, max_char;
-    const unsigned short *private_table;
-    struct QECharset *next;
-} QECharset;
-
-extern QECharset *first_charset;
-extern QECharset charset_utf8, charset_8859_1; //!< predefined charsets 
-extern QECharset charset_vt100;                //!< used for the tty output 
-
-typedef struct CharsetDecodeState {
-    /* 256 ushort table for hyper fast decoding */
-    unsigned short *table; 
-    /* slower decode function for complicated cases */
-    int (*decode_func)(struct CharsetDecodeState *,
-                       const unsigned char **); 
-    QECharset *charset;
-} CharsetDecodeState;
-
-#define INVALID_CHAR 0xfffd
-#define ESCAPE_CHAR  0xffff
-
-void charset_init(void);
-
-void qe_register_charset(QECharset *charset);
-
-char *utf8_encode(char *q, int c);
-int utf8_decode(const char **pp);
-extern unsigned char utf8_length[256];
-
-int utf8_to_unicode(unsigned int *dest, int dest_length, 
-                    const char *str);
-
-QECharset *find_charset(const char *str);
-void charset_decode_init(CharsetDecodeState *s, QECharset *charset);
-void charset_decode_close(CharsetDecodeState *s);
-
-static inline int charset_decode(CharsetDecodeState *s, const char **pp)
-{
-    const unsigned char *p;
-    int c;
-    p = *(const unsigned char **)pp;
-    c = *p;
-    c = s->table[c];
-    if (c == ESCAPE_CHAR) {
-        c = s->decode_func(s, (const unsigned char **)pp);
-    } else {
-        p++;
-        *(const unsigned char **)pp = p;
-    }
-    return c;
-}
-
-QECharset *detect_charset (const unsigned char *buf, int size);
-
-void decode_8bit_init(CharsetDecodeState *s);
-unsigned char *encode_8bit(QECharset *charset, unsigned char *q, int c);
-
-// int unicode_to_charset(char *buf, unsigned int c, QECharset *charset);
-
-/* arabic.c */
-int arab_join(unsigned int *line, unsigned int *ctog, int len);
-
-/* indic.c */
-int devanagari_log2vis(unsigned int *str, unsigned int *ctog, int len);
-
-/* unicode_join.c */
-int unicode_to_glyphs(unsigned int *dst, unsigned int *char_to_glyph_pos,
-                      int dst_size, unsigned int *src, int src_size, 
-                      int reverse);
-void load_ligatures(void);
-
 /**
  * qe event handling 
  */
@@ -479,9 +387,6 @@ typedef struct EditBuffer {
 
     struct EditBufferDataType *data_type;    //!< buffer data type (default is raw) 
     void *data; //!< associated buffer data, used if data_type != raw_data
-    
-    CharsetDecodeState charset_state;    //!< charset handling 
-    QECharset *charset;
 
     // undo system 
     int save_log;    //!< if true, each buffer operation is logged 
@@ -547,10 +452,6 @@ EditBuffer *eb_new(const char *name, int flags);
 void eb_free(EditBuffer *b);
 EditBuffer *eb_find(const char *name);
 EditBuffer *eb_find_file(const char *filename);
-
-// TODO: remove after move to unicode.c
-void eb_set_charset(EditBuffer *b, QECharset *charset);
-///////
 
 int eb_nextc(EditBuffer *b, int offset, int *next_ptr);
 int eb_prevc(EditBuffer *b, int offset, int *prev_ptr);
@@ -752,7 +653,7 @@ typedef struct EditState {
     struct EditState *next_window;
 } EditState;
 
-// TODO: Need to sort out what this is trying to do. This is erroring:
+// TODO: Need to sort out what this is doing. This is erroring:
 // qe.h:773:5: error: variably modified `generic_data` at file scope [-Werror]
 // 
 // becuase this value is being used to create an array size at compile

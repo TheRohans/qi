@@ -1605,30 +1605,6 @@ static void do_cmd_set_mode(EditState *s, const char *name)
         do_set_mode(s, m, NULL);
 }
 
-/*void charset_completion(StringArray *cs, const char *charset_str)
-{
-    QECharset *p;
-    int len;
-
-    len = strlen(charset_str);
-    for (p = first_charset; p != NULL; p = p->next) {
-        if (!strncmp(p->name, charset_str, len))
-            add_string(cs, p->name);
-    }
-}*/
-
-/* QECharset *read_charset(EditState *s, const char *charset_str)
-{
-    QECharset *charset;
-    
-    charset = find_charset(charset_str);
-    if (!charset) {
-        put_status(s, "Unknown charset '%s'", charset_str);
-        return NULL;
-    }
-    return charset;
-} */
-
 void do_toggle_line_numbers(EditState *s)
 {
     s->line_numbers = !s->line_numbers;
@@ -1785,7 +1761,7 @@ void text_mode_line(EditState *s, char *buf, int buf_size)
 
     eb_get_pos(s->b, &line_num, &col_num, s->offset);
     q += sprintf(q, "L%d--C%d--%s", 
-                 line_num + 1, col_num, "utf8"); // s->b->charset->name);
+                 line_num + 1, col_num, "utf-8");
     if (s->bidir) {
         q += sprintf(q, "--%s", s->cur_rtl ? "RTL" : "LTR");
     }
@@ -2312,6 +2288,7 @@ static void flush_fragment(DisplayState *s)
         s->line_offsets[j][1] = -1;
         j++;
     }
+    
     for (i = 0; i < s->fragment_index; i++) {
         int offset1, offset2;
         j = s->line_index + char_to_glyph_pos[i];
@@ -5180,7 +5157,7 @@ static void isearch_display(ISearchState *is)
        	v = is->search_string[i];
         if (!(v & FOUND_TAG)) {
         	to_utf8(tmp, v);
-        	int l = utf8_len(tmp[0]);
+        	// int l = utf8_len(tmp[0]);
             usprintf(&uq, tmp);
         	// uq = utf8_encode(uq, v);
         }
@@ -6681,9 +6658,7 @@ void qe_init(void *opaque)
     set_user_option(NULL);
 
     eb_init();
-    // charset_init();
     init_input_methods();
-    load_ligatures();
 
     // init basic modules
     qe_register_mode(&text_mode);
@@ -6691,8 +6666,6 @@ void qe_init(void *opaque)
     qe_register_cmd_line_options(cmd_options);
 
     register_completion("command", command_completion);
-    // register_completion("charset", charset_completion);
-    // register_completion("style", style_completion);
     register_completion("file", file_completion);
     register_completion("buffer", buffer_completion);
     
