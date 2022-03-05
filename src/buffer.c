@@ -463,7 +463,7 @@ EditBuffer *eb_new(const char *name, int flags)
     qs->first_buffer = b;
 
 	// TODO: remove after move to unicode.c
-    eb_set_charset(b, &charset_utf8);
+    // eb_set_charset(b, &charset_utf8);
     
     /* add mark move callback */
     eb_add_callback(b, eb_offset_callback, &b->mark);
@@ -745,14 +745,14 @@ void do_undo(EditState *s)
 
 // TODO: remove this after all the encode / decode bugs are
 // fixed i.e. moved to the new unicode.c
-void eb_set_charset(EditBuffer *b, QECharset *charset)
+/* void eb_set_charset(EditBuffer *b, QECharset *charset)
 {
     if (b->charset) {
         charset_decode_close(&b->charset_state);
     }
     b->charset = charset;
     charset_decode_init(&b->charset_state, charset);
-}
+} */
 
 /* */
 int eb_nextc(EditBuffer *b, int offset, int *next_ptr)
@@ -864,7 +864,7 @@ static void get_pos(u8 *buf, int size, int *line_ptr, int *col_ptr,
     col = 0;
     
     while (lp < p1) {
-        ch = s->table[*lp];
+        ch = lp[0]; // cs->table[*lp];
         if (ch == ESCAPE_CHAR) {
             /* XXX: utf8 only is handled */
             // len = utf8_length[*lp];

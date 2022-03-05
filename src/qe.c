@@ -1785,7 +1785,7 @@ void text_mode_line(EditState *s, char *buf, int buf_size)
 
     eb_get_pos(s->b, &line_num, &col_num, s->offset);
     q += sprintf(q, "L%d--C%d--%s", 
-                 line_num + 1, col_num, s->b->charset->name);
+                 line_num + 1, col_num, "utf8"); // s->b->charset->name);
     if (s->bidir) {
         q += sprintf(q, "--%s", s->cur_rtl ? "RTL" : "LTR");
     }
