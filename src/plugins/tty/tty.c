@@ -304,7 +304,7 @@ static void tty_read_handler(void *opaque)
 			return;
 	    }
     }
-    ch = to_rune(ts->buf);
+    ch = to_rune((const char *)ts->buf);
         
     switch(ts->input_state) {
     case IS_NORM:

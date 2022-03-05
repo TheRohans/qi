@@ -4647,7 +4647,6 @@ static void do_load1(EditState *s, const char *filename1,
     int mode, buf_size;
     ModeDef *selected_mode;
     EditBuffer *b;
-    EditBufferDataType *bdt;
     FILE *f;
     struct stat st;
 
@@ -4715,11 +4714,6 @@ fail1:
     selected_mode = probe_mode(s, mode, buf, buf_size);
     if (!selected_mode)
         goto fail1;
-    bdt = selected_mode->data_type;
-
-    // autodetect buffer charset (could move it to raw buffer loader)
-    // if (bdt == &raw_data_type) 
-    //    eb_set_charset(b, detect_charset(buf, buf_size));
 
     // now we can set the mode
     do_set_mode_file(s, selected_mode, NULL, f);
