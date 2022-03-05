@@ -867,7 +867,8 @@ static void get_pos(u8 *buf, int size, int *line_ptr, int *col_ptr,
         ch = s->table[*lp];
         if (ch == ESCAPE_CHAR) {
             /* XXX: utf8 only is handled */
-            len = utf8_length[*lp];
+            // len = utf8_length[*lp];
+            len = utf8_len(lp[0]);
             lp += len;
         } else {
             lp++;
