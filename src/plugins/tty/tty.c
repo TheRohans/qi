@@ -192,9 +192,6 @@ static int term_init(QEditScreen *s, int w, int h)
     
     tcsetattr(0, TCSANOW, &tty);
 
-    // only support utf8
-    s->charset = &charset_utf8;
-
     atexit(term_exit);
 
     fcntl(0, F_SETFL, O_NONBLOCK);

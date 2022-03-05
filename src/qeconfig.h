@@ -187,7 +187,7 @@ CmdDef basic_commands[] = {
     CMD_( KEY_NONE, KEY_NONE, "set-mode", do_cmd_set_mode, "s{Set mode: }[mode]")
     CMD0( KEY_CTRLX('h'), KEY_NONE, "mark-whole-buffer", do_mark_whole_buffer)
     CMD0( KEY_CTRLX('l'), KEY_NONE, "count-lines", do_count_lines)
-    CMD0( KEY_CTRLX('='), KEY_NONE, "what-cursor-position", do_what_cursor_position)
+    // CMD0( KEY_CTRLX('='), KEY_NONE, "what-cursor-position", do_what_cursor_position)
     
     // tab & indent
     CMD_( KEY_NONE, KEY_NONE, "set-tab-width", do_set_tab_width, "i{Tab width: }")

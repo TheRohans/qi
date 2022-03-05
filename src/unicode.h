@@ -16,6 +16,8 @@ void to_utf8(char *buff, const rune cp);
 int utf8_len(const char ch);
 
 rune to_rune(const char chr[4]);
+
+int str_to_utf8(const char *src, rune *dest, int src_size);
  
 #endif // end guard
 

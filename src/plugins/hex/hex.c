@@ -237,7 +237,9 @@ void hex_write_char(EditState *s, int key)
         if (s->insert && s->hex_nibble == 0) {
             ch = h << ((hsize - 1) * 4);
             if (s->unihex_mode) {
-                len = unicode_to_charset(buf, ch, s->b->charset);
+                // len = unicode_to_charset(buf, ch, s->b->charset);
+                to_utf8(buf, ch);
+				len = utf8_len(buf[0]);
             } else {
                 len = 1;
                 buf[0] = ch;
@@ -257,7 +259,8 @@ void hex_write_char(EditState *s, int key)
             ch = (cur_ch & ~(0xf << shift)) | (h << shift);
 
             if (s->unihex_mode) {
-                len = unicode_to_charset(buf, ch, s->b->charset);
+                to_utf8(buf, ch);
+                len = utf8_len(buf[0]);
             } else {
                 len = 1;
                 buf[0] = ch;

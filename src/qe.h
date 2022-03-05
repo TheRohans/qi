@@ -261,7 +261,7 @@ QECharset *detect_charset (const unsigned char *buf, int size);
 void decode_8bit_init(CharsetDecodeState *s);
 unsigned char *encode_8bit(QECharset *charset, unsigned char *q, int c);
 
-int unicode_to_charset(char *buf, unsigned int c, QECharset *charset);
+// int unicode_to_charset(char *buf, unsigned int c, QECharset *charset);
 
 /* arabic.c */
 int arab_join(unsigned int *line, unsigned int *ctog, int len);
