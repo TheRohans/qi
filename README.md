@@ -19,11 +19,11 @@ like about _emacs_ with the speed and system integration of _vi_. Qi focuses
 on the following goals:
 
 - Speed and large file editing
-- Only terminal editor (no x11, etc)
+- Terminal editor (no x11, etc)
 - Emacs bindings and usage emulation (chords, minibuffer, modes, etc)
 - Compiles to a single, self contained binary
-- Cross platform (unix based system)
-- Multi-language (human) support - with a focus on English and Chinese.
+- Cross platform (posix based systems)
+- Multi-language (human) support - with a focus on English, French and Chinese.
 - Multi-language (computer) support
 	- C
 	- Markdown
@@ -31,10 +31,10 @@ on the following goals:
 	- Golang
 	- YAML
 	- Lua
-- Default encoding UTF-8
+- UTF-8 encoding
 - Hex editing
 
-Qi was forked from QEmacs 3.2 with a lot of features stripped out.
+Qi was originally forked from QEmacs 3.2. Qi has been heavily modified from QEmacs, and it is not backwards compatible with QEmacs.
 
 ## Demo
 
