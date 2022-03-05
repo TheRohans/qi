@@ -44,48 +44,6 @@ CmdDef basic_commands[] = {
     CMD_( KEY_CTRL('y'), KEY_NONE, "yank", do_yank, "*")
     CMD_( KEY_META('y'), KEY_NONE, "yank-pop", do_yank_pop, "*")
 
-    ////////////////////////////////////////    
-    // Maths
-    CMD1( KEY_META('s'), KEY_NONE, "math-sqrt", do_char,              L'√')
-    CMD1( KEY_META('S'), KEY_NONE, "math-cube-root", do_char,         L'∛')
-    CMD1( KEY_META('i'), KEY_NONE, "math-integral", do_char,          L'∫')
-    CMD1( KEY_META('a'), KEY_NONE, "math-angle", do_char,             L'∠')
-    CMD1( KEY_META('o'), KEY_NONE, "math-omega", do_char,             L'Ω')
-    CMD1( KEY_META('p'), KEY_NONE, "math-pi", do_char,                L'π')
-    CMD1( KEY_META('+'), KEY_NONE, "math-sigma", do_char,             L'∑')
-    CMD1( KEY_META('8'), KEY_NONE, "math-infinity", do_char,          L'∞')
-    CMD1( KEY_META('('), KEY_NONE, "math-epsilon-l", do_char,         L'ϵ')
-    CMD1( KEY_META(')'), KEY_NONE, "math-epsilon-r", do_char,         L'϶')
-    CMD1( KEY_META('t'), KEY_NONE, "math-theta", do_char,             L'ϴ')
-    CMD1( KEY_META('T'), KEY_NONE, "math-therefore", do_char,         L'∴')
-    CMD1( KEY_META('/'), KEY_NONE, "math-div", do_char,               L'÷')
-    CMD1( KEY_NONE,      KEY_NONE, "math-cross", do_char,             L'⨯')
-    CMD1( KEY_NONE,      KEY_NONE, "math-degree", do_char,            L'°')
-    CMD1( KEY_META('*'), KEY_NONE, "math-dot", do_char,               L'∙')
-    
-    CMD1( KEY_META('1'), KEY_NONE, "math-sub-1", do_char,             L'₁')
-    CMD1( KEY_META('2'), KEY_NONE, "math-sup-2", do_char,             L'²')
-    CMD1( KEY_META('3'), KEY_NONE, "math-sup-3", do_char,             L'³')
-    CMD1( KEY_META('4'), KEY_NONE, "math-sup-n", do_char,             L'ⁿ')
-    
-    CMD1( KEY_META('!'), KEY_NONE, "math-ceil-l", do_char,            L'⌈')
-    CMD1( KEY_META('@'), KEY_NONE, "math-ceil-r", do_char,            L'⌉')
-    CMD1( KEY_META('#'), KEY_NONE, "math-floor-l", do_char,           L'⌊')
-    CMD1( KEY_META('$'), KEY_NONE, "math-floor-r", do_char,           L'⌋')
-    
-    CMD1( KEY_META('_'), KEY_NONE, "math-horz-bar", do_char,          L'―')
-    
-    // XXX: Doing this messes up the cursor position becuase we are not taking
-    // combined char into account when doing length
-    CMD1( KEY_META('h'), KEY_NONE, "math-vector-arrow", do_char,      0x20D7)// x⃗
-    // XXX: can not meta with arrow keys
-    CMD1( KEY_META(KEY_UP), KEY_NONE, "math-up-arrow", do_char,       L'⭡')
-    CMD1( KEY_META(KEY_DOWN), KEY_NONE, "math-down-arrow", do_char,   L'⭣')
-    CMD1( KEY_META(KEY_LEFT), KEY_NONE, "math-left-arrow", do_char,   L'⭠')
-    CMD1( KEY_META(KEY_RIGHT), KEY_NONE, "math-right-arrow", do_char, L'⭢')
-    // Unused: ep\|jk;:'"cnm,.?1234567890^&-= 
-    ////////////////////////////////////////
-    
 	// do_tab will not change read only buffer
     CMD0( KEY_CTRL('i'), KEY_NONE, "tabulate", do_tab)
     

@@ -6627,6 +6627,7 @@ static inline void init_all_modules(void)
     config_init();
     go_init();
     ts_init();
+    maths_init();
 	//example_init();
 #endif
 }

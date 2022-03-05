@@ -1,8 +1,9 @@
 # modify to get the path of the qemacs sources
 QEMACS_PATH=../../
+#LOAD_PATH=../../build/plugins/
 LOAD_PATH=../
 # define the object files it contains
-OBJS=shell.o
+OBJS=maths.o
 
 INCLUDES=-I$(QEMACS_PATH)
 DEFINES=-DQE_MODULE
@@ -14,7 +15,4 @@ all: $(OBJS)
 	$(CC) $(CFLAGS) -c -o $(LOAD_PATH)$@ $<
 
 clean:
-	rm -f $(LOAD_PATH)shell.o
-
-test:
-	@echo 'shell has no tests'
+	rm -f $(LOAD_PATH)maths.o

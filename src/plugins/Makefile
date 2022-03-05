@@ -50,6 +50,7 @@ extra:
 # 
 	make -C golang all
 	make -C tslang all
+	make -C maths-mode all
 	
 # ar rcs libplugins.a *.o
 	ar -cvq libplugins.a *.o
@@ -75,6 +76,7 @@ clean:
 	make -C python-mode clean
 	make -C golang clean
 	make -C tslang clean
+	make -C maths-mode clean
 	
 	rm -f $(LOAD_PATH)/libplugincore.a
 	rm -f $(LOAD_PATH)/libplugins.a
