@@ -163,10 +163,9 @@ static int config_mode_probe(ModeProbeData *p) {
   // file extension
   r = extension(p->filename);
   if (*r) {
-    if (strfind("|yaml|yml|ini|make|mk|mak|config|conf|toml|", r + 1, 1))
+    if (strfind("|yaml|yml|ini|make|mk|mak|config|conf|toml|sh|", r + 1, 1))
       return 100;
   }
-
   return 0;
 }
 
