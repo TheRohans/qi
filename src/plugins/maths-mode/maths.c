@@ -32,23 +32,54 @@ int maths_mode_init(EditState *s, ModeSavedData *saved_data)
 
 /* specific Maths commands */
 static CmdDef maths_commands[] = {
-    CMD1( KEY_META('s'), KEY_NONE, "math-sqrt", do_char,              L'√')
-    CMD1( KEY_META('S'), KEY_NONE, "math-cube-root", do_char,         L'∛')
-    CMD1( KEY_META('i'), KEY_NONE, "math-integral", do_char,          L'∫')
-    CMD1( KEY_META('a'), KEY_NONE, "math-angle", do_char,             L'∠')
+
+    CMD1( KEY_META('a'), KEY_NONE, "math-alpha", do_char,             L'α')
+    CMD1( KEY_META('b'), KEY_NONE, "math-beta", do_char,              L'β')
+    
+    CMD1( KEY_META('d'), KEY_NONE, "math-differential", do_char,      L'∂')
+    CMD1( KEY_META('D'), KEY_NONE, "math-delta-u", do_char,           L'Δ')
+    
+    CMD1( KEY_META('g'), KEY_NONE, "math-gamma", do_char,             L'γ')
+    CMD1( KEY_META('t'), KEY_NONE, "math-theta", do_char,             L'ϴ')
     CMD1( KEY_META('o'), KEY_NONE, "math-omega", do_char,             L'Ω')
+    
+    CMD1( KEY_META('m'), KEY_NONE, "math-micro", do_char,             L'µ')
+        
+    CMD1( KEY_META('r'), KEY_NONE, "math-real", do_char,              L'ℝ')
+    CMD1( KEY_META('c'), KEY_NONE, "math-complex", do_char,           L'ℂ')
+    CMD1( KEY_META('n'), KEY_NONE, "math-natural", do_char,           L'ℕ')
+
+    CMD1( KEY_META('s'), KEY_NONE, "math-sqrt", do_char,              L'√')
+    CMD1( KEY_NONE,      KEY_NONE, "math-cube-root", do_char,         L'∛')
+    CMD1( KEY_META('S'), KEY_NONE, "math-summation", do_char,         L'∏')
+    
+    CMD1( KEY_META('i'), KEY_NONE, "math-integral", do_char,          L'∫')
+    CMD1( KEY_META('A'), KEY_NONE, "math-angle", do_char,             L'∠')
     CMD1( KEY_META('p'), KEY_NONE, "math-pi", do_char,                L'π')
-    CMD1( KEY_META('+'), KEY_NONE, "math-sigma", do_char,             L'∑')
+    CMD1( KEY_META('P'), KEY_NONE, "math-prime", do_char,             L'′')
+    
+    CMD1( KEY_META('+'), KEY_NONE, "math-summation", do_char,         L'∑')
+    CMD1( KEY_META('='), KEY_NONE, "math-plus-minus", do_char,        L'±')
+    
     CMD1( KEY_META('8'), KEY_NONE, "math-infinity", do_char,          L'∞')
     CMD1( KEY_META('('), KEY_NONE, "math-epsilon-l", do_char,         L'ϵ')
     CMD1( KEY_META(')'), KEY_NONE, "math-epsilon-r", do_char,         L'϶')
-    CMD1( KEY_META('t'), KEY_NONE, "math-theta", do_char,             L'ϴ')
+    CMD1( KEY_META('9'), KEY_NONE, "math-subset", do_char,            L'⊂')
+    CMD1( KEY_META('0'), KEY_NONE, "math-superset", do_char,          L'⊃')
+    CMD1( KEY_META('e'), KEY_NONE, "math-empyset", do_char,           L'∅')
+
+    CMD1( KEY_META('u'), KEY_NONE, "math-union", do_char,             L'∪')
+    CMD1( KEY_META('U'), KEY_NONE, "math-intersection", do_char,      L'∩')
+
+    CMD1( KEY_META('&'), KEY_NONE, "math-and", do_char,               L'∧')
+    CMD1( KEY_META('7'), KEY_NONE, "math-or", do_char,                L'∨')
+
     CMD1( KEY_META('T'), KEY_NONE, "math-therefore", do_char,         L'∴')
     CMD1( KEY_META('/'), KEY_NONE, "math-div", do_char,               L'÷')
-    CMD1( KEY_NONE,      KEY_NONE, "math-cross", do_char,             L'⨯')
+    CMD1( KEY_META('x'), KEY_NONE, "math-cross", do_char,             L'⨯')
     CMD1( KEY_NONE,      KEY_NONE, "math-degree", do_char,            L'°')
     CMD1( KEY_META('*'), KEY_NONE, "math-dot", do_char,               L'∙')
-    
+       
     CMD1( KEY_META('1'), KEY_NONE, "math-sub-1", do_char,             L'₁')
     CMD1( KEY_META('2'), KEY_NONE, "math-sup-2", do_char,             L'²')
     CMD1( KEY_META('3'), KEY_NONE, "math-sup-3", do_char,             L'³')
@@ -62,9 +93,10 @@ static CmdDef maths_commands[] = {
     CMD1( KEY_META('_'), KEY_NONE, "math-horz-bar", do_char,          L'―')
     
     // XXX: Doing this messes up the cursor position becuase we are not taking
-    // combined chars into account when doing utf8 length
+    // combined chars into account when doing utf8 length. Makes everything off
+    // by one
     CMD1( KEY_META('h'), KEY_NONE, "math-vector-arrow", do_char,      0x20D7)// x⃗
-    // XXX: can not meta with arrow keys
+	
     CMD1( KEY_META(KEY_UP), KEY_NONE, "math-up-arrow", do_char,       L'⭡')
     CMD1( KEY_META(KEY_DOWN), KEY_NONE, "math-down-arrow", do_char,   L'⭣')
     CMD1( KEY_META(KEY_LEFT), KEY_NONE, "math-left-arrow", do_char,   L'⭠')
