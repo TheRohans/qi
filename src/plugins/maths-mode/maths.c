@@ -65,8 +65,8 @@ static CmdDef maths_commands[] = {
     CMD1( KEY_META('='), KEY_NONE, "math-not-equal", do_char,         L'≠')
     
     CMD1( KEY_META('8'), KEY_NONE, "math-infinity", do_char,          L'∞')
-    CMD1( KEY_META('('), KEY_NONE, "math-epsilon-l", do_char,         L'ϵ')
-    CMD1( KEY_META(')'), KEY_NONE, "math-epsilon-r", do_char,         L'϶')
+    CMD1( KEY_META('('), KEY_NONE, "math-element-of", do_char,        L'∈')
+    CMD1( KEY_META(')'), KEY_NONE, "math-not-element-of", do_char,    L'∉')
     CMD1( KEY_META('9'), KEY_NONE, "math-subset", do_char,            L'⊂')
     CMD1( KEY_META('0'), KEY_NONE, "math-superset", do_char,          L'⊃')
     CMD1( KEY_META('e'), KEY_NONE, "math-empyset", do_char,           L'∅')
