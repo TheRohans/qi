@@ -45,10 +45,11 @@ static CmdDef maths_commands[] = {
     
     CMD1( KEY_META('m'), KEY_NONE, "math-micro", do_char,             L'µ')
         
-    CMD1( KEY_META('r'), KEY_NONE, "math-real-numbers", do_char,      L'ℝ')
-    CMD1( KEY_META('c'), KEY_NONE, "math-complex-numbers", do_char,   L'ℂ')
-    CMD1( KEY_META('n'), KEY_NONE, "math-natural-numbers", do_char,   L'ℕ')
-    CMD1( KEY_META('z'), KEY_NONE, "math-integer-numbers", do_char,   L'ℤ')
+    CMD1( KEY_META('R'), KEY_NONE, "math-real-numbers", do_char,      L'ℝ')
+    CMD1( KEY_META('C'), KEY_NONE, "math-complex-numbers", do_char,   L'ℂ')
+    CMD1( KEY_META('N'), KEY_NONE, "math-natural-numbers", do_char,   L'ℕ')
+    CMD1( KEY_META('Z'), KEY_NONE, "math-integer-numbers", do_char,   L'ℤ')
+    CMD1( KEY_META('Q'), KEY_NONE, "math-rational-numbers", do_char,  L'ℚ')
 
     CMD1( KEY_META('s'), KEY_NONE, "math-sqrt", do_char,              L'√')
     CMD1( KEY_NONE,      KEY_NONE, "math-cube-root", do_char,         L'∛')
