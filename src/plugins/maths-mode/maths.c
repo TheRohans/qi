@@ -61,7 +61,8 @@ static CmdDef maths_commands[] = {
     CMD1( KEY_META('P'), KEY_NONE, "math-prime", do_char,             L'′')
     
     CMD1( KEY_META('+'), KEY_NONE, "math-summation", do_char,         L'∑')
-    CMD1( KEY_META('='), KEY_NONE, "math-plus-minus", do_char,        L'±')
+    CMD1( KEY_META('-'), KEY_NONE, "math-plus-minus", do_char,        L'±')
+    CMD1( KEY_META('='), KEY_NONE, "math-not-equal", do_char,         L'≠')
     
     CMD1( KEY_META('8'), KEY_NONE, "math-infinity", do_char,          L'∞')
     CMD1( KEY_META('('), KEY_NONE, "math-epsilon-l", do_char,         L'ϵ')
