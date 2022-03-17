@@ -79,7 +79,7 @@ static CmdDef maths_commands[] = {
 
     CMD1( KEY_META('T'), KEY_NONE, "math-therefore", do_char,         L'∴')
     CMD1( KEY_META('/'), KEY_NONE, "math-div", do_char,               L'÷')
-    CMD1( KEY_META('x'), KEY_NONE, "math-cross", do_char,             L'⨯')
+    CMD1( KEY_META('X'), KEY_NONE, "math-cross", do_char,             L'⨯')
     CMD1( KEY_NONE,      KEY_NONE, "math-degree", do_char,            L'°')
     CMD1( KEY_META('*'), KEY_NONE, "math-dot", do_char,               L'∙')
        
