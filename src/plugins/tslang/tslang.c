@@ -2,7 +2,6 @@
  * Typescript / Javascript mode for Qi.
  */
 #include "qe.h"
-// #include "plugincore.h"
 #include "../clang/clang.h"
 
 static const char ts_keywords[] =
@@ -144,7 +143,7 @@ void ts_colorize_line(unsigned int *buf, int len, int *colorize_state_ptr,
       break;
     case '=':
       p++;
-      /* exit type declaration */
+      // exit type declaration
       type_decl = 0;
       break;
     default:
@@ -157,24 +156,23 @@ void ts_colorize_line(unsigned int *buf, int len, int *colorize_state_ptr,
         if (strfind(ts_keywords, kbuf, 0)) {
           set_color(p_start, p1 - p_start, QE_STYLE_KEYWORD);
         } else if (strfind(ts_types, kbuf, 0)) {
-          /* c type */
-          /* if not cast, assume type declaration */
+          // if not cast, assume type declaration
           if (*p != ')') {
             type_decl = 1;
           }
           set_color(p_start, p1 - p_start, QE_STYLE_TYPE);
         } else {
-          /* assume typedef if starting at first column */
+          // assume typedef if starting at first column
           if (p_start == buf)
             type_decl = 1;
 
           if (type_decl) {
             if (*p == '(') {
-              /* function definition case */
+              // function definition case
               set_color(p_start, p1 - p_start, QE_STYLE_FUNCTION);
               type_decl = 1;
             } else if (p_start == buf) {
-              /* assume type if first column */
+              // assume type if first column
               set_color(p_start, p1 - p_start, QE_STYLE_TYPE);
             } else {
               set_color(p_start, p1 - p_start, QE_STYLE_VARIABLE);
