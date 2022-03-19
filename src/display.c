@@ -188,13 +188,13 @@ QEFont *select_font(QEditScreen *s, int style, int size)
     fc->style = style;
     fc->size = size;
     font_cache[min_index] = fc;
- found:
+found:
     fc->timestamp = font_cache_timestamp;
     font_cache_timestamp++;
     fc->refcount++;
     return fc;
 
- fail:
+fail:
     /* select_font never returns NULL */
     /* CG: This is bogus, dummy font is not device compatible? */
     fc = &dummy_font;

@@ -688,12 +688,14 @@ void do_undo(EditState *s)
     } else {
         log_index = b->log_current - 1;
     }
+    
     if (log_index == 0) {
         put_status(s, "No futher undo information");
         return;
     } else {
         put_status(s, "Undo!");
     }
+    
     /* go backward */
     log_index -= sizeof(int);
     eb_read(b->log_buffer, log_index, (unsigned char *)&size_trailer, sizeof(int));

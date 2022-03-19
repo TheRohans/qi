@@ -1412,6 +1412,7 @@ void do_yank_pop(EditState *s)
 
     // XXX: should verify if last command was a yank 
     do_undo(s);
+    
     // XXX: not strictly correct if the ring is not full 
     if (--qs->yank_current < 0)
         qs->yank_current = NB_YANK_BUFFERS - 1;
