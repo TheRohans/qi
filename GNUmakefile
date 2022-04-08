@@ -35,6 +35,7 @@ clean:
 
 test:
 	@echo '======================================= Running Tests == '
+	cat src/config.mak
 	$(MAKE) -C src test
 
 dist: clean qi doc
