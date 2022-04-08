@@ -56,7 +56,7 @@ Qi should build on any POSIX system. It is currently being run daily on:
 - Ubuntu 20.04
 - M1 Macs
 - Raspberry Pi 1
-- FreeBSD 13
+- FreeBSD 13 (Beta: only working from within Xorg)
 
 ### Quick Start
 
