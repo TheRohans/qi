@@ -157,7 +157,7 @@ static int config_mode_probe(ModeProbeData *p) {
   const char *r;
 
   // file names
-  if (strfind("|Makefile|Dockerfile|", basename(p->filename), 0))
+  if (strfind("|Makefile|Dockerfile|GNUmakefile|", basename(p->filename), 0))
     return 100;
 
   // file extension

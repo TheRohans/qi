@@ -75,9 +75,9 @@ export CFLAGS
 all: build_plugins $(TARGETLIBS) $(TARGETS)
 
 build_plugins:
-	make -C plugins core
+	$(MAKE) -C plugins core
 ifndef CONFIG_TINY
-	make -C plugins extra
+	$(MAKE) -C plugins extra
 endif
 
 qe_g$(EXE): $(OBJS)
@@ -100,7 +100,7 @@ $(LOAD_PATH)/%.o : %.c
 	@echo ''
 
 clean:
-	make -C plugins clean
+	$(MAKE) -C plugins clean
 	rm -f *.o *.exe *~ ../build/*.o ../build/qe_g$(EXE) test
 	rm -f ../qi$(EXE)
 
@@ -114,4 +114,4 @@ test:
 	@echo '======================================== Building qi tests ==== '
 	mkdir -p ../build
 	$(CC) $(CFLAGS) $(TESTS_SRC) tests.c $(LIBS) -o ../build/run_tests
-	make -C plugins test
+	$(MAKE) -C plugins test
