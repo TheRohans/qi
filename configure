@@ -235,9 +235,9 @@ echo "HOST_CC?=$host_cc" >> ${MAK_FILE}
 echo "AR?=$ar" >> ${MAK_FILE}
 #doesn't work on OS X
 #echo "STRIP=$strip -s -R .comment -R .note" >> config.mak
-echo "CFLAGS?=$CFLAGS" >> ${MAK_FILE}
-echo "LDFLAGS?=$LDFLAGS" >> ${MAK_FILE}
-echo "EXE?=$exe" >> ${MAK_FILE}
+echo "CFLAGS=$CFLAGS" >> ${MAK_FILE}
+echo "LDFLAGS=$LDFLAGS" >> ${MAK_FILE}
+echo "EXE=$exe" >> ${MAK_FILE}
 
 if test "$cpu" = "x86" ; then
   echo "TARGET_ARCH_X86=yes" >> ${MAK_FILE}
