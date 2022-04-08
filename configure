@@ -41,7 +41,6 @@ case "$cpu" in
   ;;
 esac
 gprof="no"
-network="yes"
 win32="no"
 cygwin="no"
 lshared="no"
@@ -68,9 +67,11 @@ case $targetos in
         echo "Not sure building for net_server will succeed... good luck."
     extralibs="-lsocket"
     fi ;;
-  BSD/OS)
+  BSD/OS|FreeBSD)
     extralibs="-lpoll -lgnugetopt -lm"
     make="gmake"
+    cc="clang"
+    host_cc="clang"
     ;;
   CYGWIN*)
     cygwin="yes"
@@ -274,11 +275,6 @@ echo "" >> ${MAK_FILE}
 echo -n "#define QE_VERSION \"" >> $TMPH
 echo -n `git rev-parse --short --verify HEAD` >> $TMPH
 echo "\"" >> $TMPH
-
-if test "$network" = "yes" ; then
-  echo "#define CONFIG_NETWORK 1" >> $TMPH
-  echo "CONFIG_NETWORK=yes" >> ${MAK_FILE}
-fi
 
 if test "$debug" = "yes" ; then
   echo "#define CONFIG_DEBUG 1" >> $TMPH
