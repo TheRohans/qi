@@ -52,6 +52,7 @@ extra:
 # 
 	$(MAKE) -C golang all
 	$(MAKE) -C tslang all
+	$(MAKE) -C lualang all
 	$(MAKE) -C maths-mode all
 	
 # ar rcs libplugins.a *.o
@@ -78,6 +79,7 @@ clean:
 	$(MAKE) -C python-mode clean
 	$(MAKE) -C golang clean
 	$(MAKE) -C tslang clean
+	$(MAKE) -C lualang clean
 	$(MAKE) -C maths-mode clean
 	
 	rm -f $(LOAD_PATH)/libplugincore.a
