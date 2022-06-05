@@ -20,6 +20,7 @@ enum {
     GO_COMMENT = 1,
     GO_STRING,
     GO_STRING_Q,
+    GO_STRING_B,
 };
 
 static int get_keyword(char *buf, int buf_size, unsigned int **pp)
@@ -67,6 +68,7 @@ void go_colorize_line(unsigned int *buf, int len,
         goto parse_comment;
     case GO_STRING:
     case GO_STRING_Q:
+    case GO_STRING_B:
         goto parse_string;
     default:
         break;
@@ -102,6 +104,9 @@ parse_comment:
                 set_color(p_start, p - p_start, QE_STYLE_COMMENT);
             }
             break;
+        case '`':
+            state = GO_STRING_B;
+            goto string;
         case '\'':
             state = GO_STRING_Q;
             goto string;
@@ -118,6 +123,7 @@ parse_string:
                         break;
                     p++;
                 } else if ((*p == '\'' && state == GO_STRING_Q) ||
+                		   (*p == '`'  && state == GO_STRING_B) ||
                            (*p == '\"' && state == GO_STRING)) {
                     p++;
                     state = 0;
@@ -217,11 +223,7 @@ void do_gofmt(EditState *s)
 static CmdDef go_commands[] = {
     CMD0( KEY_META(';'), KEY_NONE, "go-comment", do_c_comment)
     CMD0( KEY_CTRLX(';'), KEY_NONE, "go-comment-region", do_c_comment_region)
-    
-	CMDV( '{', KEY_NONE, "go-electric-obrace", do_c_electric, '{', "*v")
-	CMDV( '(', KEY_NONE, "go-electric-paren", do_c_electric, '(', "*v")
     CMDV( KEY_RET, KEY_NONE, "go-electric-newline", do_c_electric, '\n', "*v")
-    
     CMD0( KEY_CTRLX('y'), KEY_NONE, "go-fmt", do_gofmt)
     
     CMD_DEF_END,
