@@ -53,6 +53,7 @@ extra:
 	$(MAKE) -C golang all
 	$(MAKE) -C tslang all
 	$(MAKE) -C lualang all
+	$(MAKE) -C sqllang all
 	$(MAKE) -C maths-mode all
 	
 # ar rcs libplugins.a *.o

@@ -6623,6 +6623,7 @@ static inline void init_all_modules(void)
     go_init();
     ts_init();
     lua_init();
+    sql_init();
     maths_init();
 	//example_init();
 #endif
