@@ -188,11 +188,11 @@ void qe_register_cmd_line_options(CmdOptionDef *table);
  */
 enum QEEventType {
     QE_KEY_EVENT,
-    QE_EXPOSE_EVENT, //!< full redraw
-    QE_UPDATE_EVENT, //!< update content
-    QE_BUTTON_PRESS_EVENT, //!< mouse button press event 
-    QE_BUTTON_RELEASE_EVENT, //!< mouse button release event
-    QE_MOTION_EVENT, //!< mouse motion event
+    QE_EXPOSE_EVENT,          //!< full redraw
+    QE_UPDATE_EVENT,          //!< update content
+    QE_BUTTON_PRESS_EVENT,    //!< mouse button press event 
+    QE_BUTTON_RELEASE_EVENT,  //!< mouse button release event
+    QE_MOTION_EVENT,          //!< mouse motion event
     QE_SELECTION_CLEAR_EVENT, //!< request selection clear (X11 type selection)
 };
 
@@ -205,7 +205,7 @@ enum QEEventType {
 #define KEY_SPECIAL(c)  (((c) >= 0xe000 && (c) < 0xf000) || ((c) >= 0 && (c) < 32))
 
 #define KEY_NONE        0xffff
-#define KEY_DEFAULT     0xe401 //!< to handle all non special keys 
+#define KEY_DEFAULT     0xe401          //!< to handle all non special keys 
 
 #define KEY_TAB         KEY_CTRL('i')
 #define KEY_RET         KEY_CTRL('m')
@@ -218,12 +218,15 @@ enum QEEventType {
 #define KEY_DOWN        KEY_ESC1('B')   //!< kcud1
 #define KEY_RIGHT       KEY_ESC1('C')   //!< kcuf1
 #define KEY_LEFT        KEY_ESC1('D')   //!< kcub1
-#define KEY_CTRL_UP     KEY_ESC1('a')
-#define KEY_CTRL_DOWN   KEY_ESC1('b')
-#define KEY_CTRL_RIGHT  KEY_ESC1('c')
-#define KEY_CTRL_LEFT   KEY_ESC1('d')
-#define KEY_CTRL_END    KEY_ESC1('f')
-#define KEY_CTRL_HOME   KEY_ESC1('h')
+
+// TODO: these don't work for some reason
+#define KEY_CTRL_UP     KEY_ESC1('a')   // 5A
+#define KEY_CTRL_DOWN   KEY_ESC1('b')   // 5B
+#define KEY_CTRL_RIGHT  KEY_ESC1('c')   // 5C
+#define KEY_CTRL_LEFT   KEY_ESC1('d')   // 5D
+#define KEY_CTRL_END    KEY_ESC1('f')   // 5F
+#define KEY_CTRL_HOME   KEY_ESC1('h')   // 5H
+
 #define KEY_CTRL_PAGEUP KEY_ESC1('i')
 #define KEY_CTRL_PAGEDOWN KEY_ESC1('j')
 #define KEY_SHIFT_TAB   KEY_ESC1('Z')   //!< kcbt

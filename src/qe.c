@@ -2580,56 +2580,6 @@ int text_backward_offset(EditState *s, int offset)
     return eb_goto_pos(s->b, line, 0);
 }
 
-#ifdef CONFIG_UNICODE_JOIN
-/* max_size should be >= 2 */
-static int bidir_compute_attributes(TypeLink *list_tab, int max_size, 
-                                    EditBuffer *b, int offset)
-{
-    TypeLink *p;
-    FriBidiCharType type, ltype;
-    int left, offset1;
-    unsigned int c;
-
-    p = list_tab;
-    /* Add the starting link */
-    p->type = FRIBIDI_TYPE_SOT;
-    p->len = 0;
-    p->pos = 0;
-    p++;
-    left = max_size - 2;
-
-    ltype = FRIBIDI_TYPE_SOT;
-
-    for (;;) {
-        offset1 = offset;
-        c = eb_nextc(b, offset, &offset);
-        if (c == '\n')
-            break;
-        type = fribidi_get_type(c);
-        /* if not enough room, increment last link */
-        if (type != ltype && left > 0) {
-            p->type = type;
-            p->pos = offset1;
-            p->len = 1;
-            p++;
-            left--;
-            ltype = type;
-        } else {
-            p[-1].len++;
-        }
-    }
-    
-    /* Add the ending link */
-    p->type = FRIBIDI_TYPE_EOT;
-    p->len = 0;
-    p->pos = offset1;
-    p++;
-
-    return p - list_tab;
-}
-#endif
-
-
 #ifndef CONFIG_TINY
 //////////////////////////////////////////////////////////////////////
 // colorization handling
@@ -2760,25 +2710,7 @@ int text_display(EditState *s, DisplayState *ds, int offset)
 
     offset1 = offset;
     
-#ifdef CONFIG_UNICODE_JOIN
-    if (s->bidir) {
-        // compute the embedding levels and rle encode them 
-        if (bidir_compute_attributes(embeds, RLE_EMBEDDINGS_SIZE,
-                                     s->b, offset) > 2) {
-            base = FRIBIDI_TYPE_WL;
-            fribidi_analyse_string(embeds, &base, &embedding_max_level);
-            // assure that base has only two possible values
-            if (base != FRIBIDI_TYPE_RTL)
-                base = FRIBIDI_TYPE_LTR;
-        } else {
-            goto no_bidir;
-        }
-    } else 
-#endif
     {
-#ifdef CONFIG_UNICODE_JOIN
-    no_bidir:
-#endif
         // all line is at embedding level 0
         embedding_max_level = 0;
         embeds[1].level = 0;
@@ -2792,7 +2724,7 @@ int text_display(EditState *s, DisplayState *ds, int offset)
     if (s->line_numbers) {
         display_printf(ds, -1, -1, "%6d  ", line_num + 1);
     }
-    
+
     // prompt display
     if (s->prompt && offset1 == 0) {
         const char *p;
@@ -5906,7 +5838,6 @@ void window_get_min_size(EditState *s, int *w_ptr, int *h_ptr)
     *h_ptr = h;
 }
 
-
 /* mouse handling */
 
 #define MOTION_NONE       0
@@ -5994,12 +5925,12 @@ redraw:
 static int text_mode_probe(ModeProbeData *p)
 {
     // 100% sure these text file names are text files
-    if(strfind("|LICENSE|COPYING|", basename(p->filename), 0)) return 100;
+    if(strfind("|LICENSE|COPYING|README|", basename(p->filename), 0)) return 100;
 
     // 100% sure these are text files
     const char *r = extension(p->filename);
     if (*r) {
-        if (strfind("|txt|text|", r + 1, 1))
+        if (strfind("|txt|text|log|", r + 1, 1))
             return 100;
     }
 
@@ -6026,7 +5957,9 @@ int text_mode_init(EditState *s, ModeSavedData *saved_data)
     return 0;
 }
 
-/* generic save mode data (saves text presentation information) */
+/**
+ * Generic save mode data (saves text presentation information) 
+ */
 ModeSavedData *generic_mode_save_data(EditState *s)
 {
     ModeSavedData *saved_data;
@@ -6088,7 +6021,6 @@ int find_resource_file(char *path, int path_size, const char *pattern)
 /* CG: error messages should go to the *error* buffer.
  * displayed as a popup upon start.
  */
-
 int expect_token(const char **pp, int tok)
 {
     skip_spaces(pp);

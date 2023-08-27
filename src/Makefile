@@ -9,9 +9,6 @@ include config.mak
 # Define CONFIG_ALL_MODES to include all edit modes
 CONFIG_ALL_MODES=y
 
-# Define CONFIG_UNICODE_JOIN to include unicode bidi/script handling
-CONFIG_UNICODE_JOIN=n
-
 # Define CONFIG_ALL_KMAPS it includes generic key map handling
 CONFIG_ALL_KMAPS=n
 
@@ -51,7 +48,6 @@ LOAD_PATH=../build
 TARGETLIBS:=
 TARGETS+=qi$(EXE)
 
-# qfribidi.o == CONFIG_UNICODE_JOIN qstack.o qfribidi.o input.o
 _OBJS=qe.o buffer.o unicode.o display.o \
 util.o cutils.o unix.o
 
