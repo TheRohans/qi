@@ -644,9 +644,6 @@ typedef struct EditState {
     char modeline_shadow[MAX_SCREEN_WIDTH]; //!< display shadow to optimize redraw
     QELineShadow *line_shadow;              //!< per window shadow 
     int shadow_nb_lines;
-    // compose state for input method
-    struct InputMethod *input_method;          //!< current input method
-    struct InputMethod *selected_input_method; //!< selected input method (used to switch)
     int compose_len;
     int compose_start_offset;
     unsigned int compose_buf[20];
@@ -835,13 +832,22 @@ typedef struct CmdDef {
     void *val;
 } CmdDef;
 
-// new command macros
+/** New style command that takes no parameters */
 #define CMD_(key, key_alt, name, func, args) { key, key_alt, name "\0" args, { (void *)(func) }, 0 },
+/** New style command that takes any number of parameters */
 #define CMDV(key, key_alt, name, func, val, args) { key, key_alt, name "\0" args, { (void *)(func) }, (void *)(val) },
 
-// old macros for compatibility
+/** 
+ * Old style command that takes no parameters (only function pointer) 
+ * @see CMD_
+ */
 #define CMD0(key, key_alt, name, func) { key, key_alt, name "\0", { (void *)(func) } },
+/** 
+ * Old style command that takes 1 parameter 
+ * @see CMDV
+ */
 #define CMD1(key, key_alt, name, func, val) { key, key_alt, name "\0v", { (void *)(func) }, (void*)(val) },
+/** Mark the end of the key -> function mapping */
 #define CMD_DEF_END { 0, 0, NULL, { NULL }, 0 }
 
 void qe_register_mode(ModeDef *m);
@@ -941,31 +947,6 @@ static inline int display_char(DisplayState *s, int offset1, int offset2,
 }
 
 /* ///////////////////////////////////////////////////////////////////////// */
-/* input.c */
-
-#define INPUTMETHOD_NOMATCH   (-1)
-#define INPUTMETHOD_MORECHARS (-2)
-
-typedef struct InputMethod {
-    const char *name;
-    /* input match returns: 
-       ch >= 0 if a character ch of len '*match_len_ptr' in buf was found, 
-       INPUTMETHOD_NOMATCH if no match was found 
-       INPUTMETHOD_MORECHARS if more chars need to be typed to find
-       a suitable completion 
-     */
-    int (*input_match)(int *match_len_ptr, 
-                       const u8 *data, const unsigned int *buf, int len);
-    const u8 *data;
-    struct InputMethod *next;
-} InputMethod;
-
-extern InputMethod *input_methods;
-
-void do_set_input_method(EditState *s, const char *input_str);
-void do_switch_input_method(EditState *s);
-void init_input_methods(void);
-void close_input_methods(void);
 
 /* the following will be suppressed */
 #define LINE_MAX_SIZE 256
@@ -1082,6 +1063,8 @@ void do_eof(EditState *s);
 void do_bol(EditState *s);
 void do_eol(EditState *s);
 void do_word_right(EditState *s, int dir);
+
+void do_noop(EditState *s);
 
 /* ///////////////////////////////////////////////////////////////////////// */
 void do_indent_lastline(EditState *s);

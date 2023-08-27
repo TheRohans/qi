@@ -6,12 +6,6 @@
 #include "unicode.h"
 #include "log.h"
 
-//////////////////////
-// This file is currently not being used
-// trying to make an easier to understand 
-// utf8 input
-/////////////////////
-
 typedef struct {
 	char mask;       /* char data will be bitwise AND with this */
 	char lead;       /* start bytes of current char in utf-8 encoded character */

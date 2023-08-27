@@ -20,7 +20,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include "qe.h"
-#include "qfribidi.h"
+#include "minibidi.h"
 #include "plugins/plugincore.h"
 #include <locale.h>
 
@@ -70,7 +70,9 @@ EditBuffer *trace_buffer;
 int no_init_file;
 const char *user_option;
 
-/** mode handling */
+/** 
+ * Mode handling 
+ */
 void qe_register_mode(ModeDef *m)
 {
     ModeDef **p;
@@ -1653,6 +1655,12 @@ void do_count_lines(EditState *s)
                total_lines, line_num + 1, abs(line_num - mark_line));
 }
 
+void do_noop(EditState *s)
+{
+    return;
+}
+
+
 // TODO: This seems really useful, just need to fix the utf8 stuff
 /* void do_what_cursor_position(EditState *s)
 {
@@ -1763,12 +1771,6 @@ void text_mode_line(EditState *s, char *buf, int buf_size)
     eb_get_pos(s->b, &line_num, &col_num, s->offset);
     q += sprintf(q, "L%d--C%d--%s", 
                  line_num + 1, col_num, "utf-8");
-    if (s->bidir) {
-        q += sprintf(q, "--%s", s->cur_rtl ? "RTL" : "LTR");
-    }
-    if (s->input_method) {
-        q += sprintf(q, "--%s", s->input_method->name);
-    }
     percent = 0;
     if (s->b->total_size > 0)
         percent = (s->offset * 100) / s->b->total_size;
@@ -5352,11 +5354,16 @@ redo:
     center_cursor(s);
     edit_display(s->qe_state);
     
-    put_status(NULL, "Query replace %s with %s: ", 
+    put_status(NULL, "Query replace %s with %s [y/n/!]:", 
                is->search_str, is->replace_str);
+    
     dpy_flush(&global_screen);
 }
 
+/**
+ * Call back for query_replace to answer the Y/N 
+ * prompt when asking if an instance should be replaced
+ */
 static void query_replace_key(void *opaque, int ch)
 {
     QueryReplaceState *is = opaque;
@@ -5376,9 +5383,14 @@ static void query_replace_key(void *opaque, int ch)
         query_replace_abort(is);
         return;
     }
+
     query_replace_display(is);
 }
-    
+
+/**
+ * Replace strings in a file, but ask for conformation
+ * before actually replacing the instance
+ */
 static void query_replace(EditState *s, 
                           const char *search_str,
                           const char *replace_str, int all)
@@ -5847,21 +5859,21 @@ static void sigwinch_handler(int sig)
 void qe_event_init(void)
 {
     struct sigaction sigact;
-	struct sigaction sigwinsize;
-	
+    struct sigaction sigwinsize;
+
     struct itimerval itimer;
 
     sigact.sa_flags = SA_RESTART;
     sigact.sa_handler = poll_action;
-	
+
     sigemptyset(&sigact.sa_mask);
     sigaction(SIGVTALRM, &sigact, NULL);
-	
-	//// Window resizing ////
-	sigemptyset(&sigwinsize.sa_mask);
-	sigwinsize.sa_flags = 0;
-	sigwinsize.sa_handler = &sigwinch_handler;
-	sigaction(SIGWINCH, &sigwinsize, NULL);
+
+    //// Window resizing ////
+    sigemptyset(&sigwinsize.sa_mask);
+    sigwinsize.sa_flags = 0;
+    sigwinsize.sa_handler = &sigwinch_handler;
+    sigaction(SIGWINCH, &sigwinsize, NULL);
 
     itimer.it_interval.tv_sec = 0;
     itimer.it_interval.tv_usec = 20 * 1000; /* 50 times per second? */
@@ -6656,7 +6668,6 @@ void qe_init(void *opaque)
     set_user_option(NULL);
 
     eb_init();
-    init_input_methods();
 
     // init basic modules
     qe_register_mode(&text_mode);
@@ -6741,7 +6752,7 @@ void qe_init(void *opaque)
         show_popup(b);
         edit_display(qs);
         dpy_flush(&global_screen);
-    }	
+    }
 }
 
 int main(int argc, char **argv)
@@ -6754,8 +6765,6 @@ int main(int argc, char **argv)
     args.argv = argv;
 
     url_main_loop(qe_init, &args);
-
-    close_input_methods();
 
     dpy_close(&global_screen);
     return 0;

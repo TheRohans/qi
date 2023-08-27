@@ -41,7 +41,6 @@ FindFileState *find_file_open(const char *path, const char *pattern)
     s->dir = NULL;
     return s;
 }
-                     
 
 int find_file_next(FindFileState *s, char *filename, int filename_size_max)
 {

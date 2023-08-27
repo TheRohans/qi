@@ -50,7 +50,9 @@ void fill_rectangle(QEditScreen *s,
     s->dpy.dpy_fill_rectangle(s, x1, y1, x2 - x1, y2 - y1, color);
 }
 
-/* set the clip rectangle (and does not clip by the previous one) */
+/**
+ * Set the clip rectangle (and does not clip by the previous one) 
+ */
 void set_clip_rectangle(QEditScreen *s, CSSRect *r)
 {
     int x1, y1, x2, y2;

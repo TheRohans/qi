@@ -10,10 +10,10 @@ include config.mak
 CONFIG_ALL_MODES=y
 
 # Define CONFIG_UNICODE_JOIN to include unicode bidi/script handling
-CONFIG_UNICODE_JOIN=y
+CONFIG_UNICODE_JOIN=n
 
-# Define CONFIG_ALL_KMAPS it to include generic key map handling
-CONFIG_ALL_KMAPS=y
+# Define CONFIG_ALL_KMAPS it includes generic key map handling
+CONFIG_ALL_KMAPS=n
 
 CFLAGS:=-Wall
 # Note: Using c99 (or any ansi version) with signals is a mine field of terrible.
@@ -51,9 +51,9 @@ LOAD_PATH=../build
 TARGETLIBS:=
 TARGETS+=qi$(EXE)
 
-# qfribidi.o == CONFIG_UNICODE_JOIN
-_OBJS=qe.o buffer.o input.o unicode.o display.o \
-util.o cutils.o qstack.o qfribidi.o unix.o
+# qfribidi.o == CONFIG_UNICODE_JOIN qstack.o qfribidi.o input.o
+_OBJS=qe.o buffer.o unicode.o display.o \
+util.o cutils.o unix.o
 
 OBJS = $(patsubst %,$(LOAD_PATH)/%,$(_OBJS))
 
