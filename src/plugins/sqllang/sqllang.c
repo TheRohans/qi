@@ -6,32 +6,32 @@
 
 static const char sql_keywords[] =
     "|do|elseif|handler|if|iterate|leave|loop|repeat|resignal|signal|until|"
-    "while|abs|absent|acos|all|allocate|alter|and|any|any_value|are|array|"
+    "while|abs|absent|acos|all|allocate|alter|and|any|any_value|are|"
     "array_agg|array_max_cardinality|as|asensitive|asin|asymmetric|at|atan|"
-    "atomic|authorization|avg|begin|begin_frame|begin_partition|between|bigint|"
-    "binary|blob|boolean|both|btrim|by|call|called|cardinality|cascaded|case|"
-    "cast|ceil|ceiling|char|character|character_length|char_length|check|"
-    "classifier|clob|close|coalesce|collate|collect|column|commit|condition|"
+    "atomic|authorization|avg|begin|begin_frame|begin_partition|between|"
+    "both|btrim|by|call|called|cardinality|cascaded|case|"
+    "cast|ceil|ceiling|character|character_length|char_length|check|"
+    "classifier|close|coalesce|collate|collect|column|commit|condition|"
     "connect|constraint|contains|convert|copy|corr|corresponding|cos|cosh|"
     "count|covar_pop|covar_samp|create|cross|cube|cume_dist|current|current_"
     "catalog|current_date|current_default_transform_group|current_path|current_"
     "role|current_row|current_schema|current_time|current_timestamp|current_"
     "transform_group_for_type|current_user|cursor|cycle|date|day|deallocate|"
-    "dec|decfloat|decimal|declare|default|define|delete|dense_rank|deref|"
-    "describe|deterministic|disconnect|distinct|double|drop|dynamic|each"
+    "dec|decfloat|declare|default|define|delete|dense_rank|deref|"
+    "describe|deterministic|disconnect|distinct|drop|dynamic|each"
     "|element|else|empty|end|end-exec|end_frame|end_partition|equals|escape|"
-    "every|except|exec|execute|exists|exp|external|extract|false|fetch|filter|"
-    "first_value|float|floor|for|foreign|frame_row|free|from|full|function|"
+    "every|except|exec|execute|exists|exp|external|extract|fetch|filter|"
+    "first_value|floor|for|foreign|frame_row|free|from|full|function|"
     "fusion|get|global|grant|greatest|group|grouping|groups|having|hold|hour|"
-    "identity|in|indicator|initial|inner|inout|insensitive|insert|int|integer|"
-    "intersect|intersection|interval|into|is|join|json|json_array|json_"
+    "identity|in|indicator|initial|inner|inout|insensitive|insert|"
+    "intersect|intersection|interval|into|is|join|json_"
     "arrayagg|json_exists|json_object|json_objectagg|json_query|json_scalar|"
     "json_serialize|json_table|json_table_primitive|json_value|lag|language|"
     "large|last_value|lateral|lead|leading|least|left|like|like_regex|listagg|"
     "ln|local|localtime|localtimestamp|log|log10|lower|lpad|ltrim|match|"
     "matches|match_number|match_recognize|max|member|merge|method|min|minute|"
-    "mod|modifies|module|month|multiset|national|natural|nchar|nclob|new|no|"
-    "none|normalize|not|nth_value|ntile|null|nullif|numeric|occurrences_regex|"
+    "mod|modifies|module|month|multiset|national|natural|new|no|"
+    "normalize|not|nth_value|ntile|nullif|occurrences_regex|"
     "octet_length|of|offset|old|omit|on|one|only|open|or|order|out|outer|over|"
     "overlaps|overlay"
     "|parameter|partition|pattern|per|percent|percentile_cont|percentile_disc|"
@@ -46,13 +46,15 @@ static const char sql_keywords[] =
     "submultiset|subset|substring|substring_regex|succeeds|sum|symmetric|"
     "system|system_time|system_user|table|tablesample|tan|tanh|then|time|"
     "timestamp|timezone_hour|timezone_minute|to|trailing|translate|translate_"
-    "regex|translation|treat|trigger|trim|trim_array|true|truncate|uescape|"
-    "union|unique|unknown|unnest|update|upper|user|using|value|values|value_of|"
-    "varbinary|varchar|varying"
+    "regex|translation|treat|trigger|trim|trim_array|truncate|uescape|"
+    "union|unique|unknown|unnest|update|upper|user|using|value|values|value_of"
     "|var_pop|var_samp|versioning|when|whenever|where|width_bucket|window|with|"
     "within|without|year|";
 
-static const char sql_types[] = ""; // |local|nil|";
+static const char sql_types[] =
+    "|array|bigint|binary|blob|boolean|clob|char|decimal|double|false|float|"
+    "int|integer|json|json_array|nchar|nclob|none|null|numeric|true|varbinary|"
+    "varchar|varying|";
 
 static int get_sql_keyword(char *buf, int buf_size, unsigned int **pp) {
   unsigned int *p, c;
@@ -67,7 +69,8 @@ static int get_sql_keyword(char *buf, int buf_size, unsigned int **pp) {
         *q++ = c;
       p++;
       c = *p;
-    } while ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c == '_') || (c >= '0' && c <= '9'));
+    } while ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c == '_') ||
+             (c >= '0' && c <= '9'));
   }
   *q = '\0';
   *pp = p;
@@ -143,18 +146,18 @@ void sql_colorize_line(unsigned int *buf, int len, int *colorize_state_ptr,
     case '\"':
       // strings/chars
       state = SQL_STRING;
-    string:
+string:
       p++;
-    parse_string:
+parse_string:
       while (*p != '\n') {
-        if (*p == '\\') {
+        /* if (*p == '\\') {
           p++;
           if (*p == '\n')
             break;
-          p++;
-        } else if ((*p == '\'' && state == SQL_STRING_Q) ||
-                   // (*p == '`' && state == TS_STRING_Q) ||
-                   (*p == '\"' && state == SQL_STRING)) {
+          // p++;
+        } else  */
+        if ((*p == '\'' && state == SQL_STRING_Q) ||
+            (*p == '\"' && state == SQL_STRING)) {
           p++;
           state = 0;
           break;
@@ -164,11 +167,6 @@ void sql_colorize_line(unsigned int *buf, int len, int *colorize_state_ptr,
       }
       set_color(p_start, p - p_start, QE_STYLE_STRING);
       break;
-    /* case '=':
-      p++;
-      // exit type declaration
-      type_decl = 0;
-      break; */
     default:
       if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c == '_')) {
         get_sql_keyword(kbuf, sizeof(kbuf), &p);
@@ -183,24 +181,7 @@ void sql_colorize_line(unsigned int *buf, int len, int *colorize_state_ptr,
             type_decl = 1;
           }
           set_color(p_start, p1 - p_start, QE_STYLE_TYPE);
-        } /* else {
-          // assume typedef if starting at first column
-          if (p_start == buf)
-            type_decl = 1;
-
-          if (type_decl) {
-            if (*p == '(') {
-              // function definition case
-              set_color(p_start, p1 - p_start, QE_STYLE_FUNCTION);
-              type_decl = 1;
-            } else if (p_start == buf) {
-              // assume type if first column
-              set_color(p_start, p1 - p_start, QE_STYLE_TYPE);
-            } else {
-              set_color(p_start, p1 - p_start, QE_STYLE_VARIABLE);
-            }
-          }
-        } */
+        } 
       } else {
         p++;
       }
