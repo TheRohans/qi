@@ -188,11 +188,11 @@ void qe_register_cmd_line_options(CmdOptionDef *table);
  */
 enum QEEventType {
     QE_KEY_EVENT,
-    QE_EXPOSE_EVENT, //!< full redraw
-    QE_UPDATE_EVENT, //!< update content
-    QE_BUTTON_PRESS_EVENT, //!< mouse button press event 
-    QE_BUTTON_RELEASE_EVENT, //!< mouse button release event
-    QE_MOTION_EVENT, //!< mouse motion event
+    QE_EXPOSE_EVENT,          //!< full redraw
+    QE_UPDATE_EVENT,          //!< update content
+    QE_BUTTON_PRESS_EVENT,    //!< mouse button press event 
+    QE_BUTTON_RELEASE_EVENT,  //!< mouse button release event
+    QE_MOTION_EVENT,          //!< mouse motion event
     QE_SELECTION_CLEAR_EVENT, //!< request selection clear (X11 type selection)
 };
 
@@ -205,7 +205,7 @@ enum QEEventType {
 #define KEY_SPECIAL(c)  (((c) >= 0xe000 && (c) < 0xf000) || ((c) >= 0 && (c) < 32))
 
 #define KEY_NONE        0xffff
-#define KEY_DEFAULT     0xe401 //!< to handle all non special keys 
+#define KEY_DEFAULT     0xe401          //!< to handle all non special keys 
 
 #define KEY_TAB         KEY_CTRL('i')
 #define KEY_RET         KEY_CTRL('m')
@@ -218,12 +218,15 @@ enum QEEventType {
 #define KEY_DOWN        KEY_ESC1('B')   //!< kcud1
 #define KEY_RIGHT       KEY_ESC1('C')   //!< kcuf1
 #define KEY_LEFT        KEY_ESC1('D')   //!< kcub1
-#define KEY_CTRL_UP     KEY_ESC1('a')
-#define KEY_CTRL_DOWN   KEY_ESC1('b')
-#define KEY_CTRL_RIGHT  KEY_ESC1('c')
-#define KEY_CTRL_LEFT   KEY_ESC1('d')
-#define KEY_CTRL_END    KEY_ESC1('f')
-#define KEY_CTRL_HOME   KEY_ESC1('h')
+
+// TODO: these don't work for some reason
+#define KEY_CTRL_UP     KEY_ESC1('a')   // 5A
+#define KEY_CTRL_DOWN   KEY_ESC1('b')   // 5B
+#define KEY_CTRL_RIGHT  KEY_ESC1('c')   // 5C
+#define KEY_CTRL_LEFT   KEY_ESC1('d')   // 5D
+#define KEY_CTRL_END    KEY_ESC1('f')   // 5F
+#define KEY_CTRL_HOME   KEY_ESC1('h')   // 5H
+
 #define KEY_CTRL_PAGEUP KEY_ESC1('i')
 #define KEY_CTRL_PAGEDOWN KEY_ESC1('j')
 #define KEY_SHIFT_TAB   KEY_ESC1('Z')   //!< kcbt
@@ -644,9 +647,6 @@ typedef struct EditState {
     char modeline_shadow[MAX_SCREEN_WIDTH]; //!< display shadow to optimize redraw
     QELineShadow *line_shadow;              //!< per window shadow 
     int shadow_nb_lines;
-    // compose state for input method
-    struct InputMethod *input_method;          //!< current input method
-    struct InputMethod *selected_input_method; //!< selected input method (used to switch)
     int compose_len;
     int compose_start_offset;
     unsigned int compose_buf[20];
@@ -835,13 +835,22 @@ typedef struct CmdDef {
     void *val;
 } CmdDef;
 
-// new command macros
+/** New style command that takes no parameters */
 #define CMD_(key, key_alt, name, func, args) { key, key_alt, name "\0" args, { (void *)(func) }, 0 },
+/** New style command that takes any number of parameters */
 #define CMDV(key, key_alt, name, func, val, args) { key, key_alt, name "\0" args, { (void *)(func) }, (void *)(val) },
 
-// old macros for compatibility
+/** 
+ * Old style command that takes no parameters (only function pointer) 
+ * @see CMD_
+ */
 #define CMD0(key, key_alt, name, func) { key, key_alt, name "\0", { (void *)(func) } },
+/** 
+ * Old style command that takes 1 parameter 
+ * @see CMDV
+ */
 #define CMD1(key, key_alt, name, func, val) { key, key_alt, name "\0v", { (void *)(func) }, (void*)(val) },
+/** Mark the end of the key -> function mapping */
 #define CMD_DEF_END { 0, 0, NULL, { NULL }, 0 }
 
 void qe_register_mode(ModeDef *m);
@@ -941,31 +950,6 @@ static inline int display_char(DisplayState *s, int offset1, int offset2,
 }
 
 /* ///////////////////////////////////////////////////////////////////////// */
-/* input.c */
-
-#define INPUTMETHOD_NOMATCH   (-1)
-#define INPUTMETHOD_MORECHARS (-2)
-
-typedef struct InputMethod {
-    const char *name;
-    /* input match returns: 
-       ch >= 0 if a character ch of len '*match_len_ptr' in buf was found, 
-       INPUTMETHOD_NOMATCH if no match was found 
-       INPUTMETHOD_MORECHARS if more chars need to be typed to find
-       a suitable completion 
-     */
-    int (*input_match)(int *match_len_ptr, 
-                       const u8 *data, const unsigned int *buf, int len);
-    const u8 *data;
-    struct InputMethod *next;
-} InputMethod;
-
-extern InputMethod *input_methods;
-
-void do_set_input_method(EditState *s, const char *input_str);
-void do_switch_input_method(EditState *s);
-void init_input_methods(void);
-void close_input_methods(void);
 
 /* the following will be suppressed */
 #define LINE_MAX_SIZE 256
@@ -1082,6 +1066,8 @@ void do_eof(EditState *s);
 void do_bol(EditState *s);
 void do_eol(EditState *s);
 void do_word_right(EditState *s, int dir);
+
+void do_noop(EditState *s);
 
 /* ///////////////////////////////////////////////////////////////////////// */
 void do_indent_lastline(EditState *s);

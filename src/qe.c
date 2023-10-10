@@ -20,7 +20,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include "qe.h"
-#include "qfribidi.h"
+#include "minibidi.h"
 #include "plugins/plugincore.h"
 #include <locale.h>
 
@@ -70,7 +70,9 @@ EditBuffer *trace_buffer;
 int no_init_file;
 const char *user_option;
 
-/** mode handling */
+/** 
+ * Mode handling 
+ */
 void qe_register_mode(ModeDef *m)
 {
     ModeDef **p;
@@ -468,14 +470,12 @@ void run_system_cmd(EditState *s, const char **cmd)
         // parent process
         int status;
         if(wait(&status) == -1) {
-            // LOG("%s", "Could not wait for child process");
 	        put_status(s, "Run failed, couldn't wait for child");
             return;
         }
         // if the exit status of the child proces was 0 refresh
         // the buffer, if not then something went wrong. Assume
         // we don't have the app installed.
-        // if(WIFEXITED(status) != 0) {
         if(WEXITSTATUS(status) != 0) {
             // LOG("child exited with = %d", WEXITSTATUS(status));
             do_refresh(s);
@@ -1653,6 +1653,12 @@ void do_count_lines(EditState *s)
                total_lines, line_num + 1, abs(line_num - mark_line));
 }
 
+void do_noop(EditState *s)
+{
+    return;
+}
+
+
 // TODO: This seems really useful, just need to fix the utf8 stuff
 /* void do_what_cursor_position(EditState *s)
 {
@@ -1763,12 +1769,6 @@ void text_mode_line(EditState *s, char *buf, int buf_size)
     eb_get_pos(s->b, &line_num, &col_num, s->offset);
     q += sprintf(q, "L%d--C%d--%s", 
                  line_num + 1, col_num, "utf-8");
-    if (s->bidir) {
-        q += sprintf(q, "--%s", s->cur_rtl ? "RTL" : "LTR");
-    }
-    if (s->input_method) {
-        q += sprintf(q, "--%s", s->input_method->name);
-    }
     percent = 0;
     if (s->b->total_size > 0)
         percent = (s->offset * 100) / s->b->total_size;
@@ -2578,56 +2578,6 @@ int text_backward_offset(EditState *s, int offset)
     return eb_goto_pos(s->b, line, 0);
 }
 
-#ifdef CONFIG_UNICODE_JOIN
-/* max_size should be >= 2 */
-static int bidir_compute_attributes(TypeLink *list_tab, int max_size, 
-                                    EditBuffer *b, int offset)
-{
-    TypeLink *p;
-    FriBidiCharType type, ltype;
-    int left, offset1;
-    unsigned int c;
-
-    p = list_tab;
-    /* Add the starting link */
-    p->type = FRIBIDI_TYPE_SOT;
-    p->len = 0;
-    p->pos = 0;
-    p++;
-    left = max_size - 2;
-
-    ltype = FRIBIDI_TYPE_SOT;
-
-    for (;;) {
-        offset1 = offset;
-        c = eb_nextc(b, offset, &offset);
-        if (c == '\n')
-            break;
-        type = fribidi_get_type(c);
-        /* if not enough room, increment last link */
-        if (type != ltype && left > 0) {
-            p->type = type;
-            p->pos = offset1;
-            p->len = 1;
-            p++;
-            left--;
-            ltype = type;
-        } else {
-            p[-1].len++;
-        }
-    }
-    
-    /* Add the ending link */
-    p->type = FRIBIDI_TYPE_EOT;
-    p->len = 0;
-    p->pos = offset1;
-    p++;
-
-    return p - list_tab;
-}
-#endif
-
-
 #ifndef CONFIG_TINY
 //////////////////////////////////////////////////////////////////////
 // colorization handling
@@ -2758,25 +2708,7 @@ int text_display(EditState *s, DisplayState *ds, int offset)
 
     offset1 = offset;
     
-#ifdef CONFIG_UNICODE_JOIN
-    if (s->bidir) {
-        // compute the embedding levels and rle encode them 
-        if (bidir_compute_attributes(embeds, RLE_EMBEDDINGS_SIZE,
-                                     s->b, offset) > 2) {
-            base = FRIBIDI_TYPE_WL;
-            fribidi_analyse_string(embeds, &base, &embedding_max_level);
-            // assure that base has only two possible values
-            if (base != FRIBIDI_TYPE_RTL)
-                base = FRIBIDI_TYPE_LTR;
-        } else {
-            goto no_bidir;
-        }
-    } else 
-#endif
     {
-#ifdef CONFIG_UNICODE_JOIN
-    no_bidir:
-#endif
         // all line is at embedding level 0
         embedding_max_level = 0;
         embeds[1].level = 0;
@@ -2790,7 +2722,7 @@ int text_display(EditState *s, DisplayState *ds, int offset)
     if (s->line_numbers) {
         display_printf(ds, -1, -1, "%6d  ", line_num + 1);
     }
-    
+
     // prompt display
     if (s->prompt && offset1 == 0) {
         const char *p;
@@ -5352,11 +5284,16 @@ redo:
     center_cursor(s);
     edit_display(s->qe_state);
     
-    put_status(NULL, "Query replace %s with %s: ", 
+    put_status(NULL, "Query replace %s with %s [y/n/!]:", 
                is->search_str, is->replace_str);
+    
     dpy_flush(&global_screen);
 }
 
+/**
+ * Call back for query_replace to answer the Y/N 
+ * prompt when asking if an instance should be replaced
+ */
 static void query_replace_key(void *opaque, int ch)
 {
     QueryReplaceState *is = opaque;
@@ -5376,9 +5313,14 @@ static void query_replace_key(void *opaque, int ch)
         query_replace_abort(is);
         return;
     }
+
     query_replace_display(is);
 }
-    
+
+/**
+ * Replace strings in a file, but ask for conformation
+ * before actually replacing the instance
+ */
 static void query_replace(EditState *s, 
                           const char *search_str,
                           const char *replace_str, int all)
@@ -5847,21 +5789,21 @@ static void sigwinch_handler(int sig)
 void qe_event_init(void)
 {
     struct sigaction sigact;
-	struct sigaction sigwinsize;
-	
+    struct sigaction sigwinsize;
+
     struct itimerval itimer;
 
     sigact.sa_flags = SA_RESTART;
     sigact.sa_handler = poll_action;
-	
+
     sigemptyset(&sigact.sa_mask);
     sigaction(SIGVTALRM, &sigact, NULL);
-	
-	//// Window resizing ////
-	sigemptyset(&sigwinsize.sa_mask);
-	sigwinsize.sa_flags = 0;
-	sigwinsize.sa_handler = &sigwinch_handler;
-	sigaction(SIGWINCH, &sigwinsize, NULL);
+
+    //// Window resizing ////
+    sigemptyset(&sigwinsize.sa_mask);
+    sigwinsize.sa_flags = 0;
+    sigwinsize.sa_handler = &sigwinch_handler;
+    sigaction(SIGWINCH, &sigwinsize, NULL);
 
     itimer.it_interval.tv_sec = 0;
     itimer.it_interval.tv_usec = 20 * 1000; /* 50 times per second? */
@@ -5893,7 +5835,6 @@ void window_get_min_size(EditState *s, int *w_ptr, int *h_ptr)
     *w_ptr = w;
     *h_ptr = h;
 }
-
 
 /* mouse handling */
 
@@ -5982,12 +5923,12 @@ redraw:
 static int text_mode_probe(ModeProbeData *p)
 {
     // 100% sure these text file names are text files
-    if(strfind("|LICENSE|COPYING|", basename(p->filename), 0)) return 100;
+    if(strfind("|LICENSE|COPYING|README|", basename(p->filename), 0)) return 100;
 
     // 100% sure these are text files
     const char *r = extension(p->filename);
     if (*r) {
-        if (strfind("|txt|text|", r + 1, 1))
+        if (strfind("|txt|text|log|", r + 1, 1))
             return 100;
     }
 
@@ -6014,7 +5955,9 @@ int text_mode_init(EditState *s, ModeSavedData *saved_data)
     return 0;
 }
 
-/* generic save mode data (saves text presentation information) */
+/**
+ * Generic save mode data (saves text presentation information) 
+ */
 ModeSavedData *generic_mode_save_data(EditState *s)
 {
     ModeSavedData *saved_data;
@@ -6076,7 +6019,6 @@ int find_resource_file(char *path, int path_size, const char *pattern)
 /* CG: error messages should go to the *error* buffer.
  * displayed as a popup upon start.
  */
-
 int expect_token(const char **pp, int tok)
 {
     skip_spaces(pp);
@@ -6623,6 +6565,7 @@ static inline void init_all_modules(void)
     go_init();
     ts_init();
     lua_init();
+    sql_init();
     maths_init();
 	//example_init();
 #endif
@@ -6655,7 +6598,6 @@ void qe_init(void *opaque)
     set_user_option(NULL);
 
     eb_init();
-    init_input_methods();
 
     // init basic modules
     qe_register_mode(&text_mode);
@@ -6740,7 +6682,7 @@ void qe_init(void *opaque)
         show_popup(b);
         edit_display(qs);
         dpy_flush(&global_screen);
-    }	
+    }
 }
 
 int main(int argc, char **argv)
@@ -6753,8 +6695,6 @@ int main(int argc, char **argv)
     args.argv = argv;
 
     url_main_loop(qe_init, &args);
-
-    close_input_methods();
 
     dpy_close(&global_screen);
     return 0;

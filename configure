@@ -166,11 +166,6 @@ EOF
     $cc -o $TMPO $TMPC 2> /dev/null || _memalign=no
 fi
 
-#if test -z "$CFLAGS"; then
-#    CFLAGS="-O2"
-#fi
-
-
 # check gcc version
 cat > $TMPC <<EOF
 int main(void) {

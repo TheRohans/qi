@@ -138,6 +138,9 @@ static inline int glyph_width(QEditScreen *s, QEFont *font, int ch)
     return metrics.width;
 }
 
+/**
+ * Flush the display
+ */
 static inline void dpy_flush(QEditScreen *s)
 {
     s->dpy.dpy_flush(s);

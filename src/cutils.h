@@ -1,5 +1,5 @@
-#ifndef CUTILS_H
-#define CUTILS_H
+#ifndef QI_CUTILS_H
+#define QI_CUTILS_H
 
 #include <stdlib.h>
 

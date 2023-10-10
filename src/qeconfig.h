@@ -1,7 +1,7 @@
 #include "unicode.h"
 
 /**
- * default qi configuration 
+ * Default qi key mapping configuration 
  */
 CmdDef basic_commands[] = {
     CMDV( KEY_DEFAULT, KEY_NONE, "self-insert-command", do_char, ' ', "*v")
@@ -90,9 +90,10 @@ CmdDef basic_commands[] = {
 	
     CMDV( KEY_META('l'), KEY_NONE, "downcase-word", do_changecase_word, 0, "*v")
     CMDV( KEY_META('u'), KEY_NONE, "upcase-word", do_changecase_word, 1, "*v")
-	
+
 	// These are too dangerous for me :-/
 	// need to highlight selected region first
+    // and there is a bug where the whole file is selected by default :-o
     // CMDV( KEY_CTRLX(KEY_CTRL('l')), KEY_NONE, "downcase-region", do_changecase_region, 0, "*v")
     // CMDV( KEY_CTRLX(KEY_CTRL('u')), KEY_NONE, "upcase-region", do_changecase_region, 1, "*v")
 
@@ -117,17 +118,17 @@ CmdDef basic_commands[] = {
     CMD0( KEY_CTRLX('1'), KEY_NONE, "delete-other-windows", do_delete_other_windows)
     CMD1( KEY_CTRLX('2'), KEY_NONE, "split-window-vertically", do_split_window, 0)
     CMD1( KEY_CTRLX('3'), KEY_NONE, "split-window-horizontally", do_split_window, 1)
-    
+
     // help
-	CMD0( KEY_CTRLX('?'), KEY_F1, "help-for-help", do_help_for_help)
-	CMD0( KEY_NONE, KEY_NONE, "describe-bindings", do_describe_bindings)
-	CMD0( KEY_NONE, KEY_NONE, "describe-key-briefly", do_describe_key_briefly)
+    CMD0( KEY_CTRLX('?'), KEY_F1, "help-for-help", do_help_for_help)
+    CMD0( KEY_NONE, KEY_NONE, "describe-bindings", do_describe_bindings)
+    CMD0( KEY_NONE, KEY_NONE, "describe-key-briefly", do_describe_key_briefly)
     CMD0( KEY_CTRL('h'), KEY_NONE, "backward-delete-char", do_backspace)
 
     // styles & display
     // CMD0( KEY_CTRLX('f'), KEY_NONE, "toggle-full-screen", do_toggle_full_screen)
     CMD0( KEY_NONE, KEY_NONE, "toggle-mode-line", do_toggle_mode_line)
-	CMD0( KEY_NONE, KEY_NONE, "revert-buffer", do_revert_buffer)
+    CMD0( KEY_NONE, KEY_NONE, "revert-buffer", do_revert_buffer)
 
     // config files
     CMD_( KEY_NONE, KEY_NONE, "load-file-from-path", do_load_file_from_path, "s{Load file from path: }|file|")
@@ -151,6 +152,12 @@ CmdDef basic_commands[] = {
     CMD_( KEY_NONE, KEY_NONE, "set-tab-width", do_set_tab_width, "i{Tab width: }")
     CMD_( KEY_NONE, KEY_NONE, "set-indent-width", do_set_indent_width, "i{Indent width: }")
     CMD_( KEY_NONE, KEY_NONE, "set-indent-tabs-mode", do_set_indent_tabs_mode, "i{Indent tabs mode (0 or 1): }")
+
+    // noops
+    CMD0( KEY_CTRL_LEFT, KEY_NONE, "noop", do_noop)
+    CMD0( KEY_CTRL_RIGHT, KEY_NONE, "noop", do_noop)
+    CMD0( KEY_CTRL_UP, KEY_NONE, "noop", do_noop)
+    CMD0( KEY_CTRL_DOWN, KEY_NONE, "noop", do_noop)
     CMD_DEF_END,
 };
 

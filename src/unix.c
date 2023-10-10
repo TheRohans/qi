@@ -19,7 +19,7 @@
 #include "qe.h"
 #include <sys/wait.h>
 
-/* NOTE: it is strongly inspirated from the 'links' browser API */
+/* NOTE: it is strongly inspired from the 'links' browser API */
 
 typedef struct URLHandler {
     void *read_opaque;
