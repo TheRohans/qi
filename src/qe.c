@@ -470,14 +470,12 @@ void run_system_cmd(EditState *s, const char **cmd)
         // parent process
         int status;
         if(wait(&status) == -1) {
-            // LOG("%s", "Could not wait for child process");
 	        put_status(s, "Run failed, couldn't wait for child");
             return;
         }
         // if the exit status of the child proces was 0 refresh
         // the buffer, if not then something went wrong. Assume
         // we don't have the app installed.
-        // if(WIFEXITED(status) != 0) {
         if(WEXITSTATUS(status) != 0) {
             // LOG("child exited with = %d", WEXITSTATUS(status));
             do_refresh(s);
