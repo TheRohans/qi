@@ -217,18 +217,15 @@ int ts_mode_init(EditState *s, ModeSavedData *saved_data) {
   return ret;
 }
 
-// void do_tslangfmt(EditState *s)
-//{
-//	const char *argv[4];
-//
-//	// XXX: configure option? Scripting option?
-//    argv[0] = "clang-format";
-//    argv[1] = "-i";
-//    argv[2] = s->b->filename;
-//    argv[3] = NULL;
-//
-//	run_system_cmd(s, argv);
-//}
+void do_tslangfmt(EditState *s)
+{
+	const char *argv[4];
+    argv[0] = "clang-format";
+    argv[1] = "-i";
+    argv[2] = s->b->filename;
+    argv[3] = NULL;
+	run_system_cmd(s, argv);
+}
 
 static CmdDef ts_commands[] = {
     CMD0(KEY_META(';'), KEY_NONE, "c-comment", do_c_comment)
@@ -237,7 +234,7 @@ static CmdDef ts_commands[] = {
     // CMDV('{', KEY_NONE, "c-electric-obrace", do_c_electric, '{', "*v")
     // CMDV( '(', KEY_NONE, "c-electric-paren", do_c_electric, '(', "*v")
     CMDV(KEY_RET, KEY_NONE, "c-electric-newline", do_c_electric, '\n', "*v")
-    // CMD0( KEY_CTRLX('y'), KEY_NONE, "c-fmt", do_clangfmt)
+    CMD0( KEY_CTRLX('y'), KEY_NONE, "ts-fmt", do_tslangfmt)
     CMD_DEF_END,
 };
 
