@@ -9,7 +9,7 @@ test:
 	$(MAKE) -C hex test
 	$(MAKE) -C list test
 	$(MAKE) -C tty test
-	
+
 core:
 	@echo "======================================== Core plugins == "
 	$(MAKE) -C hex all
@@ -23,7 +23,7 @@ core:
 # ar rcs libplugincore.a *.o
 	ar -cvq libplugincore.a *.o
 
-	mv ./libplugincore.a $(LOAD_PATH)/$< 
+	mv ./libplugincore.a $(LOAD_PATH)/$<
 	rm *.o
 
 extra:
@@ -49,17 +49,19 @@ extra:
 	$(MAKE) -C python-mode all
 # Makefile, yaml, ini, etc
 	$(MAKE) -C config-mode all
-# 
+# Rust
+	$(MAKE) -C rust all
+#
 	$(MAKE) -C golang all
 	$(MAKE) -C tslang all
 	$(MAKE) -C lualang all
 	$(MAKE) -C sqllang all
 	$(MAKE) -C maths-mode all
-	
+
 # ar rcs libplugins.a *.o
 	ar -cvq libplugins.a *.o
 
-	mv ./libplugins.a $(LOAD_PATH)/$< 
+	mv ./libplugins.a $(LOAD_PATH)/$<
 	rm *.o
 
 clean:
@@ -78,11 +80,12 @@ clean:
 	$(MAKE) -C html clean
 	$(MAKE) -C css-mode clean
 	$(MAKE) -C python-mode clean
+	$(MAKE) -C rust clean
 	$(MAKE) -C golang clean
 	$(MAKE) -C tslang clean
 	$(MAKE) -C lualang clean
 	$(MAKE) -C maths-mode clean
-	
+
 	rm -f $(LOAD_PATH)/libplugincore.a
 	rm -f $(LOAD_PATH)/libplugins.a
 	rm -f plugincore.h
