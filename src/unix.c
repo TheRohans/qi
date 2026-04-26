@@ -118,8 +118,9 @@ void register_bottom_half(void (*cb)(void *opaque), void *opaque)
 {
     BottomHalfEntry *bh;
 
-    /* Should not fail */
     bh = malloc(sizeof(BottomHalfEntry));
+    if (!bh)
+        return;
     bh->cb = cb;
     bh->opaque = opaque;
     list_add(bh, &bottom_halves);

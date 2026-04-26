@@ -1097,6 +1097,10 @@ int mmap_buffer(EditBuffer *b, const char *filename)
     if (fd < 0)
         return -1;
     file_size = lseek(fd, 0, SEEK_END);
+    if (file_size < 0) {
+        close(fd);
+        return -1;
+    }
     file_ptr = mmap(NULL, file_size, PROT_READ, MAP_SHARED, fd, 0);
     if ((void*)file_ptr == MAP_FAILED) {
         close(fd);
@@ -1377,8 +1381,7 @@ int save_buffer(EditBuffer *b)
         mode = st.st_mode & 0777;
 
     /* backup old file if present */
-    strcpy(buf1, filename);
-    strcat(buf1, "~");
+    snprintf(buf1, sizeof(buf1), "%s~", filename);
     rename(filename, buf1);
 
     ret = b->data_type->buffer_save(b, filename);
