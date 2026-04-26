@@ -1752,7 +1752,6 @@ void text_mode_line(EditState *s, char *buf, int buf_size)
 {
     int line_num, col_num, wrap_mode;
     int percent;
-    char *q;
 
     wrap_mode = '-';
     if (!s->hex_mode) {

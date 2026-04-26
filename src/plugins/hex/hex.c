@@ -285,17 +285,17 @@ void hex_write_char(EditState *s, int key)
 
 void hex_mode_line(EditState *s, char *buf, int buf_size)
 {
-    char *q;
     int percent;
 
     basic_mode_line(s, buf, buf_size, '-');
-    q = buf + strlen(buf);
-    q += sprintf(q, "0x%x--0x%x", 
-                 s->offset, s->b->total_size);
+    int len = strlen(buf);
+
+    len += snprintf(buf + len, buf_size - len, "0x%x--0x%x",
+                    s->offset, s->b->total_size);
     percent = 0;
     if (s->b->total_size > 0)
         percent = (s->offset * 100) / s->b->total_size;
-    q += sprintf(q, "--%d%%", percent);
+    snprintf(buf + len, buf_size - len, "--%d%%", percent);
 }
 
 ModeDef ascii_mode = { 

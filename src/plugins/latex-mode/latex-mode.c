@@ -235,13 +235,16 @@ static void latex_cmd_run(void *opaque, char *cmd)
 		return;
 	}
 
-    /* get the directory of the open file and change into it
-     */
+    /* get the directory of the open file and change into it */
     p = strrchr(func->es->b->filename, '/');
-    if (p == func->es->b->filename)
-        p++;
-    // len = p - func->es->b->filename + 1;
-    pstrcpy(dir, sizeof(dir), func->es->b->filename);
+    if (!p) {
+        pstrcpy(dir, sizeof(dir), ".");
+    } else {
+        int dlen = p - func->es->b->filename;
+        if (dlen == 0)
+            dlen = 1;
+        snprintf(dir, sizeof(dir), "%.*s", dlen, func->es->b->filename);
+    }
     
 	int w = chdir(dir);
 	if(w < 0) {
