@@ -820,7 +820,7 @@ StringItem *set_string(StringArray *cs, int index, const char *str)
     if (index >= cs->nb_items)
         return NULL;
 
-    v = malloc(sizeof(StringItem) + strlen(str));
+    v = malloc(sizeof(StringItem) + strlen(str) + 1);
     if (!v)
         return NULL;
     v->selected = 0;

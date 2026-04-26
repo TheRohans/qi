@@ -245,12 +245,20 @@ void tty_resize(int sig)
     
     size = s->width * s->height * sizeof(TTYChar);
     
-    ts->old_screen = realloc(ts->old_screen, size);
-    ts->screen = realloc(ts->screen, size);
-    ts->line_updated = realloc(ts->line_updated, s->height);
-    
+    void *old_screen = realloc(ts->old_screen, size);
+    void *screen = realloc(ts->screen, size);
+    void *line_updated = realloc(ts->line_updated, s->height);
+    if (!old_screen || !screen || !line_updated) {
+        free(old_screen);
+        free(screen);
+        free(line_updated);
+        return;
+    }
+    ts->old_screen = old_screen;
+    ts->screen = screen;
+    ts->line_updated = line_updated;
+
     memset(ts->old_screen, 0, size);
-    // memset(ts->screen, 0x22, size);
     memset(ts->screen, 0, size);
     memset(ts->line_updated, 1, s->height);
 

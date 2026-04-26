@@ -284,9 +284,8 @@ void qe_register_binding(int key, const char *cmd_name, const char *mode_names)
         p = mode_names;
         for (;;) {
             r = strchr(p, '|');
-            // XXX: overflows
             if (!r) {
-                strcpy(mode_name, p);
+                snprintf(mode_name, sizeof(mode_name), "%s", p);
             } else {
                 memcpy(mode_name, p, r - p);
                 mode_name[r - p] = '\0';
@@ -1724,9 +1723,8 @@ void do_refresh_complete(EditState *s);
 void basic_mode_line(EditState *s, char *buf, int buf_size, int c1)
 {
     int mod, state;
-    char *q;
+    int len = 0;
 
-    q = buf;
     mod = s->b->modified ? '*' : '-';
     if (s->b->flags & BF_LOADING)
         state = 'L';
@@ -1736,25 +1734,24 @@ void basic_mode_line(EditState *s, char *buf, int buf_size, int c1)
         state = 'B';
     else
         state = '-';
-    q += sprintf(q, "%c%c:%c%c  %-20s  (%s",
-                     c1,
-                 state,
-                 s->b->flags & BF_READONLY ? '%' : mod,
-                 mod,
-                 s->b->name,
-                 s->mode->name);
+    len += snprintf(buf + len, buf_size - len, "%c%c:%c%c  %-20s  (%s",
+                    c1,
+                    state,
+                    s->b->flags & BF_READONLY ? '%' : mod,
+                    mod,
+                    s->b->name,
+                    s->mode->name);
     if (!s->insert)
-        q += sprintf(q, " Ovwrt");
+        len += snprintf(buf + len, buf_size - len, " Ovwrt");
     if (s->interactive)
-        q += sprintf(q, " Interactive");
-    q += sprintf(q, ")--");
+        len += snprintf(buf + len, buf_size - len, " Interactive");
+    snprintf(buf + len, buf_size - len, ")--");
 }
 
 void text_mode_line(EditState *s, char *buf, int buf_size)
 {
     int line_num, col_num, wrap_mode;
     int percent;
-    char *q;
 
     wrap_mode = '-';
     if (!s->hex_mode) {
@@ -1764,16 +1761,15 @@ void text_mode_line(EditState *s, char *buf, int buf_size)
             wrap_mode = 'W';
     }
     basic_mode_line(s, buf, buf_size, wrap_mode);
-    q = buf + strlen(buf);
+    int len = strlen(buf);
 
     eb_get_pos(s->b, &line_num, &col_num, s->offset);
-    q += sprintf(q, "L%d--C%d--%s",
-                 line_num + 1, col_num, "utf-8");
+    len += snprintf(buf + len, buf_size - len, "L%d--C%d--%s",
+                    line_num + 1, col_num, "utf-8");
     percent = 0;
     if (s->b->total_size > 0)
         percent = (s->offset * 100) / s->b->total_size;
-    q += sprintf(q, "--%d%%", percent);
-    *q = '\0';
+    snprintf(buf + len, buf_size - len, "--%d%%", percent);
 }
 
 void display_mode_line(EditState *s)
