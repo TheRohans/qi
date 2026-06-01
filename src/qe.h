@@ -1001,6 +1001,18 @@ void parse_config(EditState *e, const char *file);
 void do_load_qirc(EditState *e, const char *file);
 
 /* popup / low level window handling */
+typedef struct {
+    int linec;
+    int yc;           /* pixel y of cursor */
+    int xc;           /* pixel x of cursor */
+    int offsetc;
+    DirType basec;
+    DirType dirc;
+    int cursor_width;
+    int cursor_height;
+} CursorContext;
+
+void get_cursor_pos(EditState *s, CursorContext *m);
 void show_popup(EditBuffer *b);
 EditState *insert_window_left(EditBuffer *b, int width, int flags);
 EditState *find_window(EditState *s, int key);

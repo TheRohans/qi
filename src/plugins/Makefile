@@ -57,6 +57,7 @@ extra:
 	$(MAKE) -C lualang all
 	$(MAKE) -C sqllang all
 	$(MAKE) -C maths-mode all
+	$(MAKE) -C lsp all
 
 # ar rcs libplugins.a *.o
 	ar -cvq libplugins.a *.o
@@ -85,6 +86,7 @@ clean:
 	$(MAKE) -C tslang clean
 	$(MAKE) -C lualang clean
 	$(MAKE) -C maths-mode clean
+	$(MAKE) -C lsp clean
 
 	rm -f $(LOAD_PATH)/libplugincore.a
 	rm -f $(LOAD_PATH)/libplugins.a

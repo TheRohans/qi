@@ -12,17 +12,22 @@ CONFIG_ALL_MODES=y
 # Define CONFIG_ALL_KMAPS it includes generic key map handling
 CONFIG_ALL_KMAPS=n
 
-CFLAGS:=-Wall
+CFLAGS:=-Wall -Wextra -Wshadow -Wformat=2 -Wformat-security
 # Note: Using c99 (or any ansi version) with signals is a mine field of terrible.
 # CFLAGS:=-std=c99 -Wall -Wpedantic -Werror -pedantic -pedantic-errors
 # https://stackoverflow.com/questions/6491019/struct-sigaction-incomplete-error
 # CFLAGS:=-std=c99 -Wall -Wpedantic -pedantic -D_XOPEN_SOURCE=700
 
 ifdef CONFIG_DEBUG
-CFLAGS+= -O0 -g 
-else 
+CFLAGS+= -O0 -g
+else
 CFLAGS+= -Os
-endif 
+endif
+
+ifdef CONFIG_ASAN
+CFLAGS+= -fsanitize=address,undefined -fno-omit-frame-pointer
+LDFLAGS+= -fsanitize=address,undefined
+endif
 
 CFLAGS+= $(CFLAGS) -funsigned-char -I$(LOAD_PATH):./
 

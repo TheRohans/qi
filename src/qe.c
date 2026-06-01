@@ -860,18 +860,7 @@ void do_backspace(EditState *s)
  * return the cursor position relative to the screen. Note that xc is
  * given in pixel coordinates
  */
-typedef struct {
-    int linec;
-    /** Pixel corrdinates y */
-    int yc;
-    /** Pixel corrdinates x */
-    int xc;
-    int offsetc;
-    DirType basec; //!< direction of the line
-    DirType dirc; //!< direction of the char under the cursor
-    int cursor_width; //<! can be negative depending on char orientation
-    int cursor_height;
-} CursorContext;
+/* CursorContext is declared in qe.h */
 
 int cursor_func(DisplayState *ds,
                 int offset1, int offset2, int line_num,
@@ -6564,6 +6553,7 @@ static inline void init_all_modules(void)
     lua_init();
     sql_init();
     maths_init();
+    lsp_init();
 	//example_init();
 #endif
 }

@@ -98,7 +98,7 @@ unsigned int tty_colors[NB_COLORS] = {
 /**
  * return (0,0) if error 
  */
-static void get_cursor_pos(int *pw, int *ph)
+static void tty_query_cursor_pos(int *pw, int *ph)
 {
     int w, h, c, state;
     printf(ESC_QUERY_CURSOR_POSITION);
@@ -157,7 +157,7 @@ static void tty_get_screen_size(int *pw, int *ph)
 {
     int w, h;
 	printf(ESC_CURSOR_POS, MAX_WH, MAX_WH);
-    get_cursor_pos(&w, &h);
+    tty_query_cursor_pos(&w, &h);
     if (h < 1 || w < 1 || h > MAX_WH || w > MAX_WH) {
         w = 80;
         h = 25;
@@ -245,18 +245,16 @@ void tty_resize(int sig)
     
     size = s->width * s->height * sizeof(TTYChar);
     
-    void *old_screen = realloc(ts->old_screen, size);
-    void *screen = realloc(ts->screen, size);
-    void *line_updated = realloc(ts->line_updated, s->height);
-    if (!old_screen || !screen || !line_updated) {
-        free(old_screen);
-        free(screen);
-        free(line_updated);
-        return;
-    }
-    ts->old_screen = old_screen;
-    ts->screen = screen;
-    ts->line_updated = line_updated;
+    void *tmp;
+    tmp = realloc(ts->old_screen, size);
+    if (!tmp) return;
+    ts->old_screen = tmp;
+    tmp = realloc(ts->screen, size);
+    if (!tmp) return;
+    ts->screen = tmp;
+    tmp = realloc(ts->line_updated, s->height);
+    if (!tmp) return;
+    ts->line_updated = tmp;
 
     memset(ts->old_screen, 0, size);
     memset(ts->screen, 0, size);

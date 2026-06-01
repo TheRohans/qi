@@ -1,4 +1,4 @@
-.PHONY: doc build test
+.PHONY: doc build test san
 
 MAKE?=make
 
@@ -10,6 +10,11 @@ qi:
 	@echo '======================================== Building qi == '
 	mkdir -p build
 	$(MAKE) -C src all
+
+san:
+	@echo '======================================== Building qi with ASan == '
+	mkdir -p build
+	CONFIG_DEBUG=y CONFIG_ASAN=y $(MAKE) -C src all
 
 afl:
 	@echo '========================================= Fuzzing qi == '
@@ -79,6 +84,7 @@ banner_help:
 	@echo ''
 	@echo 'make qi        - kick off script to make the edtior (probably what'
 	@echo '                  you are after)'
+	@echo 'make san        - build with AddressSanitizer + UBSan (finds crashes)'
 	@echo 'make clean     - clean up build files'
 	@echo 'make distclean - clean build and config files (aka start over)'
 	@echo 'make doc       - run doxygen on the code base'

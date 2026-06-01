@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include "qe.h"
+#include "../lsp/lsp.h"
 
 static const char python_keywords[] = 
 "|and|del|for|is|raise|assert|elif|from|lambda|return|"
@@ -211,6 +212,7 @@ int python_mode_init(EditState *s, ModeSavedData *saved_data)
     if (ret)
         return ret;
     set_colorize_func(s, python_colorize_line);
+    lsp_get_server_for_file(s);
     return ret;
 }
 
