@@ -975,9 +975,11 @@ typedef struct CompletionEntry {
 void register_completion(const char *name, CompletionFunc completion_func);
 void put_status(EditState *s, const char *fmt, ...);
 void put_error(EditState *s, const char *fmt, ...);
-void minibuffer_edit(const char *input, const char *prompt, 
+void minibuffer_edit(const char *input, const char *prompt,
                      StringArray *hist, CompletionFunc completion_func,
                      void (*cb)(void *opaque, char *buf), void *opaque);
+void do_minibuffer_exit(EditState *s, int abort);
+void do_refresh_complete(EditState *s);
 void command_completion(StringArray *cs, const char *input);
 void file_completion(StringArray *cs, const char *input);
 void buffer_completion(StringArray *cs, const char *input);

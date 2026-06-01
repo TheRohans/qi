@@ -6554,6 +6554,7 @@ static inline void init_all_modules(void)
     sql_init();
     maths_init();
     lsp_init();
+    finder_init();
 	//example_init();
 #endif
 }

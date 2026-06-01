@@ -899,4 +899,3 @@ int lsp_init(void)
     return 0;
 }
 
-qe_module_init(lsp_init);
