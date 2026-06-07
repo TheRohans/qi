@@ -384,11 +384,118 @@ static void lsp_completion_confirm(EditState *s)
     lsp_completion_close(srv, tes);
 }
 
+/* Rebuild the visible popup by prefix-filtering the master buffer against
+ * the current partial word in the editor (word_start..tes->offset). */
+static void lsp_completion_refilter(LSPServer *srv)
+{
+    QEmacsState *qs = &qe_state;
+    if (!srv->completion_popup) return;
+
+    EditState *tes = srv->completion_target_es;
+    if (!tes || !is_window_alive(tes)) return;
+
+    /* current partial word */
+    char filter[256] = {0};
+    int flen = tes->offset - srv->completion_word_start;
+    if (flen < 0) flen = 0;
+    if (flen >= (int)sizeof(filter)) flen = (int)sizeof(filter) - 1;
+    if (flen > 0)
+        eb_read(tes->b, srv->completion_word_start, (unsigned char *)filter, flen);
+
+    EditBuffer *all_b = eb_find("*lsp-completions-all*");
+    if (!all_b) return;
+
+    EditBuffer *pop_b = srv->completion_popup->b;
+    pop_b->flags &= ~BF_READONLY;
+    eb_delete(pop_b, 0, pop_b->total_size);
+
+    int off = 0;
+    char linebuf[512];
+    int count = 0;
+    while (off < all_b->total_size) {
+        int old_off = off;
+        eb_get_strline(all_b, linebuf, sizeof(linebuf), &off);
+        if (off <= old_off) break;
+
+        char *sym = linebuf + 1;  /* skip list_mode marker */
+        char *tab = strchr(sym, '\t');
+        char saved = 0;
+        if (tab) { saved = *tab; *tab = '\0'; }
+
+        /* case-insensitive prefix match */
+        int match = (flen == 0);
+        if (!match) {
+            int i;
+            for (i = 0; i < flen && sym[i] && filter[i]; i++) {
+                if (tolower((unsigned char)sym[i]) != tolower((unsigned char)filter[i]))
+                    break;
+            }
+            match = (i == flen);
+        }
+
+        if (tab) *tab = saved;
+
+        if (match) {
+            eb_printf(pop_b, "%s\n", linebuf);
+            count++;
+        }
+    }
+
+    if (count == 0)
+        eb_printf(pop_b, " (no matches)\n");
+
+    pop_b->flags |= BF_READONLY;
+    srv->completion_popup->offset = 0;
+    srv->completion_popup->force_highlight = 1;
+
+    edit_display(qs);
+    dpy_flush(qs->screen);
+}
+
+/* Typed char while popup is focused: insert into editor buffer and refilter. */
+static void lsp_completion_char(EditState *s, int key)
+{
+    LSPServer *srv = lsp_completion_find_server(s);
+    if (!srv) return;
+
+    EditState *tes = srv->completion_target_es;
+    if (!tes || !is_window_alive(tes)) return;
+
+    char buf[MAX_CHAR_BYTES] = {0};
+    to_utf8(buf, key);
+    int len = utf8_len(buf[0]);
+    eb_insert(tes->b, tes->offset, buf, len);
+    tes->offset += len;
+
+    lsp_completion_refilter(srv);
+}
+
+/* Backspace while popup is focused: delete last typed char and refilter. */
+static void lsp_completion_backspace(EditState *s)
+{
+    LSPServer *srv = lsp_completion_find_server(s);
+    if (!srv) return;
+
+    EditState *tes = srv->completion_target_es;
+    if (!tes || !is_window_alive(tes)) return;
+
+    if (tes->offset <= srv->completion_word_start) return;
+
+    int prev;
+    eb_prevc(tes->b, tes->offset, &prev);
+    eb_delete(tes->b, prev, tes->offset - prev);
+    tes->offset = prev;
+
+    lsp_completion_refilter(srv);
+}
+
 static CmdDef lsp_completion_commands[] = {
-    CMD0(KEY_CTRL('n'), KEY_DOWN,      "lsp-completion-next",    lsp_completion_next)
-    CMD0(KEY_CTRL('p'), KEY_UP,        "lsp-completion-prev",    lsp_completion_prev)
-    CMD0(KEY_RET,       KEY_NONE,      "lsp-completion-confirm", lsp_completion_confirm)
-    CMD0(KEY_ESC,       KEY_CTRL('g'), "lsp-completion-abort",   lsp_completion_abort)
+    CMD0(KEY_CTRL('n'), KEY_DOWN,      "lsp-completion-next",      lsp_completion_next)
+    CMD0(KEY_CTRL('p'), KEY_UP,        "lsp-completion-prev",      lsp_completion_prev)
+    CMD0(KEY_RET,       KEY_NONE,      "lsp-completion-confirm",   lsp_completion_confirm)
+    CMD0(KEY_ESC,       KEY_CTRL('g'), "lsp-completion-abort",     lsp_completion_abort)
+    CMD0(KEY_DEL,       KEY_CTRL('h'), "lsp-completion-backspace", lsp_completion_backspace)
+    CMDV(KEY_DEFAULT,   KEY_NONE,      "lsp-completion-char",      lsp_completion_char, 0, "v")
     CMD_DEF_END,
 };
 
@@ -430,6 +537,15 @@ static void lsp_handle_completion(cJSON *result, LSPServer *srv)
         eb_delete(b, 0, b->total_size);
     }
 
+    /* master copy — kept unfiltered so typing can re-filter without re-querying LSP */
+    EditBuffer *all_b = eb_find("*lsp-completions-all*");
+    if (!all_b) {
+        all_b = eb_new("*lsp-completions-all*", BF_SYSTEM);
+    } else {
+        all_b->flags &= ~BF_READONLY;
+        eb_delete(all_b, 0, all_b->total_size);
+    }
+
     /* one item per line: " insertText\tdetail" (leading space = list_mode marker)
      * Use insertText when clangd provides it — it's always the clean symbol name.
      * Fall back to label, trimming any leading whitespace clangd sometimes adds. */
@@ -444,16 +560,20 @@ static void lsp_handle_completion(cJSON *result, LSPServer *srv)
         const char *text = lbl->valuestring;
         if (ins && cJSON_IsString(ins) && ins->valuestring[0])
             text = ins->valuestring;
-        while (*text == ' ' || *text == '\t') text++;  /* trim stray leading whitespace */
+        while (*text == ' ' || *text == '\t') text++;
         if (*text == '\0')
             continue;
-        if (det && cJSON_IsString(det))
-            eb_printf(b, " %s\t%s\n", text, det->valuestring);
-        else
-            eb_printf(b, " %s\n", text);
+        if (det && cJSON_IsString(det)) {
+            eb_printf(b,     " %s\t%s\n", text, det->valuestring);
+            eb_printf(all_b, " %s\t%s\n", text, det->valuestring);
+        } else {
+            eb_printf(b,     " %s\n", text);
+            eb_printf(all_b, " %s\n", text);
+        }
         n_items++;
     }
-    b->flags |= BF_READONLY;
+    b->flags     |= BF_READONLY;
+    all_b->flags |= BF_READONLY;
 
     if (n_items == 0) {
         put_status(tes, "LSP: no completions");
