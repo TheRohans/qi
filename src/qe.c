@@ -41,6 +41,7 @@ void print_at_byte(QEditScreen *screen,
                    int x, int y, int width, int height,
                    const char *str, int style_index);
 static void do_cmd_set_mode(EditState *s, const char *name);
+static void invalidate_all_windows(QEmacsState *qs);
 void do_delete_window(EditState *s, int force);
 void do_end_macro(EditState *s);
 static void get_default_path(EditState *s, char *buf, int buf_size);
@@ -133,6 +134,17 @@ static ModeDef *find_mode(const char *mode_name)
         p = p->next;
     }
     return NULL;
+}
+
+/**
+ * Find a mode from within the loaded modes. Public wrapper around
+ * find_mode() so that plugins can look up modes they do not own
+ * (e.g. to install a display_hook on a language mode from a
+ * separate plugin).
+ */
+ModeDef *qe_find_mode(const char *mode_name)
+{
+    return find_mode(mode_name);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -1779,6 +1791,61 @@ void display_mode_line(EditState *s)
     }
 }
 
+/**
+ * Draw a real ASCII frame ("+---- title ----+" / "|" edges) around a
+ * WF_POPUP window instead of a blank filled strip, and center the
+ * popup's buffer name in the top border as a title, so a popup reads
+ * as a labeled dialog rather than an unstyled rectangle.
+ */
+static void display_popup_frame(EditState *e)
+{
+    QEmacsState *qs = e->qe_state;
+    char line[256];
+    int w = e->x2 - e->x1;
+    int n = w;
+
+    if (n > (int)sizeof(line) - 1)
+        n = (int)sizeof(line) - 1;
+    if (n <= 0)
+        return;
+
+    memset(line, '-', n);
+    if (n >= 2) {
+        line[0] = '+';
+        line[n - 1] = '+';
+    }
+    if (n >= 3 && e->b && e->b->name[0]) {
+        char title[64];
+        snprintf(title, sizeof(title), " %s ", e->b->name);
+        int tlen = (int)strlen(title);
+        if (tlen > n - 2)
+            tlen = n - 2;
+        if (tlen > 0) {
+            int start = (n - tlen) / 2;
+            memcpy(line + start, title, tlen);
+        }
+    }
+    line[n] = '\0';
+    print_at_byte(qs->screen, e->x1, e->y1, w, qs->border_width,
+                  line, QE_STYLE_POPUP_BORDER);
+
+    memset(line, '-', n);
+    if (n >= 2) {
+        line[0] = '+';
+        line[n - 1] = '+';
+    }
+    line[n] = '\0';
+    print_at_byte(qs->screen, e->x1, e->y2 - qs->border_width, w, qs->border_width,
+                  line, QE_STYLE_POPUP_BORDER);
+
+    for (int y = e->y1 + qs->border_width; y < e->y2 - qs->border_width; y++) {
+        print_at_byte(qs->screen, e->x1, y, qs->border_width, 1,
+                      "|", QE_STYLE_POPUP_BORDER);
+        print_at_byte(qs->screen, e->x2 - qs->border_width, y, qs->border_width, 1,
+                      "|", QE_STYLE_POPUP_BORDER);
+    }
+}
+
 void display_window_borders(EditState *e)
 {
     QEmacsState *qs = e->qe_state;
@@ -1795,18 +1862,7 @@ void display_window_borders(EditState *e)
             set_clip_rectangle(qs->screen, &rect);
             color = qe_styles[QE_STYLE_WINDOW_BORDER].bg_color;
             if (e->flags & WF_POPUP) {
-                fill_rectangle(qs->screen,
-                               e->x1, e->y1,
-                               qs->border_width, e->y2 - e->y1, color);
-                fill_rectangle(qs->screen,
-                               e->x2 - qs->border_width, e->y1,
-                               qs->border_width, e->y2 - e->y1, color);
-                fill_rectangle(qs->screen,
-                               e->x1, e->y1,
-                               e->x2 - e->x1, qs->border_width, color);
-                fill_rectangle(qs->screen,
-                               e->x1, e->y2 - qs->border_width,
-                               e->x2 - e->x1, qs->border_width, color);
+                display_popup_frame(e);
             }
             if (e->flags & WF_RSEPARATOR) {
                 fill_rectangle(qs->screen,
@@ -3777,6 +3833,11 @@ EditState *edit_new(EditBuffer *b,
     if (!qs->active_window)
         qs->active_window = s;
     switch_to_buffer(s, b);
+
+    /* a new window may cover part of the screen other windows think is
+     * already up to date; force everyone to redraw so nothing is left
+     * stale underneath it. */
+    invalidate_all_windows(qs);
     return s;
 }
 
@@ -3840,6 +3901,11 @@ void edit_close(EditState *s)
     /* if active window, select another active window */
     if (qs->active_window == s)
         qs->active_window = qs->first_window;
+
+    /* s is already unlinked above, so this only touches windows that
+     * remain on screen: force them to redraw the area s used to cover,
+     * instead of relying on every caller to remember to do so. */
+    invalidate_all_windows(qs);
 
     free(s->line_shadow);
     free(s);
@@ -4281,27 +4347,39 @@ void do_less_quit(EditState *s)
     do_refresh(qs->active_window);
 }
 
-/** show a popup on a readonly buffer */
-void show_popup(EditBuffer *b)
+/**
+ * Show a popup on a readonly buffer at a caller-chosen position and
+ * size (e.g. a small tooltip anchored near the cursor), with the same
+ * "remember the previous window so C-g/q can restore it" behavior as
+ * show_popup(). Returns the new popup window.
+ */
+EditState *show_popup_at(EditBuffer *b, int x1, int y1, int w, int h)
 {
     EditState *s;
     QEmacsState *qs = &qe_state;
-    int w, h, w1, h1;
 
-    /* XXX: generic function to open popup ? */
-    w1 = qs->screen->width;
-    h1 = qs->screen->height - qs->status_height;
-    w = (w1 * 4) / 5;
-    h = (h1 * 3) / 4;
-
-    s = edit_new(b, (w1 - w) / 2, (h1 - h) / 2, w, h,
-                 WF_POPUP);
+    s = edit_new(b, x1, y1, w, h, WF_POPUP);
     do_set_mode(s, &less_mode, NULL);
     s->wrap = WRAP_TRUNCATE;
 
     popup_saved_active = qs->active_window;
     qs->active_window = s;
     do_refresh(s);
+    return s;
+}
+
+/** show a large, screen-centered popup on a readonly buffer */
+void show_popup(EditBuffer *b)
+{
+    QEmacsState *qs = &qe_state;
+    int w, h, w1, h1;
+
+    w1 = qs->screen->width;
+    h1 = qs->screen->height - qs->status_height;
+    w = (w1 * 4) / 5;
+    h = (h1 * 3) / 4;
+
+    show_popup_at(b, (w1 - w) / 2, (h1 - h) / 2, w, h);
 }
 
 void less_mode_init(void)
@@ -5387,6 +5465,23 @@ void edit_invalidate(EditState *s)
 }
 
 /**
+ * Force every window to redraw its content and borders on the next
+ * display pass. This is what keeps the screen consistent whenever the
+ * window list changes shape (a window opens, closes, or is resized):
+ * without it, windows rely on a per-line shadow cache and would skip
+ * redrawing rows that another window (e.g. a popup) had painted over,
+ * leaving stale glyphs on screen.
+ */
+static void invalidate_all_windows(QEmacsState *qs)
+{
+    EditState *e;
+    for (e = qs->first_window; e != NULL; e = e->next_window) {
+        edit_invalidate(e);
+        e->borders_invalid = 1;
+    }
+}
+
+/**
  * Try to redraw the display. Used when the window size
  * has changed, or if they do C-l to force redraw the screen
  */
@@ -5465,10 +5560,7 @@ void eb_refresh()
         compute_client_area(e);
 
     // invalidate all the edit windows and draw borders
-    for (e = qs->first_window; e != NULL; e = e->next_window) {
-        edit_invalidate(e);
-        e->borders_invalid = 1;
-    }
+    invalidate_all_windows(qs);
     // invalidate status line
     qs->status_shadow[0] = '\0';
 

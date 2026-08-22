@@ -37,17 +37,22 @@
  * Extend this table to add new languages — no other code changes needed.
  * ------------------------------------------------------------------------- */
 static const LSPLangConfig lsp_lang_configs[] = {
-    { "go",   "go",         "gopls",                      {"serve", NULL} },
-    { "rs",   "rust",       "rust-analyzer",              {NULL} },
-    { "py",   "python",     "pylsp",                      {NULL} },
-    { "c",    "c",          "clangd",                     {NULL} },
-    { "cpp",  "cpp",        "clangd",                     {NULL} },
-    { "h",    "c",          "clangd",                     {NULL} },
-    { "js",   "javascript", "typescript-language-server", {"--stdio", NULL} },
-    { "ts",   "typescript", "typescript-language-server", {"--stdio", NULL} },
-    { "lua",  "lua",        "lua-language-server",        {NULL} },
+    { "go",   "go",         "Go",         "gopls",                      {"serve", NULL} },
+    { "rs",   "rust",       "Rust",       "rust-analyzer",              {NULL} },
+    { "py",   "python",     "Python",     "pylsp",                      {NULL} },
+    { "c",    "c",          "C",          "clangd",                     {NULL} },
+    { "cpp",  "cpp",        "C",          "clangd",                     {NULL} },
+    { "h",    "c",          "C",          "clangd",                     {NULL} },
+    { "js",   "javascript", "Typescript", "typescript-language-server", {"--stdio", NULL} },
+    { "ts",   "typescript", "Typescript", "typescript-language-server", {"--stdio", NULL} },
+    { "lua",  "lua",        "Lua",        "lua-language-server",        {NULL} },
     { NULL }
 };
+
+/* one flag per lsp_lang_configs[] row: has an automatic warm-up spawn
+ * already been attempted for this language? Prevents refork storms when
+ * a server binary is missing — see lsp_warmup_display_hook(). */
+static char lsp_warmup_attempted[sizeof(lsp_lang_configs) / sizeof(lsp_lang_configs[0])];
 
 LSPServer lsp_servers[LSP_MAX_SERVERS];
 
@@ -190,6 +195,65 @@ static int lsp_file_is_open(LSPServer *srv, const char *uri)
     return 0;
 }
 
+static LSPOpenFile *lsp_find_open_file(LSPServer *srv, const char *uri)
+{
+    for (int i = 0; i < srv->num_open_files; i++) {
+        if (strcmp(srv->open_files[i].uri, uri) == 0)
+            return &srv->open_files[i];
+    }
+    return NULL;
+}
+
+/*
+ * Send the buffer's current in-memory content to the server as a full
+ * document sync. didOpen only ever reads the file from disk once; without
+ * this, the server's view of the document never reflects unsaved edits,
+ * so any hover/completion/definition request issued after typing (but
+ * before saving) resolves against stale — or entirely absent — text and
+ * returns nonsensical results (e.g. global symbols instead of a struct's
+ * fields, because the server doesn't think the "p." you just typed
+ * exists at all).
+ */
+static void lsp_send_did_change(LSPServer *srv, EditState *s)
+{
+    char uri[MAX_FILENAME_SIZE + 10];
+    lsp_file_uri(s->b->filename, uri, sizeof(uri));
+
+    LSPOpenFile *of = lsp_find_open_file(srv, uri);
+    if (!of)
+        return; /* not open yet; didOpen already sends the initial text */
+
+    int size = s->b->total_size;
+    char *content = malloc(size + 1);
+    if (!content)
+        return;
+    eb_read(s->b, 0, content, size);
+    content[size] = '\0';
+
+    of->version++;
+
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddStringToObject(root, "jsonrpc", "2.0");
+    cJSON_AddStringToObject(root, "method", "textDocument/didChange");
+
+    cJSON *params  = cJSON_CreateObject();
+    cJSON *textDoc = cJSON_CreateObject();
+    cJSON_AddStringToObject(textDoc, "uri", uri);
+    cJSON_AddNumberToObject(textDoc, "version", of->version);
+    cJSON_AddItemToObject(params, "textDocument", textDoc);
+
+    /* full-document sync: one change covering the whole file, no range */
+    cJSON *changes = cJSON_CreateArray();
+    cJSON *change  = cJSON_CreateObject();
+    cJSON_AddStringToObject(change, "text", content);
+    cJSON_AddItemToArray(changes, change);
+    cJSON_AddItemToObject(params, "contentChanges", changes);
+
+    cJSON_AddItemToObject(root, "params", params);
+    lsp_send_obj(srv, root);
+    free(content);
+}
+
 /* Public: ensure the server has received didOpen for this file. */
 void lsp_ensure_did_open(LSPServer *srv, EditState *s)
 {
@@ -201,6 +265,19 @@ void lsp_ensure_did_open(LSPServer *srv, EditState *s)
 
     if (!lsp_file_is_open(srv, uri))
         lsp_send_did_open(srv, s->b->filename, srv->config->language_id);
+}
+
+/*
+ * Public: bring the server fully up to date on this buffer — open it if
+ * needed, then push its live content — before any position-based request
+ * (hover, completion, go-to-definition). Always sending didChange here is
+ * cheap for the file sizes an editor deals with and guarantees the server
+ * is never reasoning about stale text.
+ */
+void lsp_sync_document(LSPServer *srv, EditState *s)
+{
+    lsp_ensure_did_open(srv, s);
+    lsp_send_did_change(srv, s);
 }
 
 /* -------------------------------------------------------------------------
@@ -247,7 +324,7 @@ static void lsp_handle_hover(cJSON *result, LSPServer *srv)
 
     /* LSP hover content is markdown. Strip code fences (```lang ... ```)
      * and collect the first non-empty, non-fence line for the status bar,
-     * then show the full cleaned text in a popup. */
+     * then show the full cleaned text in a small popup near the cursor. */
     static char status_line[256];
     EditBuffer *b = eb_find("*lsp-hover*");
     if (!b)
@@ -258,6 +335,8 @@ static void lsp_handle_hover(cJSON *result, LSPServer *srv)
     }
 
     status_line[0] = '\0';
+    int n_lines = 0, max_len = 0;
+    int line_lens[64];
     const char *p = text;
     while (*p) {
         /* find end of current line */
@@ -279,6 +358,11 @@ static void lsp_handle_hover(cJSON *result, LSPServer *srv)
         /* write this line to the popup buffer */
         eb_insert(b, b->total_size, p, line_len);
         eb_insert(b, b->total_size, "\n", 1);
+        if (n_lines < (int)(sizeof(line_lens) / sizeof(line_lens[0])))
+            line_lens[n_lines] = line_len;
+        n_lines++;
+        if (line_len > max_len)
+            max_len = line_len;
 
         /* capture first non-empty line for the status bar */
         if (!status_line[0] && line_len > 0) {
@@ -298,7 +382,72 @@ static void lsp_handle_hover(cJSON *result, LSPServer *srv)
     else
         put_status(es, "LSP: hover (see *lsp-hover* buffer)");
 
-    show_popup(b);
+    /* size and place the popup like an IntelliSense tooltip: small, sized
+     * to the actual content, anchored just under (or, if that would run
+     * off screen, above) the cursor — instead of a large centered modal. */
+    CursorContext cm;
+    cm.xc = NO_CURSOR;
+    cm.cursor_height = 0;
+    get_cursor_pos(es, &cm);
+
+    if (cm.xc == NO_CURSOR || cm.cursor_height <= 0) {
+        show_popup(b);
+        edit_display(qs);
+        dpy_flush(qs->screen);
+        return;
+    }
+
+    int line_h  = cm.cursor_height;
+    int char_w  = line_h / 2 > 0 ? line_h / 2 : 1;
+
+    /* narrow, VS Code-tooltip-like width: fit short content snugly, but
+     * word-wrap (rather than stretch the box) for longer doc lines */
+    int n_w = max_len + 4;
+    if (n_w < 20) n_w = 20;
+    if (n_w > 60) n_w = 60;
+
+    /* estimate wrapped row count at that width so the box is tall enough
+     * without needing to scroll for the common case; less_mode still
+     * scrolls if a line runs long enough that this estimate falls short */
+    int usable = n_w - 2;
+    if (usable < 1) usable = 1;
+    int tracked = n_lines < (int)(sizeof(line_lens) / sizeof(line_lens[0]))
+                  ? n_lines : (int)(sizeof(line_lens) / sizeof(line_lens[0]));
+    int n_h = 0;
+    for (int i = 0; i < tracked; i++) {
+        int rows = (line_lens[i] + usable - 1) / usable;
+        n_h += rows < 1 ? 1 : rows;
+    }
+    n_h += n_lines - tracked; /* untracked lines: assume one row each */
+    if (n_h < 1) n_h = 1;
+    if (n_h > 20) n_h = 20;
+
+    /* +2*border_width: compute_client_area() carves the top/bottom
+     * border out of a WF_POPUP window's own height, so without this the
+     * content area — and therefore all visible rows — collapses to
+     * nothing whenever n_h is small (e.g. a one-line hover). */
+    int popup_h = n_h * line_h + 2 * qs->border_width;
+    int popup_w = n_w * char_w;
+    int scr_w   = qs->screen->width;
+    int scr_h   = qs->screen->height - qs->status_height;
+
+    int x = cm.xc;
+    if (x + popup_w > scr_w) x = scr_w - popup_w;
+    if (x < 0) x = 0;
+
+    int y = cm.yc + cm.cursor_height;
+    if (y + popup_h > scr_h)
+        y = cm.yc - popup_h;   /* show above cursor instead */
+    if (y < 0) y = 0;
+
+    EditState *hp = show_popup_at(b, x, y, popup_w, popup_h);
+    hp->wrap = WRAP_LINE; /* word-wrap long doc lines instead of truncating */
+    /* force immediate render — this popup is created from the async LSP
+     * response handler, not from the normal key-command path that would
+     * otherwise redisplay automatically; without this it stays invisible
+     * until the next keypress. */
+    edit_display(qs);
+    dpy_flush(qs->screen);
 }
 
 /* -------------------------------------------------------------------------
@@ -589,7 +738,10 @@ static void lsp_handle_completion(cJSON *result, LSPServer *srv)
     /* compute popup geometry */
     int line_h  = cm.cursor_height;
     int char_w  = line_h / 2 > 0 ? line_h / 2 : 1;
-    int popup_h = (n_items < 8 ? n_items : 8) * line_h;
+    /* +2*border_width: see matching comment in lsp_handle_hover() — without
+     * it a short candidate list (e.g. 1-2 struct fields) collapses to a
+     * borders-only box with no visible rows. */
+    int popup_h = (n_items < 8 ? n_items : 8) * line_h + 2 * qs->border_width;
     int popup_w = 50 * char_w;
     int scr_w   = qs->screen->width;
     int scr_h   = qs->screen->height - qs->status_height;
@@ -617,6 +769,73 @@ static void lsp_handle_completion(cJSON *result, LSPServer *srv)
     /* force immediate render — edit_display+dpy_flush only fire in the key
      * handler normally, so the popup would be invisible until the next
      * keypress without this explicit flush. */
+    edit_display(qs);
+    dpy_flush(qs->screen);
+}
+
+static void lsp_uri_to_path(const char *uri, char *buf, int buf_size)
+{
+    if (!strncmp(uri, "file://", 7))
+        uri += 7;
+    pstrcpy(buf, buf_size, uri);
+}
+
+static void lsp_handle_definition(cJSON *result, LSPServer *srv)
+{
+    QEmacsState *qs = &qe_state;
+    EditState   *es = srv->def_es && is_window_alive(srv->def_es)
+                      ? srv->def_es : qs->active_window;
+    if (!es)
+        return;
+
+    if (!result || cJSON_IsNull(result)) {
+        put_status(es, "LSP: no definition found");
+        return;
+    }
+
+    /* result is Location | Location[] | LocationLink[]; take the first */
+    cJSON *loc = cJSON_IsArray(result) ? result->child : result;
+    if (!loc) {
+        put_status(es, "LSP: no definition found");
+        return;
+    }
+
+    cJSON *uri_item = cJSON_GetObjectItem(loc, "uri");
+    cJSON *range     = cJSON_GetObjectItem(loc, "range");
+    if (!uri_item) {
+        /* LocationLink shape */
+        uri_item = cJSON_GetObjectItem(loc, "targetUri");
+        range     = cJSON_GetObjectItem(loc, "targetSelectionRange");
+        if (!range)
+            range = cJSON_GetObjectItem(loc, "targetRange");
+    }
+    if (!uri_item || !cJSON_IsString(uri_item) || !range) {
+        put_status(es, "LSP: couldn't parse definition location");
+        return;
+    }
+
+    cJSON *start = cJSON_GetObjectItem(range, "start");
+    cJSON *line_item = start ? cJSON_GetObjectItem(start, "line")      : NULL;
+    cJSON *col_item  = start ? cJSON_GetObjectItem(start, "character") : NULL;
+    int line = line_item ? line_item->valueint : 0;
+    int col  = col_item  ? col_item->valueint  : 0;
+
+    char path[MAX_FILENAME_SIZE];
+    lsp_uri_to_path(uri_item->valuestring, path, sizeof(path));
+
+    /* only reload the buffer if the definition is in a different file */
+    if (strcmp(path, es->b->filename) != 0)
+        do_load(es, path);
+
+    es->offset = eb_goto_pos(es->b, line, col);
+    qs->active_window = es;
+    put_status(es, "LSP: %s:%d", path, line + 1);
+
+    /* force immediate render — same reason as lsp_handle_hover(): this
+     * runs from the async LSP response handler, not the key-command path
+     * that would otherwise redisplay automatically, so without this the
+     * jump silently happens in memory but doesn't show up until the next
+     * keypress. */
     edit_display(qs);
     dpy_flush(qs->screen);
 }
@@ -668,6 +887,11 @@ static void lsp_dispatch(LSPServer *srv, const char *json_str)
             LSP_LOG("lsp_dispatch: completion response received");
             lsp_handle_completion(result, srv);
             srv->completion_id = -1;
+        } else if (id == srv->def_id) {
+            LSP_LOG("lsp_dispatch: definition response received");
+            lsp_handle_definition(result, srv);
+            srv->def_id = -1;
+            srv->def_es = NULL;
         }
     }
     /* server-to-client notifications (no id) are silently ignored */
@@ -822,6 +1046,14 @@ static LSPServer *lsp_start_server(const LSPLangConfig *cfg, EditState *s)
     close(in_pipe[0]);
     close(out_pipe[1]);
 
+    /* Never let a read() on the server's stdout block: qi is a single-
+     * threaded select() reactor (see url_block() in unix.c), so a read
+     * call in lsp_read_handler that blocks would freeze the entire UI,
+     * with no way to even quit. This should already be unreachable since
+     * read_handler only runs when select() reports the fd readable, but
+     * a non-blocking fd makes that a guarantee instead of an assumption. */
+    fcntl(out_pipe[0], F_SETFL, fcntl(out_pipe[0], F_GETFL, 0) | O_NONBLOCK);
+
     memset(srv, 0, sizeof(*srv));
     srv->active        = 1;
     srv->initialized   = 0;
@@ -831,6 +1063,7 @@ static LSPServer *lsp_start_server(const LSPLangConfig *cfg, EditState *s)
     srv->next_id       = 1;
     srv->hover_id      = -1;
     srv->completion_id = -1;
+    srv->def_id        = -1;
     srv->config        = cfg;
     pstrcpy(srv->open_on_init, sizeof(srv->open_on_init), s->b->filename);
 
@@ -850,7 +1083,7 @@ static LSPServer *lsp_start_server(const LSPLangConfig *cfg, EditState *s)
  * Public API
  * ------------------------------------------------------------------------- */
 
-LSPServer *lsp_get_server_for_file(EditState *s)
+static const LSPLangConfig *lsp_find_config_for_file(EditState *s)
 {
     if (!s || !s->b || !s->b->filename[0])
         return NULL;
@@ -861,13 +1094,16 @@ LSPServer *lsp_get_server_for_file(EditState *s)
     /* extension() includes the leading dot */
     const char *bare_ext = (*ext == '.') ? ext + 1 : ext;
 
-    const LSPLangConfig *cfg = NULL;
     for (int i = 0; lsp_lang_configs[i].ext; i++) {
-        if (strcmp(lsp_lang_configs[i].ext, bare_ext) == 0) {
-            cfg = &lsp_lang_configs[i];
-            break;
-        }
+        if (strcmp(lsp_lang_configs[i].ext, bare_ext) == 0)
+            return &lsp_lang_configs[i];
     }
+    return NULL;
+}
+
+LSPServer *lsp_get_server_for_file(EditState *s)
+{
+    const LSPLangConfig *cfg = lsp_find_config_for_file(s);
     if (!cfg)
         return NULL;
 
@@ -875,6 +1111,64 @@ LSPServer *lsp_get_server_for_file(EditState *s)
     if (!srv)
         srv = lsp_start_server(cfg, s);
     return srv;
+}
+
+/**
+ * display_hook installed on language modes (see lsp_install_warmup_hooks)
+ * so that opening a file starts warming up its LSP server immediately,
+ * instead of waiting for the first hover/complete request. Idempotent
+ * and safe to call on every redraw: does nothing once a server for the
+ * language is running, and gives up after one failed spawn attempt per
+ * language so a missing server binary can't trigger a refork storm.
+ *
+ * Deliberately conservative about *when* it fires: display_hook runs for
+ * any window showing the mode, including a dired preview pane that
+ * flashes through every file as you arrow down a directory listing
+ * (dired.c marks those buffers BF_PREVIEW). Without the checks below,
+ * casually browsing a directory in dired silently spawned one real LSP
+ * subprocess per file type glanced at, which is both surprising and (with
+ * several concurrent servers) can wedge the UI. Only warm up for the
+ * window the user is actually in, on a buffer they actually opened.
+ */
+static void lsp_warmup_display_hook(EditState *s)
+{
+    QEmacsState *qs = &qe_state;
+    if (s != qs->active_window)
+        return;
+    if (s->b->flags & BF_PREVIEW)
+        return;
+
+    const LSPLangConfig *cfg = lsp_find_config_for_file(s);
+    if (!cfg)
+        return;
+    if (lsp_find_running(cfg))
+        return;
+
+    int idx = (int)(cfg - lsp_lang_configs);
+    if (lsp_warmup_attempted[idx])
+        return;
+    lsp_warmup_attempted[idx] = 1;
+    lsp_start_server(cfg, s);
+}
+
+/**
+ * Wire lsp_warmup_display_hook() onto every language mode that has an
+ * LSP config, so files start warming up their server as soon as they
+ * are displayed. Must run after the language plugins' own init (they
+ * set ModeDef.name); see lsp_init().
+ */
+static void lsp_install_warmup_hooks(void)
+{
+    for (int i = 0; lsp_lang_configs[i].ext; i++) {
+        ModeDef *m = qe_find_mode(lsp_lang_configs[i].mode_name);
+        if (!m)
+            continue; /* language plugin not compiled in */
+        if (m->display_hook == lsp_warmup_display_hook)
+            continue; /* already wired, e.g. shared C/Typescript mode */
+        if (m->display_hook != NULL)
+            continue; /* defensive: don't clobber a foreign hook */
+        m->display_hook = lsp_warmup_display_hook;
+    }
 }
 
 void lsp_hover(EditState *s)
@@ -889,7 +1183,7 @@ void lsp_hover(EditState *s)
         return;
     }
 
-    lsp_ensure_did_open(srv, s);
+    lsp_sync_document(srv, s);
 
     char uri[MAX_FILENAME_SIZE + 10];
     lsp_file_uri(s->b->filename, uri, sizeof(uri));
@@ -961,7 +1255,7 @@ void lsp_complete(EditState *s)
     }
     srv->completion_word_start = word_start;
 
-    lsp_ensure_did_open(srv, s);
+    lsp_sync_document(srv, s);
 
     char uri[MAX_FILENAME_SIZE + 10];
     lsp_file_uri(s->b->filename, uri, sizeof(uri));
@@ -990,16 +1284,60 @@ void lsp_complete(EditState *s)
     lsp_send_obj(srv, root);
 }
 
+void lsp_goto_definition(EditState *s)
+{
+    LSPServer *srv = lsp_get_server_for_file(s);
+    if (!srv) {
+        put_status(s, "LSP: no server for this file type");
+        return;
+    }
+    if (!srv->initialized) {
+        put_status(s, "LSP: server not ready yet, try again shortly");
+        return;
+    }
+
+    lsp_sync_document(srv, s);
+
+    char uri[MAX_FILENAME_SIZE + 10];
+    lsp_file_uri(s->b->filename, uri, sizeof(uri));
+
+    int line, col;
+    eb_get_pos(s->b, &line, &col, s->offset);
+
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddStringToObject(root, "jsonrpc", "2.0");
+    int id = srv->next_id++;
+    cJSON_AddNumberToObject(root, "id", id);
+    cJSON_AddStringToObject(root, "method", "textDocument/definition");
+
+    cJSON *params  = cJSON_CreateObject();
+    cJSON *textDoc = cJSON_CreateObject();
+    cJSON_AddStringToObject(textDoc, "uri", uri);
+    cJSON_AddItemToObject(params, "textDocument", textDoc);
+
+    cJSON *pos = cJSON_CreateObject();
+    cJSON_AddNumberToObject(pos, "line",      line);
+    cJSON_AddNumberToObject(pos, "character", col);
+    cJSON_AddItemToObject(params, "position", pos);
+    cJSON_AddItemToObject(root,   "params",   params);
+
+    srv->def_id = id;
+    srv->def_es = s;
+    lsp_send_obj(srv, root);
+}
+
 /* -------------------------------------------------------------------------
  * Command wrappers and plugin init
  * ------------------------------------------------------------------------- */
 
-static void do_lsp_hover(EditState *s)    { lsp_hover(s); }
-static void do_lsp_complete(EditState *s) { lsp_complete(s); }
+static void do_lsp_hover(EditState *s)           { lsp_hover(s); }
+static void do_lsp_complete(EditState *s)        { lsp_complete(s); }
+static void do_lsp_goto_definition(EditState *s) { lsp_goto_definition(s); }
 
 static CmdDef lsp_commands[] = {
-    CMD0(KEY_META('?'), KEY_NONE, "lsp-hover",    do_lsp_hover)
-    CMD0(KEY_META('/'), KEY_NONE, "lsp-complete",  do_lsp_complete)
+    CMD0(KEY_META('?'), KEY_NONE, "lsp-hover",           do_lsp_hover)
+    CMD0(KEY_META('/'), KEY_NONE, "lsp-complete",         do_lsp_complete)
+    CMD0(KEY_META('.'), KEY_NONE, "lsp-goto-definition",  do_lsp_goto_definition)
     CMD_DEF_END,
 };
 
@@ -1016,6 +1354,8 @@ int lsp_init(void)
 
     /* register global LSP commands (NULL mode = available everywhere) */
     qe_register_cmd_table(lsp_commands, NULL);
+
+    lsp_install_warmup_hooks();
     return 0;
 }
 

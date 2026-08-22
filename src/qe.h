@@ -854,6 +854,7 @@ typedef struct CmdDef {
 #define CMD_DEF_END { 0, 0, NULL, { NULL }, 0 }
 
 void qe_register_mode(ModeDef *m);
+ModeDef *qe_find_mode(const char *mode_name);
 void qe_register_cmd_table(CmdDef *cmds, const char *mode);
 void qe_register_binding(int key, const char *cmd_name, 
                          const char *mode_names);
@@ -1016,6 +1017,7 @@ typedef struct {
 
 void get_cursor_pos(EditState *s, CursorContext *m);
 void show_popup(EditBuffer *b);
+EditState *show_popup_at(EditBuffer *b, int x1, int y1, int w, int h);
 EditState *insert_window_left(EditBuffer *b, int width, int flags);
 EditState *find_window(EditState *s, int key);
 void do_find_window(EditState *s, int key);

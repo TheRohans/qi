@@ -29,6 +29,12 @@
     STYLE_DEF(QE_STYLE_WINDOW_BORDER, "window-border",
               COLOR_TRANSPARENT, QERGB(255, 255, 255),
               0, 0, TS_RESET)
+    // popup window frame + title text: needs a real fg/bg pair since,
+    // unlike window-border above, it is used to draw visible glyphs
+    // (box-drawing/ASCII frame characters), not just a blank fill
+    STYLE_DEF(QE_STYLE_POPUP_BORDER, "popup-border",
+              QERGB(0, 0, 0), QERGB(255, 255, 255),
+              0, 0, TS_RESET)
     STYLE_DEF(QE_STYLE_MINIBUF, "minibuf",
               QERGB(255, 255, 255), COLOR_TRANSPARENT,
               0, 0, TS_RESET)

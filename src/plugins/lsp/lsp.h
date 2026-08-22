@@ -20,6 +20,7 @@ typedef struct EditState EditState;
 typedef struct {
     const char *ext;         /* file extension without dot, e.g. "go" */
     const char *language_id; /* LSP languageId, e.g. "go" */
+    const char *mode_name;   /* qi ModeDef.name for this language, e.g. "Go" */
     const char *cmd;         /* server executable */
     const char *args[LSP_MAX_CMD_ARGS]; /* extra args, NULL-terminated */
 } LSPLangConfig;
@@ -43,8 +44,10 @@ typedef struct {
     int init_id;
     int hover_id;
     int completion_id;
+    int def_id;
 
     EditState *hover_es;            /* edit window that requested the hover */
+    EditState *def_es;              /* edit window that requested go-to-definition */
 
     EditState *completion_popup;    /* dropdown popup window, NULL when inactive */
     EditState *completion_target_es;/* editor window to insert completion into */
@@ -63,7 +66,9 @@ extern LSPServer lsp_servers[LSP_MAX_SERVERS];
 int        lsp_init(void);
 LSPServer *lsp_get_server_for_file(EditState *s);
 void       lsp_ensure_did_open(LSPServer *srv, EditState *s);
+void       lsp_sync_document(LSPServer *srv, EditState *s);
 void       lsp_hover(EditState *s);
 void       lsp_complete(EditState *s);
+void       lsp_goto_definition(EditState *s);
 
 #endif
