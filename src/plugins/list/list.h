@@ -11,5 +11,7 @@ void list_toggle_selection(EditState *s);
 
 int list_init(void);
 
+extern ModeDef list_mode;
+
 #endif
 

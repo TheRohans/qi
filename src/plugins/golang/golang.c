@@ -4,6 +4,7 @@
  * Copyright (c) 2001, 2002 Fabrice Bellard.
  */
 #include "qe.h"
+#include "../lsp/lsp.h"
 #include "../clang/clang.h"
 
 static const char go_keywords[] = 
@@ -204,6 +205,7 @@ int go_mode_init(EditState *s, ModeSavedData *saved_data)
     if (ret)
         return ret;
     set_colorize_func(s, go_colorize_line);
+    lsp_get_server_for_file(s);
     return ret;
 }
 

@@ -245,7 +245,6 @@ static void latex_cmd_run(void *opaque, char *cmd)
             dlen = 1;
         snprintf(dir, sizeof(dir), "%.*s", dlen, func->es->b->filename);
     }
-    
 	int w = chdir(dir);
 	if(w < 0) {
 		LOG("%s", "Change directory didn't work");

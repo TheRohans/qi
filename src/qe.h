@@ -854,6 +854,7 @@ typedef struct CmdDef {
 #define CMD_DEF_END { 0, 0, NULL, { NULL }, 0 }
 
 void qe_register_mode(ModeDef *m);
+ModeDef *qe_find_mode(const char *mode_name);
 void qe_register_cmd_table(CmdDef *cmds, const char *mode);
 void qe_register_binding(int key, const char *cmd_name, 
                          const char *mode_names);
@@ -975,9 +976,11 @@ typedef struct CompletionEntry {
 void register_completion(const char *name, CompletionFunc completion_func);
 void put_status(EditState *s, const char *fmt, ...);
 void put_error(EditState *s, const char *fmt, ...);
-void minibuffer_edit(const char *input, const char *prompt, 
+void minibuffer_edit(const char *input, const char *prompt,
                      StringArray *hist, CompletionFunc completion_func,
                      void (*cb)(void *opaque, char *buf), void *opaque);
+void do_minibuffer_exit(EditState *s, int abort);
+void do_refresh_complete(EditState *s);
 void command_completion(StringArray *cs, const char *input);
 void file_completion(StringArray *cs, const char *input);
 void buffer_completion(StringArray *cs, const char *input);
@@ -1001,7 +1004,20 @@ void parse_config(EditState *e, const char *file);
 void do_load_qirc(EditState *e, const char *file);
 
 /* popup / low level window handling */
+typedef struct {
+    int linec;
+    int yc;           /* pixel y of cursor */
+    int xc;           /* pixel x of cursor */
+    int offsetc;
+    DirType basec;
+    DirType dirc;
+    int cursor_width;
+    int cursor_height;
+} CursorContext;
+
+void get_cursor_pos(EditState *s, CursorContext *m);
 void show_popup(EditBuffer *b);
+EditState *show_popup_at(EditBuffer *b, int x1, int y1, int w, int h);
 EditState *insert_window_left(EditBuffer *b, int width, int flags);
 EditState *find_window(EditState *s, int key);
 void do_find_window(EditState *s, int key);
